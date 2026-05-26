@@ -3,7 +3,7 @@
 
 <template lang="html">
     <div>
-        Lệnh tháo dỡ
+        Nhóm lỗi kiểm tra chất lượng
     </div>
 </template>
 

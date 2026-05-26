@@ -26,3 +26,38 @@
     -webkit-mask-position: -57px -7px;
     mask-position: -57px -7px;
 }
+
+.icon-quality-control {
+    -webkit-mask-position: -110px -6px;
+    mask-position: -110px -6px;
+}
+
+.icon-material-factory {
+    -webkit-mask-position: -84px -6px;
+    mask-position: -84px -6px;
+}
+
+.icon-production-report {
+    -webkit-mask-position: -214px -7px;
+    mask-position: -214px -7px;
+}
+
+.icon-product-material {
+    -webkit-mask-position: -136px -6px;
+    mask-position: -136px -6px;
+}
+
+.icon-process {
+    -webkit-mask-position: -162px -6px;
+    mask-position: -162px -6px;
+}
+
+.icon-production-capacity {
+    -webkit-mask-position: -189px -6px;
+    mask-position: -189px -6px;
+}
+
+.icon-production-category {
+    -webkit-mask-position: -240px -6px;
+    mask-position: -240px -6px;
+}

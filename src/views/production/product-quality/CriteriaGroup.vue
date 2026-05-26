@@ -3,7 +3,7 @@
 
 <template lang="html">
     <div>
-        Lệnh tháo dỡ
+        Nhóm tiêu chí chất lượng
     </div>
 </template>
 

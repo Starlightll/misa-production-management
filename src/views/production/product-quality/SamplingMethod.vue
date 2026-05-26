@@ -3,7 +3,7 @@
 
 <template lang="html">
     <div>
-        Lệnh tháo dỡ
+        Phương pháp chọn mẫu
     </div>
 </template>
 
