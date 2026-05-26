@@ -1,26 +1,30 @@
 @import "tailwindcss";
+@import "./assets/fonts/font.css";
+@import "./assets/icons/icon.css";
 
 :root {
-  --primary: #009B6E;
-  --text: #6b6375;
+  --primary-color: #0e9a62;
+  --text: #101828;
   --text-h: #08060d;
   --bg: #fff;
-  --border: #e5e4e7;
+  --bg-content: #f0f2f4;
+  --border: #D5D7DA;
+  --border-light: #e5e7eb;
   --code-bg: #f4f3ec;
-  --accent: #009B6E;
-  --accent-bg: rgba(0, 155, 110, 0.1);
-  --accent-border: rgba(0, 155, 110, 0.5);
+  --accent: #0e9a62;
+  --accent-bg: rgba(14, 154, 98, 0.1);
+  --accent-border: rgba(14, 154, 98, 0.5);
   --social-bg: rgba(244, 243, 236, 0.5);
   --shadow:
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
 
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --inter: 'Inter';
+  --heading: 'Inter';
   --mono: ui-monospace, Consolas, monospace;
 
-
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
+  font: 18px/145% var(--inter);
+  letter-spacing: normal;
   color-scheme: light dark;
   color: var(--text);
   background: var(--bg);
@@ -32,6 +36,8 @@
   @media (max-width: 1024px) {
     font-size: 16px;
   }
+
+
 }
 
 @media (prefers-color-scheme: dark) {
@@ -39,14 +45,21 @@
     --text: #9ca3af;
     --text-h: #f3f4f6;
     --bg: #16171d;
+    --bg-content: #1f2028;
     --border: #2e303a;
+    --border-light: #2e303a;
     --code-bg: #1f2028;
-    --accent: #009B6E;
-    --accent-bg: rgba(0, 155, 110, 0.15);
-    --accent-border: rgba(0, 155, 110, 0.5);
+    --accent: #0e9a62;
+    --accent-bg: rgba(14, 154, 98, 0.15);
+    --accent-border: rgba(14, 154, 98, 0.5);
     --social-bg: rgba(47, 48, 58, 0.5);
     --shadow:
       rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+
+    /* Misa */
+    --pl-base: #2a2f36;
+    --pl-highlight: #343b44;
+    --pl-dark: #0b0d10;
   }
 
   #social .button-icon {
@@ -56,6 +69,13 @@
 
 body {
   margin: 0;
+  padding: 0;
+  background: #f4f5f8;
+  overflow: hidden;
+  font-family: Inter;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 }
 
 h1,
@@ -164,15 +184,15 @@ code {
 }
 
 #app {
-  width: 1126px;
-  max-width: 100%;
+  /* max-width: 100%;
   margin: 0 auto;
   text-align: center;
   border-inline: 1px solid var(--border);
   min-height: 100svh;
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
+  box-sizing: border-box; */
+  flex: 1;
 }
 
 #center {

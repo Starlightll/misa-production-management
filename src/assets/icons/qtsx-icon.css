@@ -1,0 +1,28 @@
+.mi-qtsx {
+    mask-image: url(qtsx_icon.svg);
+    -webkit-mask-image: url(qtsx_icon.svg);
+    mask-repeat: no-repeat;
+    -webkit-mask-repeat: no-repeat;
+    background-color: #4b5563;
+}
+
+.icon-dashboard {
+    -webkit-mask-position: -6px -7px;
+    mask-position: -6px -7px;
+}
+
+.icon-order {
+    -webkit-mask-position: -344px -86px;
+    mask-position: -344px -86px;
+}
+
+.icon-plan {
+    -webkit-mask-position: -32px -7px;
+    mask-position: -32px -7px;
+}
+
+
+.icon-power {
+    -webkit-mask-position: -57px -7px;
+    mask-position: -57px -7px;
+}

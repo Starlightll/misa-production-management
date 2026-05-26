@@ -1,0 +1,17 @@
+.mi-warehouse {
+    mask-image: url(Icon\ Warehouse.svg);
+    -webkit-mask-image: url(Icon\ Warehouse.svg);
+    mask-repeat: no-repeat;
+    -webkit-mask-repeat: no-repeat;
+    background-color: #4b5563;
+}
+
+.icon-dropdown-up {
+    -webkit-mask-position: -180px -16px;
+    mask-position: -180px -16px;
+}
+
+.icon-chevron-right {
+    -webkit-mask-position: -220px -16px;
+    mask-position: -220px -16px;
+}

@@ -1,0 +1,10 @@
+@import "qtsx-icon.css";
+@import "warehouse-icon.css";
+
+.icon20 {
+    height: 20px;
+    width: 20px;
+    min-height: 20px;
+    min-width: 20px;
+    position: relative;
+}
