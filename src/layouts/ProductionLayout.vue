@@ -3,18 +3,29 @@ import { ref } from 'vue';
 import Navbar from '../components/modules/production/Navbar.vue';
 import Sidebar from '../components/modules/production/Sidebar.vue';
 const isCollapsed = ref(false);
+const isExpanded = ref(false);
+
+const toggleCollapse = () => {
+    isCollapsed.value = !isCollapsed.value;
+    console.log('Sidebar collapsed:', isCollapsed.value);
+};
+
+const collapseOnHover = () => {
+    if (isExpanded.value) {
+        isExpanded.value = false;
+    }
+};
 
 </script>
 
 <template>
     <div class="layout-container">
         <div class="header-container">
-            <!-- <Navbar /> -->
-            <button @click="isCollapsed = !isCollapsed">Toggle Sidebar</button>
+            <Navbar />
         </div>
         <div class="main" :class="{ 'ms-collapse': isCollapsed }">
-            <div class="main-left">
-                <Sidebar class="sidebar" :isCollapsed="isCollapsed" />
+            <div class="main-left" @mouseenter="isExpanded = true" @mouseleave="collapseOnHover">
+                <Sidebar class="sidebar" :isCollapsed="isCollapsed" @toggleCollapse="toggleCollapse" />
             </div>
             <main class="main-right">
                 <slot /> <!-- View sẽ nằm ở đây -->

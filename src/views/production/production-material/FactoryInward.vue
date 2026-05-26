@@ -3,7 +3,7 @@
 
 <template lang="html">
     <div>
-        Ca làm việc
+        Phiếu nhập kho tại nhà máy
     </div>
 </template>
 

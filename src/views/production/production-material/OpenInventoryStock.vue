@@ -3,7 +3,7 @@
 
 <template lang="html">
     <div>
-        Ca làm việc
+        Tồn kho đầu kỳ tại nhà máy
     </div>
 </template>
 

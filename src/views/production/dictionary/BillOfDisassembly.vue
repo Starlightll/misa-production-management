@@ -3,7 +3,7 @@
 
 <template lang="html">
     <div>
-        Ca làm việc
+        Định mức tháo dỡ
     </div>
 </template>
 

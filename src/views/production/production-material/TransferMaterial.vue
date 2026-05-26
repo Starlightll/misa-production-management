@@ -3,7 +3,7 @@
 
 <template lang="html">
     <div>
-        Ca làm việc
+        Điều chuyển vật tư
     </div>
 </template>
 

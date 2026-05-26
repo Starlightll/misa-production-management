@@ -3,7 +3,7 @@
 
 <template lang="html">
     <div>
-        Ca làm việc
+        Lý do dừng công việc
     </div>
 </template>
 

@@ -3,7 +3,7 @@
 
 <template lang="html">
     <div>
-        Tiêu chí chất lượng
+        Yêu cầu kiểm tra chất lượng
     </div>
 </template>
 

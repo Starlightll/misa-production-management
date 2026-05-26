@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue'
 import ProductionLayout from './layouts/ProductionLayout.vue'
 
+
 const route = useRoute()
 const layoutMap = {
   ProductionLayout: ProductionLayout,

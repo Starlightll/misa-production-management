@@ -3,7 +3,7 @@
 
 <template lang="html">
     <div>
-        Ca làm việc
+        Đối tượng tập hợp chi phí
     </div>
 </template>
 

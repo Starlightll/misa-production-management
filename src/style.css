@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "./assets/fonts/font.css";
 @import "./assets/icons/icon.css";
+@import 'floating-vue/dist/style.css';
 
 :root {
   --primary-color: #0e9a62;
@@ -324,4 +325,21 @@ code {
     right: 0;
     border-right-color: var(--border);
   }
+}
+
+
+.v-popper__inner {
+  background: #111111 !important;
+  font-size: 13px !important;
+  font-family: inherit;
+  padding: 6px 12px !important;
+  font-weight: 400 !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0.3px;
+  border-radius: 2px !important;
+}
+
+.v-popper__arrow-outer,
+.v-popper__arrow-inner {
+  border-color: #111111 !important;
 }

@@ -3,7 +3,7 @@
 
 <template lang="html">
     <div>
-        Ca làm việc
+        Nhóm vật tư hàng hóa
     </div>
 </template>
 

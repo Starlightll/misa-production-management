@@ -3,7 +3,7 @@
 
 <template lang="html">
     <div>
-        Ca làm việc
+        Định mức nguyên vật liệu (BOM)
     </div>
 </template>
 

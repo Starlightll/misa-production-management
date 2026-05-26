@@ -3,7 +3,7 @@
 
 <template lang="html">
     <div>
-        Ca làm việc
+        Cơ cấu tổ chức
     </div>
 </template>
 
