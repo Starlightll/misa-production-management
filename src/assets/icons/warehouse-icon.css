@@ -11,7 +11,68 @@
     mask-position: -180px -16px;
 }
 
+.angle-down-small {
+    -webkit-mask-position: -32px 0px;
+    mask-position: -32px 0px;
+}
+
 .icon-chevron-right {
     -webkit-mask-position: -220px -16px;
     mask-position: -220px -16px;
+}
+
+.logo-menu {
+    -webkit-mask-position: 0px -35px;
+    mask-position: 0px -35px;
+    cursor: pointer;
+}
+
+.plus {
+    -webkit-mask-position: -80px 0px;
+    mask-position: -80px 0px;
+}
+
+.reload {
+    -webkit-mask-position: -112px 0px;
+    mask-position: -112px 0px;
+}
+
+.search {
+    -webkit-mask-position: 0px 0px;
+    mask-position: 0px 0px;
+}
+
+.filter {
+    -webkit-mask-position: -544px 0px;
+    mask-position: -544px 0px;
+}
+
+.step-backward {
+    -webkit-mask-position: -143px 0px;
+    mask-position: -143px 0px;
+}
+
+.step-forward {
+    -webkit-mask-position: -160px 0px;
+    mask-position: -160px 0px;
+}
+
+.angle-left {
+    -webkit-mask-position: -48px 0px;
+    mask-position: -48px 0px;
+}
+
+.angle-right {
+    -webkit-mask-position: -64px 0px;
+    mask-position: -64px 0px;
+}
+
+.angle-down {
+    -webkit-mask-position: -202px -18px;
+    mask-position: -202px -18px;
+}
+
+.close {
+    -webkit-mask-position: -299px -16px;
+    mask-position: -299px -16px;
 }

@@ -3,28 +3,15 @@
     <div class="form__popup__content">
       <div class="form__popup__header">
         <h2>{{ title }}</h2>
-        <div
-          class="form__popup__close mi__icon__close form__popup__close__btn"
-          @click="$emit('close')"
-        ></div>
+        <div class="form__popup__close mi__icon__close form__popup__close__btn" @click="$emit('close')"></div>
       </div>
       <div class="form__popup__body">
         <p class="mb-4">{{ message }}</p>
       </div>
       <div class="form__popup__footer">
-        <MsButton
-          class="cancel"
-          @click="$emit('cancel')"
-          :label="'Hủy'"
-          variant="ghost"
-          >Hủy</MsButton
-        >
-        <MsButton
-          class="confirm"
-          @click="$emit('confirm')"
-          :label="'Xác nhận'"
-          :variant="variant === 'danger' ? 'danger' : 'primary'"
-        >
+        <MsButton class="cancel" @click="$emit('cancel')" :label="'Hủy'" variant="text">Hủy</MsButton>
+        <MsButton class="confirm" @click="$emit('confirm')" :label="'Xác nhận'"
+          :severity="variant === 'danger' ? 'danger' : 'primary'">
           Xác nhận
         </MsButton>
       </div>

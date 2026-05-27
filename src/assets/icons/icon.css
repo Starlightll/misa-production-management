@@ -1,5 +1,14 @@
 @import "qtsx-icon.css";
 @import "warehouse-icon.css";
+@import "awh-icon.css";
+
+.icon16 {
+    height: 16px;
+    width: 16px;
+    min-height: 16px;
+    min-width: 16px;
+    position: relative;
+}
 
 .icon20 {
     height: 20px;
@@ -7,4 +16,21 @@
     min-height: 20px;
     min-width: 20px;
     position: relative;
+}
+
+.icon20.to-24 {
+    transform: scale(1.2);
+    transform-origin: center;
+}
+
+.icon24 {
+    height: 24px;
+    width: 24px;
+    min-height: 24px;
+    min-width: 24px;
+    position: relative;
+}
+
+.icon.left {
+    margin: 0 4px 0 0;
 }

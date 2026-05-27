@@ -1,16 +1,14 @@
 <template lang="html">
-  <div class="ms-input-wrapper" :class="{ 'has-error': error }" :title="error">
+  <div class="ms-input" :class="{ 'has-error': error }" :title="error">
     <!-- Icon phía trước (Prefix Icon) -->
-    <i v-if="icon" class="mi icon" :class="icon"></i>
+    <div class="ms-input-container">
+      <div class="ms-input-content flex-1 flex items-center">
+        <i v-if="icon" class="" :class="icon"></i>
+        <input class="" :type="type" :value="modelValue" :placeholder="placeholder" @input="onInput"
+          @blur="$emit('blur', $event)" />
+      </div>
 
-    <input
-      class="ms-input"
-      :type="type"
-      :value="modelValue"
-      :placeholder="placeholder"
-      @input="onInput"
-      @blur="$emit('blur', $event)"
-    />
+    </div>
   </div>
 </template>
 <script setup lang="ts">
@@ -38,44 +36,91 @@ const onInput = (event: any) => {
 </script>
 <style lang="css" scoped>
 input {
-  border: 1px solid #dddde4;
-  height: 32px;
-  outline: none;
-  border-radius: 3px;
+  /* height: 32px;
   padding: 2px 16px;
-  width: 100%;
-}
+  
+  border: 1px solid #D1D5DB;
+  border-radius: 8px; */
 
-input:hover {
-  border: 1px solid #2970f6;
+  outline: none;
+  padding: 0;
+  display: flex;
+  width: 100%;
+  border: none;
+  background: transparent;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 input:focus {
-  border: 1px solid #2970f6;
+  outline: none;
 }
 
-.ms-input-wrapper {
-  position: relative;
+
+/* input:hover {
+  border: 1px solid var(--color-gray-400);
 }
 
-.ms-input-wrapper .icon {
+input:focus {
+  border: 1px solid var(--color-primary);
+} */
+
+.ms-input {
+  background-color: #fff;
+}
+
+.ms-input-container {
+  align-items: center;
+  column-gap: 4px;
+  padding: 5px 12px;
+  border: 1px solid #D1D5DB;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.ms-input-container:hover {
+  border: 1px solid var(--color-gray-400);
+}
+
+.ms-input-container:focus-within {
+  border: 1px solid var(--color-primary);
+}
+
+.ms-input-content {
+  column-gap: 4px;
+  min-width: 0;
+  align-items: center;
+}
+
+.ms-input.has-error {
+
+  .ms-input-container {
+    border: 1px solid #f44336 !important;
+  }
+
+  .icon {
+    background-color: #f44336 !important;
+  }
+}
+
+/* .ms-input .icon {
   position: absolute;
   top: 50%;
   left: 5px;
   transform: translate(0, -50%);
-}
+} */
 
-.ms-input-wrapper input {
+/* .ms-input input {
   padding-left: v-bind('icon ? "32px" : "16px"');
 }
 
-.ms-input-wrapper.has-error input {
+.ms-input.has-error input {
   border: 2px solid #f44336 !important;
 }
 
-.ms-input-wrapper.has-error .icon {
+.ms-input.has-error .icon {
   background-color: #f44336 !important;
-}
+} */
 
 .checkbox {
   width: 16px;

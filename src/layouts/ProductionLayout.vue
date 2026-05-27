@@ -70,8 +70,8 @@ const collapseOnHover = () => {
 
 .main-right {
     flex: 1;
-    padding: 20px;
-    background: var(--bg-content);
+    // padding: 20px;
+    background: var(--bg-dark);
     width: calc(100% - 248px);
 }
 </style>

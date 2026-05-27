@@ -375,7 +375,7 @@ const handleSidebarMouseEnter = () => {
                 <div class="menu-item" @click="toggleExpandGroup(GROUP_PLAN_INDEX)">
                     <div class="icon-menu mi-qtsx icon20 icon-plan"></div>
                     <div class="menu-item__text">Kế hoạch sản xuất</div>
-                    <div class="dropdown icon-menu mi-warehouse icon20 icon-dropdown-up"></div>
+                    <div class="dropdown icon-menu mi-warehouse icon16 icon-dropdown-up"></div>
                 </div>
                 <div class="sub-menu"
                     :style="{ height: groupExpandIndex === GROUP_PLAN_INDEX && !isCollapsed || (groupExpandIndex === GROUP_PLAN_INDEX && isSidebarExpanded) ? `${calculateSubmenuHeight(GROUP_PLAN_INDEX)}px` : '0' }">
@@ -441,7 +441,7 @@ const handleSidebarMouseEnter = () => {
                         <div v-if="handoverSubmenuOpen"
                             @mouseenter="isHoveringHandoverMenu = true; openHandoverSubmenu()"
                             @mouseleave="handoverSubmenuOpen = false"
-                            class="absolute top-0 left-full pl-5 w-max  z-10000 transition-opacity">
+                            class="sub-menu-panel-container transition-opacity">
                             <div class="sub-menu-panel bg-white p-2">
                                 <div class="sub-menu-panel__section">
                                     <router-link to="/production/production-execution/handover"
@@ -487,7 +487,7 @@ const handleSidebarMouseEnter = () => {
                         <div v-if="productQualitySubmenuOpen"
                             @mouseenter="isHoveringProductQualityMenu = true; openProductQualitySubmenu()"
                             @mouseleave="productQualitySubmenuOpen = false;"
-                            class=" absolute top-0 left-full pl-5 w-max  z-10000 transition-opacity">
+                            class="sub-menu-panel-container transition-opacity">
                             <div class="sub-menu-panel bg-white p-2">
                                 <div class="sub-menu-panel__section">
                                     <router-link to="/production/product-quality/criteria" class="sub-menu-panel__item">
@@ -641,7 +641,7 @@ const handleSidebarMouseEnter = () => {
                 <div v-if="productOtherCategorySubmenuOpen"
                     @mouseenter="isHoveringProductOtherCategoryMenu = true; openProductOtherCategorySubmenu()"
                     @mouseleave="productOtherCategorySubmenuOpen = false;"
-                    class="absolute top-0 left-full pl-5 w-max  z-10000 transition-opacity">
+                    class="sub-menu-panel-container transition-opacity">
                     <div class="sub-menu-panel bg-white p-2">
                         <div class="flex gap-2">
                             <!-- Objects -->
@@ -736,7 +736,7 @@ const handleSidebarMouseEnter = () => {
 
     .menu-item {
         justify-content: flex-start;
-        padding: 8px 8px !important;
+        padding: 6px !important;
 
         .icon-menu {
             margin-left: 0 !important;
@@ -785,11 +785,11 @@ const handleSidebarMouseEnter = () => {
 
     .menu-item {
         justify-content: flex-start;
-        padding: 0;
+        padding: 6px;
 
-        .icon-menu {
-            margin-left: 6px;
-        }
+        // .icon-menu {
+        //     margin-left: 6px;
+        // }
     }
 
     .sidebar-footer {
@@ -840,7 +840,7 @@ const handleSidebarMouseEnter = () => {
 
 .menu-item {
     position: relative;
-    padding: 8px 8px;
+    padding: 6px;
     height: 32px;
     font-size: 13px;
     display: flex;
@@ -983,6 +983,16 @@ const handleSidebarMouseEnter = () => {
 }
 
 // Panel menu
+.sub-menu-panel-container {
+    position: absolute;
+    top: -25px;
+    left: 100%;
+    padding: 25px;
+    z-index: 100;
+    width: max-content;
+    cursor: default;
+}
+
 .sub-menu-panel {
     border: 1px solid #E9EAEB;
     border-radius: 8px;

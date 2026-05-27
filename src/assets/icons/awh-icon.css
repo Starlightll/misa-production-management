@@ -1,0 +1,37 @@
+.mi-awh {
+    mask-image: url(./sprite_awh.svg);
+    -webkit-mask-image: url(./sprite_awh.svg);
+    mask-repeat: no-repeat;
+    -webkit-mask-repeat: no-repeat;
+    background-color: #4b5563;
+}
+
+.download-status {
+    -webkit-mask-position: -744px -36px;
+    mask-position: -744px -36px;
+}
+
+.stock-20 {
+    -webkit-mask-position: -278px -193px;
+    mask-position: -278px -193px;
+}
+
+.setting {
+    -webkit-mask-position: -360px -36px;
+    mask-position: -360px -36px;
+}
+
+.bell {
+    -webkit-mask-position: -24px -36px;
+    mask-position: -24px -36px;
+}
+
+.question-circle {
+    -webkit-mask-position: -48px -36px;
+    mask-position: -48px -36px;
+}
+
+.dots-circle-horizontal {
+    -webkit-mask-position: -8px -428px;
+    mask-position: -8px -428px;
+}

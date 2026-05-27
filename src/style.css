@@ -4,10 +4,54 @@
 @import 'floating-vue/dist/style.css';
 
 :root {
-  --primary-color: #0e9a62;
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+  --green-50: #ecfdf5;
+  --green-100: #d1fae5;
+  --green-200: #a7f3d0;
+  --green-300: #6ee7b7;
+  --green-400: #34d399;
+  --green-500: #10b981;
+  --green-600: #0e9a62;
+  --green-700: #0a724b;
+  --green-800: #064635;
+  --green-900: #03231a;
+}
+
+:root {
+  --primary-color: var(--green-600);
+  --primary-color-hover: var(--green-700);
+  --primary-soft-light: var(--green-50);
+  --secondary-color: var(--gray-600);
+  --secondary-color-hover: var(--gray-700);
+  --color-primary: var(--primary-color);
+  --color-primary-hover: var(--primary-color-hover);
+  --color-secondary: var(--secondary-color);
+  --color-secondary-hover: var(--secondary-color-hover);
+  --color-success: #16a34a;
+  --color-success-hover: #15803d;
+  --color-info: #0ea5e9;
+  --color-info-hover: #0284c7;
+  --color-warning: #f59e0b;
+  --color-warning-hover: #d97706;
+  --color-danger: #dc2626;
+  --color-danger-hover: #b91c1c;
+  --color-help: #4f46e5;
+  --color-help-hover: #4338ca;
+  --color-border: #e0e0e0;
   --text: #101828;
   --text-h: #08060d;
   --bg: #fff;
+  --bg-semi-dark: #F3F4F6;
+  --bg-dark: #E5E7EB;
   --bg-content: #f0f2f4;
   --border: #D5D7DA;
   --border-light: #e5e7eb;
@@ -77,6 +121,10 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: normal;
+  box-sizing: border-box;
 }
 
 h1,
@@ -86,7 +134,7 @@ h2 {
   color: var(--text-h);
 }
 
-h1 {
+/* h1 {
   font-size: 56px;
   letter-spacing: -1.68px;
   margin: 32px 0;
@@ -95,9 +143,9 @@ h1 {
     font-size: 36px;
     margin: 20px 0;
   }
-}
+} */
 
-h2 {
+/* h2 {
   font-size: 24px;
   line-height: 118%;
   letter-spacing: -0.24px;
@@ -106,7 +154,7 @@ h2 {
   @media (max-width: 1024px) {
     font-size: 20px;
   }
-}
+} */
 
 p {
   margin: 0;
