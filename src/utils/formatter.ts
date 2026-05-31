@@ -28,6 +28,6 @@ export const formatDate = (value: any) => {
  * createdby: pdthien - 15.10.2025
  */
 export const formatText = (value: any) => {
-  if (value === null || value === undefined || value === '') return '--';
+  if (value === null || value === undefined || value === '') return '-';
   return String(value);
 };

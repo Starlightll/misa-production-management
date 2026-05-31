@@ -1,11 +1,11 @@
 <template lang="html">
   <div class="ms-input" :class="{ 'has-error': error }" :title="error">
     <!-- Icon phía trước (Prefix Icon) -->
-    <div class="ms-input-container">
+    <div class="ms-input-container" :class="{ 'disabled': disabled }">
       <div class="ms-input-content flex-1 flex items-center">
         <i v-if="icon" class="" :class="icon"></i>
         <input class="" :type="type" :value="modelValue" :placeholder="placeholder" @input="onInput"
-          @blur="$emit('blur', $event)" />
+          @blur="$emit('blur', $event)" :readonly="readonly" :disabled="disabled" />
       </div>
 
     </div>
@@ -22,6 +22,8 @@ const props = defineProps({
   placeholder: String,
   icon: String, // Ví dụ: 'fa-user'
   error: String, // Thông báo lỗi truyền từ cha vào
+  readonly: Boolean, // Nếu true, input sẽ ở chế độ chỉ đọc
+  disabled: Boolean, // Nếu true, input sẽ bị vô hiệu hóa
 });
 
 const emit = defineEmits(["update:modelValue", "blur"]);
@@ -67,6 +69,7 @@ input:focus {
 
 .ms-input {
   background-color: #fff;
+
 }
 
 .ms-input-container {
@@ -125,5 +128,10 @@ input:focus {
 .checkbox {
   width: 16px;
   height: 16px;
+}
+
+.disabled {
+  cursor: default !important;
+  background-color: #f5f5f5;
 }
 </style>

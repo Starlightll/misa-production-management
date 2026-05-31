@@ -13,7 +13,8 @@
             <div class="form__popup__header__title">
               <div class="form__popup__header__title__text">{{ title }}</div>
             </div>
-            <div class="form__popup__close mi-warehouse icon20 close form__popup__close__btn" @click="$emit('close')">
+            <div v-if="showCloseButton" class="form__popup__close mi-warehouse icon20 close form__popup__close__btn"
+              @click="$emit('close')">
             </div>
           </template>
         </div>
@@ -67,6 +68,10 @@ const props = defineProps({
     type: String,
     default: "auto",
   },
+  showCloseButton: {
+    type: Boolean,
+    default: true,
+  },
 });
 </script>
 
@@ -82,6 +87,7 @@ const props = defineProps({
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  transition: opacity 0.3s ease;
 }
 
 .form__popup__content {
@@ -142,8 +148,8 @@ const props = defineProps({
 .form__popup__body {
   display: flex;
   flex-direction: column;
-  padding: 24px;
-  overflow: auto;
+  padding: 20px;
+  /* overflow: auto; */
   scrollbar-width: thin;
   flex: 1;
   background-color: #fff;
@@ -155,19 +161,21 @@ const props = defineProps({
   border-radius: 0 0 8px 8px;
   align-items: center;
   justify-content: flex-end;
-  padding: 9px 24px;
+  padding: 12px 20px;
   width: 100% !important;
-  height: 56px !important;
   border-top: 1px solid var(--border);
   background-color: #fff !important;
 }
 
 
 .form__popup.hidden {
-  display: none;
+  opacity: 0;
+  pointer-events: none;
+  /* display: none; */
 }
 
 .form__popup.visible {
-  display: flex;
+  opacity: 1;
+  /* display: flex; */
 }
 </style>

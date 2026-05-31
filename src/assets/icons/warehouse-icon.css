@@ -76,3 +76,28 @@
     -webkit-mask-position: -299px -16px;
     mask-position: -299px -16px;
 }
+
+.clock {
+    -webkit-mask-position: -385px -1px;
+    mask-position: -385px -1px;
+}
+
+.calendar {
+    -webkit-mask-position: -369px -1px;
+    mask-position: -369px -1px;
+}
+
+.ic-help {
+    -webkit-mask-position: -279px -16px;
+    mask-position: -279px -16px;
+}
+
+.pencil {
+    -webkit-mask-position: -271px 0px;
+    mask-position: -271px 0px;
+}
+
+.feature-more-blue {
+    -webkit-mask-position: -288px 0px;
+    mask-position: -288px 0px;
+}

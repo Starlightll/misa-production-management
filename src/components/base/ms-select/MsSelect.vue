@@ -1,12 +1,12 @@
 <template lang="html">
   <div class="ms-select" v-click-outside="closeDropdown">
-    <div ref="triggerRef" class="ms-select-wrapper" :class="{ 'has-error': error, disabled: disabled }">
+    <div ref="triggerRef" class="ms-select-wrapper" :class="{ 'has-error': error, disabled: disabled }"
+      @click="toggleDropdown">
       <i v-if="icon" class="mi icon" :class="icon"></i>
-      <input type="text" class="ms-select-input" :placeholder="placeholder" :value="selectedLabel"
-        @click="toggleDropdown" readonly />
+      <input type="text" class="ms-select-input" :placeholder="placeholder" :value="selectedLabel" readonly />
       <!-- slots -->
       <slot :name="'customActions'" :toggle="toggleDropdown"></slot>
-      <i class="mi-warehouse icon16 icon angle-down" :class="{ 'is-open': isOpening }"></i>
+      <i class="mi-warehouse icon16 icon angle-down cursor-pointer" :class="{ 'is-open': isOpening }"></i>
     </div>
     <!-- dropdown -->
     <transition name="slide">

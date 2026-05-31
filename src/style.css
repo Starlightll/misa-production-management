@@ -53,8 +53,17 @@
   --bg-semi-dark: #F3F4F6;
   --bg-dark: #E5E7EB;
   --bg-content: #f0f2f4;
-  --border: #D5D7DA;
+  --border: #D1D5DB;
   --border-light: #e5e7eb;
+  --border-dark: #9ca3af;
+  --checkbox-size: 16px;
+  --checkbox-accent: var(--color-primary);
+  --checkbox-border: var(--border);
+  --checkbox-border-hover: var(--border-dark);
+  --checkbox-bg: #ffffff;
+  --checkbox-error: var(--color-danger);
+  --checkbox-label: var(--text);
+  --checkbox-disabled-opacity: 0.6;
   --code-bg: #f4f3ec;
   --accent: #0e9a62;
   --accent-bg: rgba(14, 154, 98, 0.1);

@@ -2,14 +2,8 @@
   <div class="ms-textarea-wrapper" :class="{ 'has-error': error }">
     <i v-if="icon" class="mi icon" :class="icon"></i>
 
-    <textarea
-      class="ms-textarea"
-      :rows="rows"
-      :value="modelValue"
-      :placeholder="placeholder"
-      @input="onInput"
-      @blur="$emit('blur', $event)"
-    ></textarea>
+    <textarea class="ms-textarea max-h-32" :rows="rows" :value="modelValue" :placeholder="placeholder" @input="onInput"
+      @blur="$emit('blur', $event)"></textarea>
   </div>
 </template>
 <script setup lang="ts">
@@ -35,7 +29,7 @@ const onInput = (event: any) => {
 textarea {
   border: 1px solid #dddde4;
   outline: none;
-  border-radius: 3px;
+  border-radius: 8px;
   padding: 8px 16px;
   width: 100%;
   resize: vertical;
@@ -43,11 +37,11 @@ textarea {
 }
 
 textarea:hover {
-  border: 1px solid #2970f6;
+  border: 1px solid var(--primary-color);
 }
 
 textarea:focus {
-  border: 1px solid #2970f6;
+  border: 1px solid var(--primary-color);
 }
 
 .ms-textarea-wrapper {

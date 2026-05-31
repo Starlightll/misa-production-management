@@ -808,15 +808,26 @@ const handleSidebarMouseEnter = () => {
     }
 
     .sub-menu {
-        .sub-menu__item {
-            display: none;
-        }
+        // .sub-menu__item {
+        //     display: none;
+        // }
     }
 
     .menu-group-items {
+
+        &:hover {
+            .sub-menu__item {
+                display: flex !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+                overflow: visible !important;
+            }
+        }
+
         .sub-menu__item {
             opacity: 0;
             visibility: hidden;
+            overflow: clip;
         }
     }
 }
@@ -872,6 +883,8 @@ const handleSidebarMouseEnter = () => {
     background: rgba(0, 0, 0, .05);
     border-radius: 8px;
 }
+
+.menu-group-items {}
 
 .menu-group-items .sub-menu {
     display: flex;
