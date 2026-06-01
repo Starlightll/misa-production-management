@@ -101,3 +101,19 @@
     -webkit-mask-position: -288px 0px;
     mask-position: -288px 0px;
 }
+
+.duplicate {
+    -webkit-mask-position: -224px 0px;
+    mask-position: -224px 0px;
+}
+
+.empty {
+    -webkit-mask-position: -176px 0px;
+    mask-position: -176px 0px;
+}
+
+.trash {
+    -webkit-mask-position: -208px 0px;
+    mask-position: -208px 0px;
+    background-color: #f04438 !important;
+}

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 import MsInput from '../../base/ms-input/MsInput.vue';
 import MsButton from '../../base/ms-button/MsButton.vue';
 import MsTableDefault from '../../base/ms-table/MsTableDefault.vue';
@@ -128,15 +128,16 @@ const fields = [
         key: "Action",
         label: "Hành động",
         type: "custom",
-        displayOnHover: true,
         fixed: "right",
         sortable: false,
         filterable: false,
         resizable: false,
+        displayOnHover: true,
         style: {
             position: "sticky",
             right: 0,
-            zIndex: 5,
+            zIndex: 10,
+            overflow: 'visible',
             width: '120px',
             borderLeft: 'none',
         },
@@ -150,39 +151,43 @@ const fields = [
 ];
 
 const rows = [
-    { ShiftCode: 'S1', ShiftName: 'Ca sáng', ShiftBeginTime: '08:00', ShiftEndTime: '16:00', ShiftBeginBreakTime: '12:00', ShiftEndBreakTime: '13:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-01', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-01', ShiftWorkingTime: 8 },
-    { ShiftCode: 'S2', ShiftName: 'Ca chiều', ShiftBeginTime: '16:00', ShiftEndTime: '24:00', ShiftBeginBreakTime: '20:00', ShiftEndBreakTime: '21:00', ShiftInactive: true, CreatedBy: 'John Doe', CreatedDate: '2023-01-02', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-02', ShiftWorkingTime: 8 },
-    { ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
-    { ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
-    { ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
-    { ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
-    { ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
-    { ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
-    { ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
-    { ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
-    { ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
-    { ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
-    { ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
-    { ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
-    { ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
-    { ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
-    { ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
-    { ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
-    { ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
-    { ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
-    { ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
-    { ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
-    { ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
-    { ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
-    { ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
-    { ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
-    { ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
-    { ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
-    { ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
-    { ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
-    { ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
-    { ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
+    { id: '1', ShiftCode: 'S1', ShiftName: 'Ca sáng', ShiftBeginTime: '08:00', ShiftEndTime: '16:00', ShiftBeginBreakTime: '12:00', ShiftEndBreakTime: '13:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-01', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-01', ShiftWorkingTime: 8 },
+    { id: '2', ShiftCode: 'S2', ShiftName: 'Ca chiều', ShiftBeginTime: '16:00', ShiftEndTime: '24:00', ShiftBeginBreakTime: '20:00', ShiftEndBreakTime: '21:00', ShiftInactive: true, CreatedBy: 'John Doe', CreatedDate: '2023-01-02', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-02', ShiftWorkingTime: 8 },
+    { id: '3', ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
+    { id: '4', ShiftCode: 'S4', ShiftName: 'Ca đêm', ShiftBeginTime: '08:00', ShiftEndTime: '16:00', ShiftBeginBreakTime: '12:00', ShiftEndBreakTime: '13:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-04', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-04', ShiftWorkingTime: 8 },
+    { id: '5', ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
+    { id: '6', ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
+    { id: '7', ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
+    { id: '8', ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
+    { id: '9', ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
+    { id: '10', ShiftCode: 'S3', ShiftName: 'Ca tối', ShiftBeginTime: '24:00', ShiftEndTime: '08:00', ShiftBeginBreakTime: '04:00', ShiftEndBreakTime: '05:00', ShiftInactive: false, CreatedBy: 'John Doe', CreatedDate: '2023-01-03', ModifiedBy: 'John Doe', ModifiedDate: '2023-01-03', ShiftWorkingTime: 8 },
 ];
+
+const disableMouseEvent = ref(false);
+const showMenuId = ref<string | null>(null);
+const toggleMenu = (rowId: string) => {
+    showMenuId.value = showMenuId.value === rowId ? null : rowId;
+};
+const focusedRowIndex = ref<number>(-1);
+
+const closeMenu = () => {
+    showMenuId.value = null;
+};
+
+const handleDocumentClick = () => {
+    closeMenu();
+};
+
+
+
+onMounted(() => {
+    document.addEventListener('click', handleDocumentClick);
+});
+
+onBeforeUnmount(() => {
+    document.removeEventListener('click', handleDocumentClick);
+});
+
 </script>
 
 <template lang="html">
@@ -204,7 +209,7 @@ const rows = [
         <!-- Table grid -->
         <div class="table-container__table">
             <div class="table-container__table__content">
-                <MsTableDefault :fields="fields" :rows="rows">
+                <MsTableDefault :fields="fields" :rows="rows" :focusedRowIndex="focusedRowIndex">
                     <template #title-Checkbox="{ }">
                         <MsCheckbox type="checkbox" style="width: 16px; height: 16px" />
                     </template>
@@ -223,8 +228,8 @@ const rows = [
                             <div class="status-content">Ngừng sử dụng</div>
                         </div>
                     </template>
-                    <template #Action="{ row }">
-                        <div class="flex items-center justify-center gap-2 w-full h-full">
+                    <template #Action="{ row, rowIndex }">
+                        <div class="flex items-center justify-center gap-2 w-full h-full ">
                             <div class="border border-gray-300 rounded-lg flex items-center justify-center w-6 h-6 cursor-pointer group"
                                 @click="">
                                 <div class="icon icon16 mi-warehouse pencil group-hover:bg-(--primary-color)!"
@@ -232,10 +237,30 @@ const rows = [
                                 </div>
                             </div>
 
-                            <div class="border border-gray-300 rounded-lg flex items-center justify-center w-6 h-6 cursor-pointer group"
-                                @click="">
-                                <div class="icon icon16 mi-warehouse feature-more-blue group-hover:bg-(--primary-color)!"
-                                    @click="">
+                            <div class="border border-gray-300 rounded-lg flex items-center justify-center w-6 h-6 cursor-pointer group relative"
+                                @click.stop="toggleMenu(row.id); focusedRowIndex = rowIndex as number; console.log('Focused row index:', focusedRowIndex)">
+                                <div
+                                    class="icon icon16 mi-warehouse feature-more-blue group-hover:bg-(--primary-color)! group relative">
+                                </div>
+                                <!-- Dropdown menu -->
+                                <div v-if="showMenuId === row.id" @click.stop="" @mouseleave="closeMenu"
+                                    class="mt-1 w-32 bg-white rounded-lg absolute top-full right-0 z-50 overflow-hidden p-2 shadow-gray-300 "
+                                    style="box-shadow: 0 0 8px #0000001a, 0 8px 16px #0000001a;">
+                                    <div class="px-3 py-2 hover:bg-gray-100 rounded-sm cursor-pointer flex whitespace-nowrap items-center gap-2"
+                                        @click="closeMenu">
+                                        <div class="icon icon16 mi-warehouse duplicate"></div>
+                                        <div>Nhân bản</div>
+                                    </div>
+                                    <div class="px-3 py-2 hover:bg-gray-100 rounded-sm cursor-pointer flex whitespace-nowrap items-center gap-2"
+                                        @click="closeMenu">
+                                        <div class="icon icon16 mi-warehouse active"></div>
+                                        <div>Sử dụng</div>
+                                    </div>
+                                    <div class="px-3 py-2 hover:bg-gray-100 rounded-sm cursor-pointer flex whitespace-nowrap items-center gap-2"
+                                        @click="closeMenu">
+                                        <div class="icon icon16 mi-warehouse trash"></div>
+                                        <div>Xóa</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

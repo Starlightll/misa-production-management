@@ -71,7 +71,8 @@
             </tr>
         </thead>
         <tbody class="ms-tbody bg-white divide-y divide-gray-200">
-            <tr v-for="(row, rowIndex) in rows" :key="rowIndex" class="ms-tr">
+            <tr v-for="(row, rowIndex) in rows" :key="rowIndex" class="ms-tr"
+                :class="[rowIndex == props.focusedRowIndex ? 'z-10!' : '']">
                 <td v-for="field in fields" :key="field.key" :style="field.style || {}" class="ms-col-td">
                     <div class="flex flex-1" :class="[
                         field.type === 'number' ? 'text-end! justify-end!' : field.type === 'date' ? 'text-center! justify-center!' : field.type === 'text' ? 'text-left! justify-start!' : 'text-start! justify-start!',
@@ -84,7 +85,8 @@
                                     {{ handleFormat(row[field.key], "text") }}
                                 </slot>
                             </div> -->
-                            <slot :name="field.key" :row="row" :field="field" :value="row[field.key]">
+                            <slot :name="field.key" :row="row" :rowIndex="rowIndex" :field="field"
+                                :value="row[field.key]">
                                 {{ handleFormat(row[field.key], "text") }}
                             </slot>
                         </template>
@@ -120,6 +122,14 @@ const props = defineProps({
         type: Array as any,
         required: true,
     },
+    disableMouseEvent: {
+        type: Boolean,
+        default: false,
+    },
+    focusedRowIndex: {
+        type: Number,
+        default: null,
+    },
 });
 
 const handleFormat = (value: any, type: string) => {
@@ -154,10 +164,23 @@ table {
     }
 
     .ms-tr {
+        position: relative;
+        z-index: 0;
+
         &:hover {
+            z-index: 1;
+
             .display-on-hover {
-                opacity: 1;
+                opacity: 1 !important;
             }
+
+            .ms-col-td {
+                background-color: #F9FAFB !important;
+            }
+        }
+
+        .ms-col-td {
+            background-color: #FFF !important;
         }
 
 
@@ -234,12 +257,13 @@ table {
         padding: 0 16px;
         height: 32px;
         vertical-align: middle;
-        background-color: #fff;
         border-bottom: 1px solid #E5E7EB;
         font-size: 13px;
+        position: relative;
+        overflow: visible;
 
         .display-on-hover {
-            opacity: 0;
+            opacity: 0 !important;
         }
     }
 }
