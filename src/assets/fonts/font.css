@@ -1,3 +1,8 @@
+/* Variable fonts usage:
+:root { font-family: "Inter", sans-serif; }
+@supports (font-variation-settings: normal) {
+  :root { font-family: "InterVariable", sans-serif; font-optical-sizing: auto; }
+} */
 @font-face {
     font-family: InterVariable;
     font-style: normal;
@@ -516,22 +521,37 @@
     }
 }
 
-
+:root,
 html,
 body,
 button,
 input,
-textarea {
-    font-family: Inter, Roboto, Helvetica, Arial, sans-serif !important;
-}
-
+textarea,
 .dx-overlay-content,
-.dx-widget,
-.dx-widget input,
-.dx-overlay-wrapper,
-.dx-overlay-wrapper input,
-.dx-overlay-wrapper textarea,
 .dx-popup-title,
 .dx-item-content {
-    font-family: Inter, Roboto, Helvetica, Arial, sans-serif !important;
+    font-family: Inter, sans-serif;
+    font-feature-settings: 'liga' 1, 'calt' 1;
+    /* fix for Chrome */
+}
+
+@supports (font-variation-settings: normal) {
+
+    :root,
+    html,
+    body,
+    button,
+    input,
+    textarea,
+    .dx-overlay-content,
+    .dx-popup-title,
+    .dx-item-content {
+        font-family: InterVariable, sans-serif;
+    }
+}
+
+/* Đảm bảo toàn bộ số có độ rộng bằng nhau */
+* {
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: "tnum" 1, "lnum" 1;
 }

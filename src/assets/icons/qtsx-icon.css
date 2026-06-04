@@ -6,63 +6,78 @@
     background-color: #4b5563;
 }
 
-.icon-dashboard {
+.mi-qtsx.icon-dashboard {
     -webkit-mask-position: -6px -7px;
     mask-position: -6px -7px;
 }
 
-.icon-order {
+.mi-qtsx.icon-order {
     -webkit-mask-position: -344px -86px;
     mask-position: -344px -86px;
 }
 
-.icon-plan {
+.mi-qtsx.icon-plan {
     -webkit-mask-position: -32px -7px;
     mask-position: -32px -7px;
 }
 
 
-.icon-power {
+.mi-qtsx.icon-power {
     -webkit-mask-position: -57px -7px;
     mask-position: -57px -7px;
 }
 
-.icon-quality-control {
+.mi-qtsx.icon-quality-control {
     -webkit-mask-position: -110px -6px;
     mask-position: -110px -6px;
 }
 
-.icon-material-factory {
+.mi-qtsx.icon-material-factory {
     -webkit-mask-position: -84px -6px;
     mask-position: -84px -6px;
 }
 
-.icon-production-report {
+.mi-qtsx.icon-production-report {
     -webkit-mask-position: -214px -7px;
     mask-position: -214px -7px;
 }
 
-.icon-product-material {
+.mi-qtsx.icon-product-material {
     -webkit-mask-position: -136px -6px;
     mask-position: -136px -6px;
 }
 
-.icon-process {
+.mi-qtsx.icon-process {
     -webkit-mask-position: -162px -6px;
     mask-position: -162px -6px;
 }
 
-.icon-production-capacity {
+.mi-qtsx.icon-production-capacity {
     -webkit-mask-position: -189px -6px;
     mask-position: -189px -6px;
 }
 
-.icon-production-category {
+.mi-qtsx.icon-production-category {
     -webkit-mask-position: -240px -6px;
     mask-position: -240px -6px;
 }
 
-.icon-reminder-24 {
+.mi-qtsx.icon-reminder-24 {
     -webkit-mask-position: -552px -428px;
     mask-position: -552px -428px;
+}
+
+.mi-qtsx.icon-info {
+    -webkit-mask-position: -218px -167px;
+    mask-position: -218px -167px;
+}
+
+.mi-qtsx.icon-warning {
+    -webkit-mask-position: -188px -169px;
+    mask-position: -188px -169px;
+}
+
+.mi-qtsx.icon-danger {
+    -webkit-mask-position: -249px -168px;
+    mask-position: -249px -168px;
 }

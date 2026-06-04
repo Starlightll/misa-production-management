@@ -29,7 +29,7 @@
             <th class="text-center!">Hành động</th> -->
             <th v-for="field in fields" :key="field.key" :style="field.style || {}" :class="[
               field.type === 'number' ? 'text-end!' : '',
-              field.type === 'date' ? 'text-center!' : '',
+              field.type === 'date' || field.type === 'time' ? 'text-center!' : '',
             ]">
               <!-- Custom type with slot -->
               <template v-if="field.type === 'custom'">
@@ -58,7 +58,7 @@
           <tr v-for="(row, rowIndex) in rows" :key="rowIndex" class="relative group">
             <td v-for="field in fields" :key="field.key" :style="field.style || {}" :class="[
               field.type === 'number' ? 'text-end!' : '',
-              field.type === 'date' ? 'text-center!' : '',
+              field.type === 'date' || field.type === 'time' ? 'text-center!' : '',
             ]">
               <!-- Custom type with slot -->
               <template v-if="field.type === 'custom'">
@@ -93,7 +93,7 @@ import {
   watch,
 } from "vue";
 import { useResizeObserver, useElementSize } from "@vueuse/core";
-import { formatNumber, formatDate, formatText } from "../../../utils/formatter";
+import { formatNumber, formatDate, formatText, formatTime } from "../../../utils/formatter";
 
 const props = defineProps({
   fields: {
@@ -101,7 +101,7 @@ const props = defineProps({
     required: true,
     validator: (value: any) => {
       return value.every((field: any) => {
-        const validTypes = ["text", "number", "date", "custom"];
+        const validTypes = ["text", "number", "date", "time", "custom"];
         return (
           field.key && field.label && validTypes.includes(field.type || "text")
         );
@@ -122,6 +122,8 @@ const handleFormat = (value: any, type: string) => {
       return formatNumber(value);
     case "date":
       return formatDate(value);
+    case "time":
+      return formatTime(value);
     case "text":
       return formatText(value);
     default:

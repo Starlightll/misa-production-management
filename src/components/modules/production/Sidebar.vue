@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n();
+
 const props = defineProps<{
     isCollapsed: boolean;
 }>();
@@ -362,42 +365,42 @@ const handleSidebarMouseEnter = () => {
         <div class="menu-items relative">
             <router-link to="/production/dashboard" class="menu-item">
                 <div class="icon-menu mi-qtsx icon20 icon-dashboard"></div>
-                <div class="menu-item__text">Tổng quan</div>
+                <div class="menu-item__text">{{ t('sidebar.overview') }}</div>
             </router-link>
 
             <router-link to="/production/sale-order" class="menu-item">
                 <div class="icon-menu mi-qtsx icon20 icon-order"></div>
-                <div class="menu-item__text">Đơn đặt hàng</div>
+                <div class="menu-item__text">{{ t('sidebar.saleOrder') }}</div>
             </router-link>
 
             <div class="menu-group-items"
                 :class="{ 'active-parent': isParentActive('/production/production-plan'), 'group-expand': groupExpandIndex === GROUP_PLAN_INDEX }">
                 <div class="menu-item" @click="toggleExpandGroup(GROUP_PLAN_INDEX)">
                     <div class="icon-menu mi-qtsx icon20 icon-plan"></div>
-                    <div class="menu-item__text">Kế hoạch sản xuất</div>
+                    <div class="menu-item__text">{{ t('sidebar.productionPlan') }}</div>
                     <div class="dropdown icon-menu mi-warehouse icon16 icon-dropdown-up"></div>
                 </div>
                 <div class="sub-menu"
                     :style="{ height: groupExpandIndex === GROUP_PLAN_INDEX && !isCollapsed || (groupExpandIndex === GROUP_PLAN_INDEX && isSidebarExpanded) ? `${calculateSubmenuHeight(GROUP_PLAN_INDEX)}px` : '0' }">
                     <router-link to="/production/production-plan/sale-order-plan" class="sub-menu__item"
-                        v-tooltip.right="'Kế hoạch sản xuất theo đơn hàng'">
-                        <div class="sub-menu__item__text">Kế hoạch theo đơn hàng</div>
+                        :v-tooltip.right="t('sidebar.plan.saleOrderPlan')">
+                        <div class="sub-menu__item__text">{{ t('sidebar.plan.saleOrderPlan') }}</div>
                     </router-link>
                     <router-link to="/production/production-plan/overall-plan" class="sub-menu__item">
-                        <div class="sub-menu__item__text">Kế hoạch tổng thể</div>
+                        <div class="sub-menu__item__text">{{ t('sidebar.plan.overallPlan') }}</div>
                     </router-link>
                     <router-link to="/production/production-plan/detail-plan" class="sub-menu__item">
-                        <div class="sub-menu__item__text">Kế hoạch chi tiết</div>
+                        <div class="sub-menu__item__text">{{ t('sidebar.plan.detailPlan') }}</div>
                     </router-link>
                     <router-link to="/production/production-plan/material-plan" class="sub-menu__item"
-                        v-tooltip.right="'Kế hoạch nguyên vật liệu'">
-                        <div class="sub-menu__item__text">Kế hoạch nguyên vật liệu</div>
+                        :v-tooltip.right="t('sidebar.plan.materialPlan')">
+                        <div class="sub-menu__item__text">{{ t('sidebar.plan.materialPlan') }}</div>
                     </router-link>
                     <router-link to="/production/production-plan/material-purchase-request" class="sub-menu__item">
-                        <div class="sub-menu__item__text">Yêu cầu mua NVL</div>
+                        <div class="sub-menu__item__text">{{ t('sidebar.plan.materialPurchaseRequest') }}</div>
                     </router-link>
                     <router-link to="/production/production-plan/purchase-order" class="sub-menu__item">
-                        <div class="sub-menu__item__text">Đơn mua hàng</div>
+                        <div class="sub-menu__item__text">{{ t('sidebar.plan.purchaseOrder') }}</div>
                     </router-link>
                 </div>
             </div>
@@ -406,35 +409,35 @@ const handleSidebarMouseEnter = () => {
                 :class="{ 'active-parent': isParentActive('/production/production-execution'), 'group-expand': groupExpandIndex === GROUP_EXECUTION_INDEX }">
                 <div class="menu-item" @click="toggleExpandGroup(GROUP_EXECUTION_INDEX)">
                     <div class="icon-menu mi-qtsx icon20 icon-power"></div>
-                    <div class="menu-item__text">Điều phối và thực thi</div>
+                    <div class="menu-item__text">{{ t('sidebar.productionExecution') }}</div>
                     <div class="dropdown icon-menu mi-warehouse icon20 icon-dropdown-up"></div>
                 </div>
                 <div class="sub-menu"
                     :style="{ height: groupExpandIndex === GROUP_EXECUTION_INDEX && !isCollapsed || (groupExpandIndex === GROUP_EXECUTION_INDEX && isSidebarExpanded) ? `${calculateSubmenuHeight(GROUP_EXECUTION_INDEX)}px` : '0' }">
                     <router-link to="/production/production-execution/order" class="sub-menu__item">
-                        <div class="sub-menu__item__text">Lệnh sản xuất</div>
+                        <div class="sub-menu__item__text">{{ t('sidebar.execution.order') }}</div>
                     </router-link>
                     <router-link to="/production/production-execution/dismantle-order" class="sub-menu__item">
-                        <div class="sub-menu__item__text">Lệnh tháo gỡ</div>
+                        <div class="sub-menu__item__text">{{ t('sidebar.execution.dismantleOrder') }}</div>
                     </router-link>
                     <router-link to="/production/production-execution/schedule" class="sub-menu__item">
-                        <div class="sub-menu__item__text">Lịch sản xuất</div>
+                        <div class="sub-menu__item__text">{{ t('sidebar.execution.schedule') }}</div>
                     </router-link>
                     <router-link to="/production/production-execution/material-request" class="sub-menu__item">
-                        <div class="sub-menu__item__text">Yêu cầu xuất vật tư</div>
+                        <div class="sub-menu__item__text">{{ t('sidebar.execution.materialRequest') }}</div>
                     </router-link>
                     <router-link to="/production/production-execution/statistics" class="sub-menu__item">
-                        <div class="sub-menu__item__text">Thống kê sản xuất</div>
+                        <div class="sub-menu__item__text">{{ t('sidebar.execution.statistics') }}</div>
                     </router-link>
                     <router-link to="/production/production-execution/product-request" class="sub-menu__item"
-                        v-tooltip.right="'Yêu cầu nhập thành phẩm, nguyên vật liệu thừa'">
-                        <div class="sub-menu__item__text">Yêu cầu nhập thành phầm, nguyên vật liệu thừa</div>
+                        :v-tooltip.right="t('sidebar.execution.productRequest')">
+                        <div class="sub-menu__item__text">{{ t('sidebar.execution.productRequest') }}</div>
                     </router-link>
                     <div class="sub-menu__item relative group" @mouseenter="openHandoverSubmenu" :class="{
                         'active-sub-panel-parent': isPanelActive(['/production/production-execution/handover', '/production/production-execution/handoverreturn'])
                     }" @mouseleave="handoverSubmenuOpen = false;">
-                        <div class="sub-menu__item__text"
-                            v-tooltip.top-start="'Bàn giao sản phẩm, nguyên vật liệu thừa'">Bàn giao bán thành phẩm
+                        <div class="sub-menu__item__text" :v-tooltip.top-start="t('sidebar.execution.handover')">
+                            {{ t('sidebar.execution.handover') }}
                         </div>
                         <div class="dropdown icon-menu mi-warehouse icon20 icon-chevron-right"></div>
                         <!-- Sub-menu panel for handover  -->
@@ -446,19 +449,21 @@ const handleSidebarMouseEnter = () => {
                                 <div class="sub-menu-panel__section">
                                     <router-link to="/production/production-execution/handover"
                                         class="sub-menu-panel__item">
-                                        <div class="sub-menu-panel__item__text">Bàn giao</div>
+                                        <div class="sub-menu-panel__item__text">{{ t('sidebar.execution.handover') }}
+                                        </div>
                                     </router-link>
                                     <router-link to="/production/production-execution/handoverreturn"
                                         class="sub-menu-panel__item">
-                                        <div class="sub-menu-panel__item__text">Trả lại</div>
+                                        <div class="sub-menu-panel__item__text">{{ t('sidebar.execution.handoverReturn')
+                                            }}</div>
                                     </router-link>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <router-link to="/production/production-execution/handover-overview" class="sub-menu__item"
-                        v-tooltip.right="'Tình hình bàn giao sản xuất'">
-                        <div class="sub-menu__item__text">Tình hình bàn giao sản xuất</div>
+                        :v-tooltip.right="t('sidebar.execution.handoverOverview')">
+                        <div class="sub-menu__item__text">{{ t('sidebar.execution.handoverOverview') }}</div>
                     </router-link>
                 </div>
             </div>
@@ -467,21 +472,22 @@ const handleSidebarMouseEnter = () => {
                 :class="{ 'active-parent': isParentActive('/production/product-quality'), 'group-expand': groupExpandIndex === GROUP_PRODUCT_QUALITY_INDEX }">
                 <div class="menu-item" @click="toggleExpandGroup(GROUP_PRODUCT_QUALITY_INDEX)">
                     <div class="icon-menu mi-qtsx icon20 icon-quality-control"></div>
-                    <div class="menu-item__text">Kiểm tra chất lượng</div>
+                    <div class="menu-item__text">{{ t('sidebar.productQuality') }}</div>
                     <div class="dropdown icon-menu mi-warehouse icon20 icon-dropdown-up"></div>
                 </div>
                 <div class="sub-menu"
                     :style="{ height: groupExpandIndex === GROUP_PRODUCT_QUALITY_INDEX && !isCollapsed || (groupExpandIndex === GROUP_PRODUCT_QUALITY_INDEX && isSidebarExpanded) ? `${calculateSubmenuHeight(GROUP_PRODUCT_QUALITY_INDEX)}px` : '0' }">
                     <router-link to="/production/product-quality/quality-check-request" class="sub-menu__item">
-                        <div class="sub-menu__item__text">Yêu cầu kiểm tra</div>
+                        <div class="sub-menu__item__text">{{ t('sidebar.productQualityItems.qualityCheckRequest') }}
+                        </div>
                     </router-link>
                     <router-link to="/production/product-quality/inspection-voucher" class="sub-menu__item">
-                        <div class="sub-menu__item__text">Phiếu kiểm tra</div>
+                        <div class="sub-menu__item__text">{{ t('sidebar.productQualityItems.inspectionVoucher') }}</div>
                     </router-link>
                     <div class="sub-menu__item relative group" :class="{
                         'active-sub-panel-parent': isPanelActive(['/production/product-quality/criteria', '/production/product-quality/criteria-group', '/production/product-quality/sampling-method', '/production/product-quality/quality-standard', '/production/product-quality/quality-error', '/production/product-quality/quality-error-group'])
                     }" @mouseenter="openProductQualitySubmenu" @mouseleave="productQualitySubmenuOpen = false;">
-                        <div class="sub-menu__item__text">Tiêu chuẩn</div>
+                        <div class="sub-menu__item__text">{{ t('sidebar.productQualityItems.criteria') }}</div>
                         <div class="icon-menu mi-warehouse icon20 icon-chevron-right"></div>
                         <!-- Sub-menu panel for handover  -->
                         <div v-if="productQualitySubmenuOpen"
@@ -491,27 +497,37 @@ const handleSidebarMouseEnter = () => {
                             <div class="sub-menu-panel bg-white p-2">
                                 <div class="sub-menu-panel__section">
                                     <router-link to="/production/product-quality/criteria" class="sub-menu-panel__item">
-                                        <div class="sub-menu-panel__item__text">Tiêu chí chất lượng</div>
+                                        <div class="sub-menu-panel__item__text">{{
+                                            t('sidebar.productQualityItems.criteria') }}
+                                        </div>
                                     </router-link>
                                     <router-link to="/production/product-quality/criteria-group"
                                         class="sub-menu-panel__item">
-                                        <div class="sub-menu-panel__item__text">Nhóm tiêu chí chất lượng</div>
+                                        <div class="sub-menu-panel__item__text">{{
+                                            t('sidebar.productQualityItems.criteriaGroup') }}
+                                        </div>
                                     </router-link>
                                     <router-link to="/production/product-quality/sampling-method"
                                         class="sub-menu-panel__item">
-                                        <div class="sub-menu-panel__item__text">Phương pháp chọn mẫu</div>
+                                        <div class="sub-menu-panel__item__text">{{
+                                            t('sidebar.productQualityItems.samplingMethod') }}</div>
                                     </router-link>
                                     <router-link to="/production/product-quality/quality-standard"
                                         class="sub-menu-panel__item">
-                                        <div class="sub-menu-panel__item__text">Bộ tiêu chuẩn kiểm tra chất lượng</div>
+                                        <div class="sub-menu-panel__item__text">{{
+                                            t('sidebar.productQualityItems.qualityStandard')
+                                        }}</div>
                                     </router-link>
                                     <router-link to="/production/product-quality/quality-error"
                                         class="sub-menu-panel__item">
-                                        <div class="sub-menu-panel__item__text">Lỗi kiểm tra chất lượng</div>
+                                        <div class="sub-menu-panel__item__text">{{
+                                            t('sidebar.productQualityItems.qualityError') }}
+                                        </div>
                                     </router-link>
                                     <router-link to="/production/product-quality/quality-error-group"
                                         class="sub-menu-panel__item">
-                                        <div class="sub-menu-panel__item__text">Nhóm lỗi kiểm tra chất lượng</div>
+                                        <div class="sub-menu-panel__item__text">{{
+                                            t('sidebar.productQualityItems.qualityErrorGroup') }}</div>
                                     </router-link>
                                 </div>
                             </div>
@@ -524,26 +540,30 @@ const handleSidebarMouseEnter = () => {
                 :class="{ 'active-parent': isParentActive('/production/production-material'), 'group-expand': groupExpandIndex === GROUP_PRODUCTION_MATERIAL_INDEX }">
                 <div class="menu-item" @click="toggleExpandGroup(GROUP_PRODUCTION_MATERIAL_INDEX)">
                     <div class="icon-menu mi-qtsx icon20 icon-material-factory"></div>
-                    <div class="menu-item__text">Kho vật tư</div>
+                    <div class="menu-item__text">{{ t('sidebar.productionMaterial') }}</div>
                     <div class="dropdown icon-menu mi-warehouse icon20 icon-dropdown-up"></div>
                 </div>
                 <div class="sub-menu"
                     :style="{ height: groupExpandIndex === GROUP_PRODUCTION_MATERIAL_INDEX && !isCollapsed || (groupExpandIndex === GROUP_PRODUCTION_MATERIAL_INDEX && isSidebarExpanded) ? `${calculateSubmenuHeight(GROUP_PRODUCTION_MATERIAL_INDEX)}px` : '0' }">
                     <router-link to="/production/production-material/request-material" class="sub-menu__item"
-                        v-tooltip.right="'Đề nghị kho cấp vật tư'">
-                        <div class="sub-menu__item__text">Đề nghị kho cấp vật tư</div>
+                        :v-tooltip.right="t('sidebar.productionMaterialItems.requestMaterial')">
+                        <div class="sub-menu__item__text">{{ t('sidebar.productionMaterialItems.requestMaterial') }}
+                        </div>
                     </router-link>
                     <router-link to="/production/production-material/factory-inward" class="sub-menu__item">
-                        <div class="sub-menu__item__text">Nhập kho</div>
+                        <div class="sub-menu__item__text">{{ t('sidebar.productionMaterialItems.factoryInward') }}</div>
                     </router-link>
                     <router-link to="/production/production-material/export-material" class="sub-menu__item">
-                        <div class="sub-menu__item__text">Xuất kho</div>
+                        <div class="sub-menu__item__text">{{ t('sidebar.productionMaterialItems.exportMaterial') }}
+                        </div>
                     </router-link>
                     <router-link to="/production/production-material/transfer-material" class="sub-menu__item">
-                        <div class="sub-menu__item__text">Điều chuyển</div>
+                        <div class="sub-menu__item__text">{{ t('sidebar.productionMaterialItems.transferMaterial') }}
+                        </div>
                     </router-link>
                     <router-link to="/production/production-material/opn-inventory-stock" class="sub-menu__item">
-                        <div class="sub-menu__item__text">Tồn kho đầu kỳ</div>
+                        <div class="sub-menu__item__text">{{ t('sidebar.productionMaterialItems.opnInventoryStock')
+                            }}</div>
                     </router-link>
                 </div>
             </div>
@@ -552,7 +572,7 @@ const handleSidebarMouseEnter = () => {
 
             <router-link to="/production/reportlist" class="menu-item">
                 <div class="icon-menu mi-qtsx icon20 icon-production-report"></div>
-                <div class="menu-item__text">Báo cáo</div>
+                <div class="menu-item__text">{{ t('sidebar.reports') }}</div>
             </router-link>
 
             <div class="menu-item-line"></div>
@@ -561,28 +581,30 @@ const handleSidebarMouseEnter = () => {
                 :class="{ 'active-parent': isParentActive('/production/dictionary'), 'group-expand': groupExpandIndex === GROUP_DICTIONARY_INDEX }">
                 <div class="menu-item" @click="toggleExpandGroup(GROUP_DICTIONARY_INDEX)">
                     <div class="icon-menu mi-qtsx icon20 icon-product-material"></div>
-                    <div class="menu-item__text">Sản phẩm, NVL</div>
+                    <div class="menu-item__text">{{ t('sidebar.dictionary') }}</div>
                     <div class="dropdown icon-menu mi-warehouse icon20 icon-dropdown-up"></div>
                 </div>
                 <div class="sub-menu"
                     :style="{ height: groupExpandIndex === GROUP_DICTIONARY_INDEX && !isCollapsed || (groupExpandIndex === GROUP_DICTIONARY_INDEX && isSidebarExpanded) ? `${calculateSubmenuHeight(GROUP_DICTIONARY_INDEX)}px` : '0' }">
                     <router-link to="/production/dictionary/inventoryitem" class="sub-menu__item">
-                        <div class="sub-menu__item__text">Vật tư hàng hóa</div>
+                        <div class="sub-menu__item__text">{{ t('sidebar.dictionaryItems.inventoryItem') }}</div>
                     </router-link>
                     <router-link to="/production/dictionary/inventoryitemgroup" class="sub-menu__item"
-                        v-tooltip.right="'Nhóm vật tư hàng hóa'">
-                        <div class="sub-menu__item__text">Nhóm vật tư hàng hóa</div>
+                        :v-tooltip.right="t('sidebar.dictionaryItems.inventoryItemGroup')">
+                        <div class="sub-menu__item__text">{{ t('sidebar.dictionaryItems.inventoryItemGroup') }}</div>
                     </router-link>
                     <router-link to="/production/dictionary/billOfMaterials" class="sub-menu__item"
-                        v-tooltip.right="'Định mức nguyên vật liệu'">
-                        <div class="sub-menu__item__text">Định mức nguyên vật liệu</div>
+                        :v-tooltip.right="t('sidebar.dictionaryItems.billOfMaterials')">
+                        <div class="sub-menu__item__text">{{ t('sidebar.dictionaryItems.billOfMaterials') }}</div>
                     </router-link>
-                    <router-link to="/production/dictionary/billOfDisassembly" class="sub-menu__item">
-                        <div class="sub-menu__item__text">Định mức tháo dỡ</div>
+                    <router-link to="/production/dictionary/billOfDisassembly" class="sub-menu__item"
+                        :v-tooltip.right="t('sidebar.dictionaryItems.billOfDisassembly')">
+                        <div class="sub-menu__item__text">{{ t('sidebar.dictionaryItems.billOfDisassembly') }}</div>
                     </router-link>
                     <router-link to="/production/dictionary/alternativeMaterialList" class="sub-menu__item"
-                        v-tooltip.right="'Danh sách nguyên vật liệu thay thế'">
-                        <div class="sub-menu__item__text">Nguyên vật liệu thay thế</div>
+                        :v-tooltip.right="t('sidebar.dictionaryItems.alternativeMaterialList')">
+                        <div class="sub-menu__item__text">{{ t('sidebar.dictionaryItems.alternativeMaterialList') }}
+                        </div>
                     </router-link>
                 </div>
             </div>
@@ -591,16 +613,17 @@ const handleSidebarMouseEnter = () => {
                 :class="{ 'active-parent': isParentActive('/production/production-process'), 'group-expand': groupExpandIndex === GROUP_PRODUCTION_PROCESS_INDEX }">
                 <div class="menu-item" @click="toggleExpandGroup(GROUP_PRODUCTION_PROCESS_INDEX)">
                     <div class="icon-menu mi-qtsx icon20 icon-process"></div>
-                    <div class="menu-item__text">Quy trình</div>
+                    <div class="menu-item__text">{{ t('sidebar.productionProcess') }}</div>
                     <div class="dropdown icon-menu mi-warehouse icon20 icon-dropdown-up"></div>
                 </div>
                 <div class="sub-menu"
                     :style="{ height: groupExpandIndex === GROUP_PRODUCTION_PROCESS_INDEX && !isCollapsed || (groupExpandIndex === GROUP_PRODUCTION_PROCESS_INDEX && isSidebarExpanded) ? `${calculateSubmenuHeight(GROUP_PRODUCTION_PROCESS_INDEX)}px` : '0' }">
                     <router-link to="/production/production-process/stage" class="sub-menu__item">
-                        <div class="sub-menu__item__text">Công đoạn</div>
+                        <div class="sub-menu__item__text">{{ t('sidebar.productionProcessItems.stage') }}</div>
                     </router-link>
                     <router-link to="/production/production-process/production-process" class="sub-menu__item">
-                        <div class="sub-menu__item__text">Quy trình</div>
+                        <div class="sub-menu__item__text">{{ t('sidebar.productionProcessItems.productionProcess') }}
+                        </div>
                     </router-link>
                 </div>
             </div>
@@ -609,22 +632,26 @@ const handleSidebarMouseEnter = () => {
                 :class="{ 'active-parent': isParentActive('/production/production-capacity'), 'group-expand': groupExpandIndex === GROUP_PRODUCTION_CAPACITY_INDEX }">
                 <div class="menu-item" @click="toggleExpandGroup(GROUP_PRODUCTION_CAPACITY_INDEX)">
                     <div class="icon-menu mi-qtsx icon20 icon-production-capacity"></div>
-                    <div class="menu-item__text">Năng lực sản xuất</div>
+                    <div class="menu-item__text">{{ t('sidebar.productionCapacity') }}</div>
                     <div class="dropdown icon-menu mi-warehouse icon20 icon-dropdown-up"></div>
                 </div>
                 <div class="sub-menu"
                     :style="{ height: groupExpandIndex === GROUP_PRODUCTION_CAPACITY_INDEX && !isCollapsed || (groupExpandIndex === GROUP_PRODUCTION_CAPACITY_INDEX && isSidebarExpanded) ? `${calculateSubmenuHeight(GROUP_PRODUCTION_CAPACITY_INDEX)}px` : '0' }">
                     <router-link to="/production/production-capacity/productionTeam" class="sub-menu__item">
-                        <div class="sub-menu__item__text">Tổ sản xuất</div>
+                        <div class="sub-menu__item__text">{{ t('sidebar.productionCapacityItems.productionTeam') }}
+                        </div>
                     </router-link>
                     <router-link to="/production/production-capacity/productionEquipment" class="sub-menu__item">
-                        <div class="sub-menu__item__text">Máy móc</div>
+                        <div class="sub-menu__item__text">{{ t('sidebar.productionCapacityItems.productionEquipment') }}
+                        </div>
                     </router-link>
                     <router-link to="/production/production-capacity/productionCapacityGroup" class="sub-menu__item">
-                        <div class="sub-menu__item__text">Nhóm năng lực</div>
+                        <div class="sub-menu__item__text">{{
+                            t('sidebar.productionCapacityItems.productionCapacityGroup') }}</div>
                     </router-link>
                     <router-link to="/production/production-capacity/productionPattern" class="sub-menu__item">
-                        <div class="sub-menu__item__text">Khuôn</div>
+                        <div class="sub-menu__item__text">{{ t('sidebar.productionCapacityItems.productionPattern') }}
+                        </div>
                     </router-link>
                 </div>
             </div>
@@ -634,7 +661,7 @@ const handleSidebarMouseEnter = () => {
                 :class="{ 'active-sub-panel-parent': isParentActive('/production/other-categories') }">
                 <div class="menu-item ">
                     <div class="icon-menu mi-qtsx icon20 icon-production-category"></div>
-                    <div class="menu-item__text">Danh mục khác</div>
+                    <div class="menu-item__text">{{ t('sidebar.otherCategories') }}</div>
                     <div class="dropdown icon-menu mi-warehouse icon20 icon-chevron-right"></div>
                 </div>
                 <!-- Sub-menu panel for handover  -->
@@ -646,51 +673,65 @@ const handleSidebarMouseEnter = () => {
                         <div class="flex gap-2">
                             <!-- Objects -->
                             <div class="sub-menu-panel__section">
-                                <div class="sub-menu-panel__title">Đối tượng</div>
+                                <div class="sub-menu-panel__title">{{ t('sidebar.objects') }}</div>
                                 <router-link to="/production/other-categories/customer" class="sub-menu-panel__item">
-                                    <div class="sub-menu-panel__item__text">Khách hàng</div>
+                                    <div class="sub-menu-panel__item__text">{{
+                                        t('sidebar.otherCategoriesItems.customer') }}</div>
                                 </router-link>
                                 <router-link to="/production/other-categories/supplier" class="sub-menu-panel__item">
-                                    <div class="sub-menu-panel__item__text">Nhà cung cấp</div>
+                                    <div class="sub-menu-panel__item__text">{{
+                                        t('sidebar.otherCategoriesItems.supplier') }}</div>
                                 </router-link>
                                 <router-link to="/production/other-categories/employee" class="sub-menu-panel__item">
-                                    <div class="sub-menu-panel__item__text">Nhân viên</div>
+                                    <div class="sub-menu-panel__item__text">{{
+                                        t('sidebar.otherCategoriesItems.employee') }}</div>
                                 </router-link>
                                 <router-link to="/production/other-categories/job" class="sub-menu-panel__item">
-                                    <div class="sub-menu-panel__item__text">Đối tượng tập hợp chi phí</div>
+                                    <div class="sub-menu-panel__item__text">{{ t('sidebar.otherCategoriesItems.job') }}
+                                    </div>
                                 </router-link>
                             </div>
                             <div class="sub-menu-panel__section">
-                                <div class="sub-menu-panel__title">Lịch làm việc</div>
+                                <div class="sub-menu-panel__title">{{ t('sidebar.otherCategoriesItems.workSchedule') }}
+                                </div>
                                 <router-link to="/production/other-categories/shift" class="sub-menu-panel__item">
-                                    <div class="sub-menu-panel__item__text">Ca làm việc</div>
+                                    <div class="sub-menu-panel__item__text">{{ t('sidebar.otherCategoriesItems.shift')
+                                    }}</div>
                                 </router-link>
                                 <router-link to="/production/other-categories/holiday-schedule"
                                     class="sub-menu-panel__item">
-                                    <div class="sub-menu-panel__item__text">Ngày nghỉ</div>
+                                    <div class="sub-menu-panel__item__text">{{
+                                        t('sidebar.otherCategoriesItems.holidaySchedule') }}</div>
                                 </router-link>
                                 <router-link to="/production/other-categories/work-schedule"
                                     class="sub-menu-panel__item">
-                                    <div class="sub-menu-panel__item__text">Lịch làm việc</div>
+                                    <div class="sub-menu-panel__item__text">{{
+                                        t('sidebar.otherCategoriesItems.workSchedule') }}</div>
                                 </router-link>
                             </div>
                             <div class="sub-menu-panel__section">
-                                <div class="sub-menu-panel__title">Khác</div>
+                                <div class="sub-menu-panel__title">{{ t('sidebar.others')
+                                }}</div>
                                 <router-link to="/production/other-categories/organization"
                                     class="sub-menu-panel__item">
-                                    <div class="sub-menu-panel__item__text">Cơ cấu tổ chức</div>
+                                    <div class="sub-menu-panel__item__text">{{
+                                        t('sidebar.otherCategoriesItems.organization') }}</div>
                                 </router-link>
                                 <router-link to="/production/other-categories/stock" class="sub-menu-panel__item">
-                                    <div class="sub-menu-panel__item__text">Kho</div>
+                                    <div class="sub-menu-panel__item__text">{{ t('sidebar.otherCategoriesItems.stock')
+                                    }}</div>
                                 </router-link>
                                 <router-link to="/production/other-categories/unit" class="sub-menu-panel__item">
-                                    <div class="sub-menu-panel__item__text">Đơn vị tính</div>
+                                    <div class="sub-menu-panel__item__text">{{ t('sidebar.otherCategoriesItems.unit') }}
+                                    </div>
                                 </router-link>
                                 <router-link to="/production/other-categories/reason" class="sub-menu-panel__item">
-                                    <div class="sub-menu-panel__item__text">Lý do dừng công việc</div>
+                                    <div class="sub-menu-panel__item__text">{{ t('sidebar.otherCategoriesItems.reason')
+                                    }}</div>
                                 </router-link>
                                 <router-link to="/production/other-categories/currency" class="sub-menu-panel__item">
-                                    <div class="sub-menu-panel__item__text">Loại tiền</div>
+                                    <div class="sub-menu-panel__item__text">{{
+                                        t('sidebar.otherCategoriesItems.currency') }}</div>
                                 </router-link>
                             </div>
                         </div>
@@ -704,7 +745,7 @@ const handleSidebarMouseEnter = () => {
         <div class="sidebar-footer">
             <div class="collapse-btn" @click="toggleCollapse">
                 <div class="icon-menu mi-warehouse icon20 icon-chevron-right"></div>
-                <div class="collapse-btn__text">{{ !isCollapsed ? 'Thu gọn' : 'Mở rộng' }}</div>
+                <div class="collapse-btn__text">{{ !isCollapsed ? t('sidebar.collapse') : t('sidebar.expand') }}</div>
             </div>
         </div>
     </div>

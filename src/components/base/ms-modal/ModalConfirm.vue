@@ -1,20 +1,25 @@
 <template lang="html">
   <div class="form__popup" :class="{ hidden: !visible, visible: visible }">
     <div class="form__popup__content">
-      <div class="form__popup__header">
-        <h2>{{ title }}</h2>
-        <div class="form__popup__close mi__icon__close form__popup__close__btn" @click="$emit('close')"></div>
-      </div>
-      <div class="form__popup__body">
-        <p class="mb-4">{{ message }}</p>
-      </div>
-      <div class="form__popup__footer">
-        <MsButton class="cancel" @click="$emit('cancel')" :label="'Hủy'" variant="text">Hủy</MsButton>
-        <MsButton class="confirm" @click="$emit('confirm')" :label="'Xác nhận'"
-          :severity="variant === 'danger' ? 'danger' : 'primary'">
-          Xác nhận
-        </MsButton>
-      </div>
+      <template v-if="$slots.template">
+        <slot name="template"></slot>
+      </template>
+      <template v-else>
+        <div class="form__popup__header">
+          <h2>{{ title }}</h2>
+          <div class="form__popup__close mi__icon__close form__popup__close__btn" @click="$emit('close')"></div>
+        </div>
+        <div class="form__popup__body">
+          <div class="mb-4" v-html="message"></div>
+        </div>
+        <div class="form__popup__footer">
+          <MsButton class="cancel" @click="$emit('cancel')" :label="'Hủy'" variant="text">Hủy</MsButton>
+          <MsButton class="confirm" @click="$emit('confirm')" :label="'Xác nhận'"
+            :severity="variant === 'danger' ? 'danger' : 'primary'">
+            Xác nhận
+          </MsButton>
+        </div>
+      </template>
     </div>
   </div>
 </template>
@@ -60,7 +65,8 @@ const emit = defineEmits(["cancel", "confirm", "close"]);
 .form__popup__content {
   background-color: #fff;
   /* padding: 20px; */
-  border-radius: 8px;
+  border-radius: 12px;
+  box-shadow: 0 3px 20px #00000014;
   height: auto;
 }
 

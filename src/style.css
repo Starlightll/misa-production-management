@@ -26,26 +26,70 @@
   --green-900: #03231a;
 }
 
+.ms-button--success {
+  --btn-color: #22c55e;
+  --btn-color-dark: #16a34a;
+  --btn-color-rgb: 34, 197, 94;
+  --btn-text: #ffffff;
+}
+
+.ms-button--info {
+  --btn-color: #0ea5e9;
+  --btn-color-dark: #0284c7;
+  --btn-color-rgb: 14, 165, 233;
+  --btn-text: #ffffff;
+}
+
+.ms-button--warning {
+  --btn-color: #f59e0b;
+  --btn-color-dark: #d97706;
+  --btn-color-rgb: 245, 158, 11;
+  --btn-text: #ffffff;
+}
+
+.ms-button--help {
+  --btn-color: #a855f7;
+  --btn-color-dark: #9333ea;
+  --btn-color-rgb: 168, 85, 247;
+  --btn-text: #ffffff;
+}
+
+.ms-button--danger {
+  --btn-color: #ef4444;
+  --btn-color-dark: #dc2626;
+  --btn-color-rgb: 239, 68, 68;
+  --btn-text: #ffffff;
+}
+
 :root {
   --primary-color: var(--green-600);
   --primary-color-hover: var(--green-700);
+  --primary-color-rgb: 75, 85, 99;
   --primary-soft-light: var(--green-50);
-  --secondary-color: var(--gray-600);
-  --secondary-color-hover: var(--gray-700);
+  --secondary-color: var(--gray-300);
+  --secondary-color-hover: var(--gray-400);
+  --secondary-color-rgb: 185, 188, 196;
   --color-primary: var(--primary-color);
   --color-primary-hover: var(--primary-color-hover);
+  --color-primary-rgb: var(--primary-color-rgb);
   --color-secondary: var(--secondary-color);
   --color-secondary-hover: var(--secondary-color-hover);
+  --color-secondary-rgb: var(--secondary-color-rgb);
   --color-success: #16a34a;
   --color-success-hover: #15803d;
+  --color-success-rgb: 22, 163, 74;
   --color-info: #0ea5e9;
   --color-info-hover: #0284c7;
+  --color-info-rgb: 14, 165, 233;
   --color-warning: #f59e0b;
   --color-warning-hover: #d97706;
+  --color-warning-rgb: 245, 158, 11;
   --color-danger: #dc2626;
   --color-danger-hover: #b91c1c;
+  --color-danger-rgb: 220, 34, 38;
   --color-help: #4f46e5;
   --color-help-hover: #4338ca;
+  --color-help-rgb: 79, 70, 229;
   --color-border: #e0e0e0;
   --text: #101828;
   --text-h: #08060d;
@@ -72,12 +116,6 @@
   --shadow:
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --inter: 'Inter';
-  --heading: 'Inter';
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 18px/145% var(--inter);
   letter-spacing: normal;
   color-scheme: light dark;
   color: var(--text);
@@ -121,12 +159,29 @@
   }
 }
 
+html,
+body,
+button,
+input,
+textarea,
+.dx-overlay-content,
+.dx-popup-title,
+.dx-item-content {
+  font-family: Inter, Helvetica, Arial, sans-serif !important
+}
+
+label {
+  color: #101828;
+  display: block;
+  font-weight: 500;
+}
+
 body {
   margin: 0;
   padding: 0;
   background: #f4f5f8;
+
   overflow: hidden;
-  font-family: Inter;
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -136,12 +191,13 @@ body {
   box-sizing: border-box;
 }
 
+/* 
 h1,
 h2 {
   font-family: var(--heading);
   font-weight: 500;
   color: var(--text-h);
-}
+} */
 
 /* h1 {
   font-size: 56px;
@@ -399,4 +455,40 @@ code {
 .v-popper__arrow-outer,
 .v-popper__arrow-inner {
   border-color: #111111 !important;
+}
+
+
+/* Animate  */
+/* rotate */
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* pulse */
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.animate-rotate {
+  animation: rotate 1s linear infinite;
+}
+
+.animate-pulse {
+  animation: pulse 2s ease-in-out infinite;
 }

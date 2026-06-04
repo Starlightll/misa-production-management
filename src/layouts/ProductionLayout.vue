@@ -2,11 +2,12 @@
 import { ref } from 'vue';
 import Navbar from '../components/modules/production/Navbar.vue';
 import Sidebar from '../components/modules/production/Sidebar.vue';
-const isCollapsed = ref(false);
+const isCollapsed = ref(localStorage.getItem('sidebarCollapsed') === 'true');
 const isExpanded = ref(false);
 
 const toggleCollapse = () => {
     isCollapsed.value = !isCollapsed.value;
+    localStorage.setItem('sidebarCollapsed', isCollapsed.value.toString());
     console.log('Sidebar collapsed:', isCollapsed.value);
 };
 

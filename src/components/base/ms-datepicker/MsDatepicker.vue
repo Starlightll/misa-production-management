@@ -1,10 +1,10 @@
 <template>
   <div class="ms-datepicker" ref="rootRef" @focusout="handleBlur">
-    <div class="ms-datepicker-wrapper" :class="{ 'has-error': error }" :title="error" @click="openPicker">
-      <input type="text" class="ms-datepicker-input" :placeholder="resolvedPlaceholder" :value="displayValue" readonly
-        @focus="openPicker" />
+    <div class="ms-datepicker-wrapper" :class="{ 'has-error': error }">
+      <input type="text" class="ms-datepicker-input" :placeholder="resolvedPlaceholder" :value="inputValue"
+        :readonly="readonly" :disabled="disabled" @input="handleInput" @blur="handleInputBlur" />
 
-      <div class="ms-datepicker-wrapper__datepicker__button" @click.stop="togglePicker">
+      <div class="ms-datepicker-wrapper__datepicker__button" @click.stop="readonly || disabled ? null : togglePicker()">
         <div class="icon" :class="resolvedIcon"></div>
       </div>
     </div>
@@ -73,6 +73,8 @@ const props = defineProps({
     type: String,
     default: "date", // Hoặc "month", "year" tùy nhu cầu
   },
+  readonly: Boolean,
+  disabled: Boolean,
   icon: String,
   error: String,
 });
@@ -84,6 +86,8 @@ const isOpen = ref(false);
 const viewMonth = ref(0);
 const viewYear = ref(0);
 const selectedTime = ref("");
+const inputValue = ref("");
+const isUserInput = ref(false);
 
 const handleBlur = (event: FocusEvent) => {
   const container = event.currentTarget as HTMLElement;
@@ -122,6 +126,116 @@ const timeOptions = Array.from({ length: 48 }, (_, index) => {
   return `${hours}:${minutes}`;
 });
 
+const extractTimeDigits = (value: string) =>
+  value.replace(/\D/g, "").slice(0, 4);
+
+const formatTimeDraft = (digits: string) => {
+  if (!digits) return "";
+  if (digits.length <= 2) return digits;
+  return `${digits.slice(0, 2)}:${digits.slice(2)}`;
+};
+
+const normalizeTimeDigits = (digits: string) => {
+  if (!digits) return "";
+
+  let hours = 0;
+  let minutes = 0;
+
+  if (digits.length <= 2) {
+    hours = Number(digits);
+    minutes = 0;
+  } else if (digits.length === 3) {
+    hours = Number(digits.slice(0, 2));
+    minutes = Number(`${digits.slice(2)}0`);
+  } else {
+    hours = Number(digits.slice(0, 2));
+    minutes = Number(digits.slice(2));
+  }
+
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) return "";
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return "";
+
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+};
+
+const normalizeTimeInput = (value: string) => {
+  const digits = extractTimeDigits(value.trim());
+  return normalizeTimeDigits(digits);
+};
+
+const normalizeDateInput = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+
+  const dmyMatch = trimmed.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+  const ymdMatch = trimmed.match(/^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})$/);
+
+  let day = 0;
+  let month = 0;
+  let year = 0;
+
+  if (dmyMatch) {
+    day = Number(dmyMatch[1]);
+    month = Number(dmyMatch[2]);
+    year = Number(dmyMatch[3]);
+  } else if (ymdMatch) {
+    year = Number(ymdMatch[1]);
+    month = Number(ymdMatch[2]);
+    day = Number(ymdMatch[3]);
+  } else {
+    return "";
+  }
+
+  const date = new Date(year, month - 1, day);
+  if (
+    Number.isNaN(date.getTime()) ||
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) {
+    return "";
+  }
+
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+};
+
+const normalizeDateTimeInput = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+
+  let datePart = trimmed;
+  let timePart = "";
+
+  if (trimmed.includes("T")) {
+    const split = trimmed.split("T");
+    datePart = split[0];
+    timePart = split[1] ?? "";
+  } else if (trimmed.includes(" ")) {
+    const split = trimmed.split(/\s+/);
+    datePart = split[0];
+    timePart = split[1] ?? "";
+  }
+
+  const normalizedDate = normalizeDateInput(datePart);
+  if (!normalizedDate) return "";
+
+  let normalizedTime = "";
+  if (timePart) {
+    normalizedTime = normalizeTimeInput(timePart);
+    if (!normalizedTime) return "";
+  } else {
+    normalizedTime = selectedTime.value || "00:00";
+  }
+
+  return `${normalizedDate}T${normalizedTime}`;
+};
+
+const formatDateDisplay = (isoDate: string) => {
+  const match = isoDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return isoDate;
+  return `${match[3]}/${match[2]}/${match[1]}`;
+};
+
 const parseDate = (value?: string) => {
   if (!value) return null;
   const match = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
@@ -134,6 +248,9 @@ const parseDate = (value?: string) => {
 
 const parseTime = (value?: string) => {
   if (!value) return "";
+  //Check if value matchs time format HH:MM:SS
+  const timeFullMatch = value.match(/^(\d{2}):(\d{2})(?::\d{2})?$/);
+  if (timeFullMatch) return `${timeFullMatch[1]}:${timeFullMatch[2]}`;
   const match = value.match(/T(\d{2}):(\d{2})$/);
   if (match) return `${match[1]}:${match[2]}`;
   const timeMatch = value.match(/^(\d{2}):(\d{2})$/);
@@ -153,7 +270,12 @@ const syncView = () => {
  */
 const displayValue = computed(() => {
   if (!props.modelValue) return "";
-  if (resolvedType.value === "time") return props.modelValue;
+  //format time to
+  if (resolvedType.value === "time") {
+    const parsedTime = parseTime(props.modelValue);
+    console.log("Parsed time:", props.modelValue, parsedTime);
+    return parsedTime || props.modelValue;
+  }
   if (resolvedType.value === "datetime") {
     const match = props.modelValue.match(
       /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/
@@ -165,6 +287,94 @@ const displayValue = computed(() => {
   if (!match) return props.modelValue;
   return `${match[3]}/${match[2]}/${match[1]}`;
 });
+
+const handleInput = (event: Event) => {
+  const value = (event.target as HTMLInputElement).value;
+  isUserInput.value = true;
+  inputValue.value = value;
+
+  if (resolvedType.value === "time") {
+    const digits = extractTimeDigits(value);
+    inputValue.value = formatTimeDraft(digits);
+
+    if (!digits) {
+      selectedTime.value = "";
+      emit("update:modelValue", "");
+      return;
+    }
+
+    const normalizedTime = normalizeTimeDigits(digits);
+    if (normalizedTime) {
+      selectedTime.value = normalizedTime;
+      emit("update:modelValue", normalizedTime);
+    }
+    return;
+  }
+
+  if (!value) {
+    selectedTime.value = "";
+    emit("update:modelValue", "");
+    return;
+  }
+
+  if (resolvedType.value === "datetime") {
+    const normalizedDateTime = normalizeDateTimeInput(value);
+    if (normalizedDateTime) {
+      selectedTime.value = normalizedDateTime.split("T")[1];
+      emit("update:modelValue", normalizedDateTime);
+    }
+    return;
+  }
+
+  const normalizedDate = normalizeDateInput(value);
+  if (normalizedDate) {
+    emit("update:modelValue", normalizedDate);
+  }
+};
+
+const handleInputBlur = () => {
+  isUserInput.value = false;
+  const value = inputValue.value.trim();
+
+  if (!value) {
+    selectedTime.value = "";
+    emit("update:modelValue", "");
+    return;
+  }
+
+  if (resolvedType.value === "time") {
+    const normalizedTime = normalizeTimeInput(value);
+    if (normalizedTime) {
+      selectedTime.value = normalizedTime;
+      inputValue.value = normalizedTime;
+      emit("update:modelValue", normalizedTime);
+    } else {
+      inputValue.value = displayValue.value;
+    }
+    return;
+  }
+
+  if (resolvedType.value === "datetime") {
+    const normalizedDateTime = normalizeDateTimeInput(value);
+    if (normalizedDateTime) {
+      const [datePart, timePart] = normalizedDateTime.split("T");
+      selectedTime.value = timePart;
+      inputValue.value = `${formatDateDisplay(datePart)} ${timePart}`;
+      emit("update:modelValue", normalizedDateTime);
+    } else {
+      inputValue.value = displayValue.value;
+    }
+    return;
+  }
+
+  const normalizedDate = normalizeDateInput(value);
+  if (normalizedDate) {
+    inputValue.value = formatDateDisplay(normalizedDate);
+    emit("update:modelValue", normalizedDate);
+  } else {
+    inputValue.value = displayValue.value;
+  }
+};
 
 const calendarCells = computed(() => {
   const startOfMonth = new Date(viewYear.value, viewMonth.value, 1);
@@ -307,6 +517,16 @@ watch(
     if (!isOpen.value) syncView();
   }
 );
+
+watch(
+  displayValue,
+  (value) => {
+    if (!isUserInput.value) {
+      inputValue.value = value;
+    }
+  },
+  { immediate: true }
+);
 </script>
 <style lang="css" scoped>
 .ms-datepicker-wrapper {
@@ -387,7 +607,7 @@ input:focus {
 }
 
 .ms-datepicker-wrapper.has-error {
-  border: 2px solid #f44336 !important;
+  border: 1px solid #f44336 !important;
 }
 
 .ms-datepicker-wrapper.has-error .icon {
@@ -410,6 +630,7 @@ input:focus {
 
 .ms-datepicker-calendar {
   width: 100%;
+  min-width: 245px;
   padding: 12px;
 }
 
@@ -519,6 +740,7 @@ input:focus {
   margin-top: 8px;
   border-top: 1px solid #e5e7eb;
   padding-top: 8px;
+  padding-bottom: 8px;
   display: flex;
   justify-content: center;
 }

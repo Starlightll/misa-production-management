@@ -287,6 +287,13 @@ const routes = [
         component: () => import('../views/production/other-categories/WorkSchedule.vue'),
         meta: { layout: 'ProductionLayout' }
     },
+
+    //Report list
+    {
+        path: '/production/reportlist',
+        component: () => import('../views/production/ReportList.vue'),
+        meta: { layout: 'ProductionLayout' }
+    },
 ]
 
 export const router = createRouter({

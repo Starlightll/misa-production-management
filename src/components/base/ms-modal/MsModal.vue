@@ -109,7 +109,7 @@ const props = defineProps({
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  border-radius: 8px 8px 0 0;
+  border-radius: 12px 12px 0 0;
   background-color: #fff !important;
 
   .form__popup__header__title {
@@ -158,7 +158,7 @@ const props = defineProps({
 .form__popup__footer {
   display: flex;
   justify-content: flex-end;
-  border-radius: 0 0 8px 8px;
+  border-radius: 0 0 12px 12px;
   align-items: center;
   justify-content: flex-end;
   padding: 12px 20px;

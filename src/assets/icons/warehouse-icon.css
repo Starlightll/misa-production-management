@@ -6,114 +6,154 @@
     background-color: #4b5563;
 }
 
-.icon-dropdown-up {
+.mi-warehouse.icon-dropdown-up {
     -webkit-mask-position: -180px -16px;
     mask-position: -180px -16px;
 }
 
-.angle-down-small {
+.mi-warehouse.angle-down-small {
     -webkit-mask-position: -32px 0px;
     mask-position: -32px 0px;
 }
 
-.icon-chevron-right {
+.mi-warehouse.icon-chevron-right {
     -webkit-mask-position: -220px -16px;
     mask-position: -220px -16px;
 }
 
-.logo-menu {
+.mi-warehouse.logo-menu {
     -webkit-mask-position: 0px -35px;
     mask-position: 0px -35px;
     cursor: pointer;
 }
 
-.plus {
+.mi-warehouse.plus {
     -webkit-mask-position: -80px 0px;
     mask-position: -80px 0px;
 }
 
-.reload {
+.mi-warehouse.reload {
     -webkit-mask-position: -112px 0px;
     mask-position: -112px 0px;
 }
 
-.search {
+.mi-warehouse.search {
     -webkit-mask-position: 0px 0px;
     mask-position: 0px 0px;
 }
 
-.filter {
+.mi-warehouse.filter {
     -webkit-mask-position: -544px 0px;
     mask-position: -544px 0px;
 }
 
-.step-backward {
+.mi-warehouse.step-backward {
     -webkit-mask-position: -143px 0px;
     mask-position: -143px 0px;
 }
 
-.step-forward {
+.mi-warehouse.step-forward {
     -webkit-mask-position: -160px 0px;
     mask-position: -160px 0px;
 }
 
-.angle-left {
+.mi-warehouse.angle-left {
     -webkit-mask-position: -48px 0px;
     mask-position: -48px 0px;
 }
 
-.angle-right {
+.mi-warehouse.angle-right {
     -webkit-mask-position: -64px 0px;
     mask-position: -64px 0px;
 }
 
-.angle-down {
+.mi-warehouse.angle-down {
     -webkit-mask-position: -202px -18px;
     mask-position: -202px -18px;
 }
 
-.close {
+.mi-warehouse.close {
     -webkit-mask-position: -299px -16px;
     mask-position: -299px -16px;
 }
 
-.clock {
+.mi-warehouse.close {
+    -webkit-mask-position: -96px 0px;
+    mask-position: -96px 0px;
+}
+
+.mi-warehouse.clock {
     -webkit-mask-position: -385px -1px;
     mask-position: -385px -1px;
 }
 
-.calendar {
+.mi-warehouse.calendar {
     -webkit-mask-position: -369px -1px;
     mask-position: -369px -1px;
 }
 
-.ic-help {
+.mi-warehouse.ic-help {
     -webkit-mask-position: -279px -16px;
     mask-position: -279px -16px;
 }
 
-.pencil {
+.mi-warehouse.pencil {
     -webkit-mask-position: -271px 0px;
     mask-position: -271px 0px;
 }
 
-.feature-more-blue {
+.mi-warehouse.feature-more-blue {
     -webkit-mask-position: -288px 0px;
     mask-position: -288px 0px;
 }
 
-.duplicate {
+.mi-warehouse.duplicate {
     -webkit-mask-position: -224px 0px;
     mask-position: -224px 0px;
 }
 
-.empty {
+.mi-warehouse.empty {
     -webkit-mask-position: -176px 0px;
     mask-position: -176px 0px;
 }
 
-.trash {
+.mi-warehouse.active {
+    -webkit-mask-position: -192px 0px;
+    mask-position: -192px 0px;
+}
+
+.mi-warehouse.trash {
     -webkit-mask-position: -208px 0px;
     mask-position: -208px 0px;
     background-color: #f04438 !important;
+}
+
+.mi-warehouse.export {
+    -webkit-mask-position: -976px 0px;
+    mask-position: -976px 0px;
+}
+
+.mi-warehouse.setting {
+    -webkit-mask-position: -122px -18px;
+    mask-position: -122px -18px;
+}
+
+.mi-warehouse.icon24.setting {
+    -webkit-mask-position: -360px -36px;
+    mask-position: -360px -36px;
+}
+
+.mi-warehouse.icon20.close {
+    -webkit-mask-position: -299px -16px;
+    mask-position: -299px -16px;
+}
+
+.mi-warehouse.icon16.filter--active {
+    -webkit-mask-position: -720px 0px;
+    mask-position: -720px 0px;
+}
+
+.mi-warehouse.refresh {
+    -webkit-mask-position: -560px -0px;
+    mask-position: -560px -0px;
 }

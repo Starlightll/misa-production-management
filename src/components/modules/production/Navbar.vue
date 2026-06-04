@@ -12,38 +12,38 @@
         </div>
         <div class="nav-item right">
             <div class="nav-item-content">
-                <div class="item-content nav-item-content-left">
+                <div class="item-content nav-item-content-left" v-tooltip.bottom="'Công ty cổ phần MISA Test - 345'">
                     <span class="name-company-title">Công ty cổ phần MISA Test - 345</span>
                     <span class="icon-menu mi-warehouse icon16 angle-down-small"></span>
                 </div>
                 <div class="item-content nav-item-content-right">
-                    <div class="icon-function-nav icon-nav-hover export">
+                    <div class="icon-function-nav icon-nav-hover export" v-tooltip.bottom="'Xuất Excel'">
                         <div class="icon mi-awh icon24 download-status">
                         </div>
                     </div>
-                    <div class="icon-function-nav icon-nav-hover export">
+                    <div class="icon-function-nav icon-nav-hover export" v-tooltip.bottom="'Tra cứu tồn kho'">
                         <div class="icon mi-qtsx icon20 to-24 stock-20">
                         </div>
                     </div>
-                    <div class="icon-function-nav icon-nav-hover export">
+                    <div class="icon-function-nav icon-nav-hover export" v-tooltip.bottom="'Nhắc nhở thông minh'">
                         <div class="icon mi-qtsx icon24 icon-reminder-24 ">
                         </div>
                     </div>
                     <!-- Separator -->
                     <div data-v-9bc15201="" class="ml-3 nav-separator"></div>
-                    <div class="icon-function-nav icon-nav-hover export">
+                    <div class="icon-function-nav icon-nav-hover export" v-tooltip.bottom="'Thiết lập'">
                         <div class="icon mi-warehouse icon24 setting ">
                         </div>
                     </div>
-                    <div class="icon-function-nav notification-count">
+                    <div class="icon-function-nav notification-count" v-tooltip.bottom="'Thông báo'">
                         <span class="count-noti">99+</span>
                         <div class="icon mi-warehouse icon24 bell"></div>
                     </div>
-                    <div class="icon-function-nav icon-nav-hover export">
+                    <div class="icon-function-nav icon-nav-hover export" v-tooltip.bottom="'Trợ giúp (F1)'">
                         <div class="icon mi-warehouse icon24 question-circle">
                         </div>
                     </div>
-                    <div class="icon-function-nav icon-nav-hover export">
+                    <div class="icon-function-nav icon-nav-hover export" v-tooltip.bottom="'Tính năng khác'">
                         <div class="icon mi-qtsx icon24 dots-circle-horizontal">
                         </div>
                     </div>

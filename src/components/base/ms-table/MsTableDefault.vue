@@ -1,43 +1,9 @@
 <template lang="html">
     <table class="ms-table">
         <thead class="ms-thead bg-(--bg-semi-dark)">
-            <!-- <tr class="ms-tr">
-                <th v-for="field in fields" :key="field.key" scope="col" class="ms-col-th">
-                    <div class="title-wrapper">
-                        
-                        <div class="title">
-                           
-                            <div class="icon pin mi-pin icon16 bg-gray-600!"></div>
-                           
-                            <div>{{ field.label }}</div>
-                            
-                            <div class="icon sort mi-arrow-up icon16 bg-gray-600!"></div>
-                        </div>
-                        
-                        <div v-if="field.filterable" class="icon filter mi-warehouse icon16 bg-gray-600!"></div>
-                    </div>
-                    
-                    <div class="resizer"></div>
-                </th>
-            </tr> -->
             <tr>
                 <th v-for="(field, index) in fields" :key="field.key" :style="field.style || {}" scope="col"
                     class="ms-col-th">
-                    <!-- Custom type with slot -->
-                    <!-- <template v-if="field.type === 'custom'">
-                        <div class="title-wrapper" :class="[
-                            field.type === 'number' ? 'justify-end!' : 'justify-center!',
-                            field.type === 'date' ? 'justify-center!' : 'justify-center!',
-                        ]" :style="[
-                            index === fields.length - 1 ? 'border-right: none !important;' : '',
-                        ]">
-                            <slot :name="`title-${field.key}`" :field="field">
-                                {{ field.label }}
-                            </slot>
-                        </div>
-                    </template> -->
-                    <!-- Other types -->
-
                     <div class="title-wrapper" :style="[
                         index === fields.length - 1 ? 'border-right: none !important;' : '',
                     ]">
@@ -47,7 +13,7 @@
                             <div class="icon pin mi-pin icon16 bg-gray-600!"></div>
                             <!-- Text -->
                             <div class="flex-1 flex items-center" :class="[
-                                field.type === 'number' ? 'text-end! justify-end!' : field.type === 'date' ? 'text-center! justify-center!' : field.type === 'text' ? 'text-left! justify-start!' : 'text-start! justify-start!',
+                                field.type === 'number' ? 'text-end! justify-end!' : field.type === 'date' ? 'text-center! justify-center!' : field.type === 'time' ? 'text-start! justify-start!' : field.type === 'text' ? 'text-left! justify-start!' : 'text-start! justify-start!',
                             ]">
                                 <template v-if="field.type === 'custom'">
                                     <slot :name="`title-${field.key}`" :field="field">
@@ -62,7 +28,10 @@
                             <div class="icon sort mi-arrow-up icon16 bg-gray-600!"></div>
                         </div>
                         <!-- Filter icon -->
-                        <div v-if="field.filterable" class="icon filter mi-warehouse icon16 bg-gray-600!"></div>
+                        <div v-if="field.filterable" class="icon mi-warehouse icon16 bg-gray-600! "
+                            :class="field.filterData.value ? 'filtered filter--active' : 'filter'"
+                            @click.stop="handleFilterClick(field, $event)">
+                        </div>
                     </div>
 
                     <!-- Resizer -->
@@ -71,11 +40,11 @@
             </tr>
         </thead>
         <tbody class="ms-tbody bg-white divide-y divide-gray-200">
-            <tr v-for="(row, rowIndex) in rows" :key="rowIndex" class="ms-tr"
-                :class="[rowIndex == props.focusedRowIndex ? 'z-10!' : '']">
+            <tr v-for="(row, index) in rows" :key="index" class="ms-tr"
+                :class="[index == props.focusedRowIndex ? 'z-10!' : '', props.selectedRowIndices.includes(index) ? 'row-selected' : '']">
                 <td v-for="field in fields" :key="field.key" :style="field.style || {}" class="ms-col-td">
                     <div class="flex flex-1" :class="[
-                        field.type === 'number' ? 'text-end! justify-end!' : field.type === 'date' ? 'text-center! justify-center!' : field.type === 'text' ? 'text-left! justify-start!' : 'text-start! justify-start!',
+                        field.type === 'number' ? 'text-end! justify-end!' : field.type === 'date' ? 'text-center! justify-center!' : field.type === 'time' ? 'text-start! justify-start!' : field.type === 'text' ? 'text-left! justify-start!' : 'text-start! justify-start!',
                         field.displayOnHover ? 'display-on-hover' : '',
                     ]">
                         <!-- Custom type with slot -->
@@ -85,8 +54,7 @@
                                     {{ handleFormat(row[field.key], "text") }}
                                 </slot>
                             </div> -->
-                            <slot :name="field.key" :row="row" :rowIndex="rowIndex" :field="field"
-                                :value="row[field.key]">
+                            <slot :name="field.key" :row="row" :rowIndex="index" :field="field" :value="row[field.key]">
                                 {{ handleFormat(row[field.key], "text") }}
                             </slot>
                         </template>
@@ -103,20 +71,19 @@
     </table>
 </template>
 <script setup lang="ts">
-import { formatNumber, formatDate, formatText } from '../../../utils/formatter';
+import { ref } from 'vue';
+import { formatNumber, formatDate, formatText, formatTime } from '../../../utils/formatter';
+
+const emit = defineEmits(["filter"]);
+
+const handleFilterClick = (field: any, event: MouseEvent) => {
+    emit("filter", { field, event });
+};
 
 const props = defineProps({
     fields: {
         type: Array as any,
         required: true,
-        validator: (value: any) => {
-            return value.every((field: any) => {
-                const validTypes = ["text", "number", "date", "custom"];
-                return (
-                    field.key && field.label && validTypes.includes(field.type || "text")
-                );
-            });
-        },
     },
     rows: {
         type: Array as any,
@@ -130,6 +97,10 @@ const props = defineProps({
         type: Number,
         default: null,
     },
+    selectedRowIndices: {
+        type: Array as any,
+        default: () => [],
+    },
 });
 
 const handleFormat = (value: any, type: string) => {
@@ -138,6 +109,8 @@ const handleFormat = (value: any, type: string) => {
             return formatNumber(value);
         case "date":
             return formatDate(value);
+        case "time":
+            return formatTime(value);
         case "text":
             return formatText(value);
         default:
@@ -148,7 +121,7 @@ const handleFormat = (value: any, type: string) => {
 
 </script>
 
-<style lang="css" scoped>
+<style lang="scss" scoped>
 table {
     width: 100%;
     table-layout: fixed;
@@ -167,6 +140,11 @@ table {
         position: relative;
         z-index: 0;
 
+        &.row-selected,
+        &.row-selected td {
+            background-color: #a4f6d3 !important;
+        }
+
         &:hover {
             z-index: 1;
 
@@ -175,13 +153,15 @@ table {
             }
 
             .ms-col-td {
-                background-color: #F9FAFB !important;
+                background-color: #F9FAFB;
             }
         }
 
         .ms-col-td {
-            background-color: #FFF !important;
+            background-color: #FFF;
         }
+
+
 
 
     }
@@ -195,6 +175,7 @@ table {
         /* min-width: 200px; */
         /* width: 200px; */
         position: relative;
+
 
         &:hover {
             .title-wrapper .filter {
@@ -233,6 +214,10 @@ table {
 
             .filter {
                 display: none;
+
+                &.filtered {
+                    display: block !important;
+                }
             }
         }
 
