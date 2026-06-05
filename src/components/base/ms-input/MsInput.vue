@@ -7,7 +7,7 @@
           @input="handleInput" @blur="handleBlur" @focus="handleFocus" :class="[
             textAlign === 'left' ? 'text-left!' : textAlign === 'right' ? 'text-right!' : textAlign === 'center' ? 'text-center!' : '',
             textColor ? `${textColor}` : '',
-          ]" :readonly="readonly" :disabled="disabled" :minlength="minLength" />
+          ]" :readonly="readonly" :disabled="disabled" :minlength="minLength" :maxlength="maxLength" />
       </div>
     </div>
   </div>

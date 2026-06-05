@@ -1,13 +1,6 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, computed, onUnmounted } from 'vue';
 import { onClickOutside } from '@vueuse/core';
-import MsButton from '../../../components/base/ms-button/MsButton.vue';
-import MsModal from '../../../components/base/ms-modal/MsModal.vue';
-import MsDatepicker from '../../../components/base/ms-datepicker/MsDatepicker.vue';
-import MsInput from '../../../components/base/ms-input/MsInput.vue';
-import MsTextArea from '../../../components/base/ms-textarea/MsTextArea.vue';
-import MsSelect from '../../../components/base/ms-select/MsSelect.vue';
-import MsCheckbox from '../../../components/base/ms-checkbox/MsCheckbox.vue';
 import MsTableDefault from '../../../components/base/ms-table/MsTableDefault.vue';
 import * as signalR from '@microsoft/signalr';
 
@@ -739,6 +732,7 @@ const handleDuplicateShift = (shiftId: string) => {
             modifiedBy: '',
         };
         formShiftBeforeEditData.value = { ...formShiftData.value };
+        calculateShiftTimes();
         isAddEditShiftModalVisible.value = true;
     }
 };
