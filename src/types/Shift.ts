@@ -5,8 +5,8 @@ export type Shift = {
     shiftDescription: string;
     shiftBeginTime: string;
     shiftEndTime: string;
-    shiftBeginBreakTime: string;
-    shiftEndBreakTime: string;
+    shiftBeginBreakTime: string | null;
+    shiftEndBreakTime: string | null;
     shiftWorkingTime: number;
     shiftBreakingTime: number;
     shiftInactive: boolean;

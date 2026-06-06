@@ -1,8 +1,192 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, computed, onUnmounted } from 'vue';
 import { onClickOutside } from '@vueuse/core';
-import MsTableDefault from '../../../components/base/ms-table/MsTableDefault.vue';
+import MsTableDefault from '../../../../components/base/ms-table/MsTableDefault.vue';
 import * as signalR from '@microsoft/signalr';
+
+import { useAuthStore } from '../../../../stores/auth.ts';
+
+const authStore = useAuthStore();
+
+import { shiftService } from '../../../../api/shiftService.ts';
+import { useShiftForm } from './composables/useShiftForm';
+
+const {
+    formShiftData,
+    formShiftBeforeEditData,
+    formShiftError,
+    shiftWorkingTime,
+    shiftBreakingTime,
+    validateShiftCode,
+    validateShiftName,
+    validateShiftBeginTime,
+    validateShiftEndTime,
+    validateShiftBeginBreakTime,
+    validateShiftEndBreakTime,
+    calculateShiftTimes,
+    validateShiftForm,
+    resetFormShiftError,
+    resetFormShiftData,
+    convertToTimeString
+} = useShiftForm();
+
+//#region init data ==================================================================================
+const fetchDataPaging = async (pagingParams: PagingParams) => {
+    // xây dựng filter
+    pagingParams.filter = filterBuilder();
+
+    const params = {
+        pageIndex: pagingParams.page,
+        pageSize: pagingParams.pageSize,
+        filter: pagingParams.filter && pagingParams.filter.length > 0 ? JSON.stringify(pagingParams.filter) : "",
+        sort: pagingParams.sort && pagingParams.sort.length > 0 ? JSON.stringify(pagingParams.sort) : "[{\"Selector\":\"ModifiedDate\",\"ASC\":false}]",
+        columns: pagingParams.columns && pagingParams.columns.length > 0 ? pagingParams.columns.join(',') : "",
+        customFilter: pagingParams.customFilter && pagingParams.customFilter.length > 0 ? JSON.stringify(pagingParams.customFilter) : "",
+    };
+    try {
+        // Gọi thẳng từ service, dữ liệu trả về đã được axios bóc tách sẵn
+        const response = await shiftService.getDataPaging(params);
+
+        tableRows.value = response.data.data;
+        totalItems.value = response.data.total;
+        totalPages.value = response.data.totalPages;
+        selectedRowIndices.value = [];
+    } catch (error) {
+        // Lỗi hệ thống đã được Interceptor xử lý log/toast tự động, 
+        // ở đây bạn chỉ xử lý các logic UI riêng biệt nếu cần
+    }
+
+}
+//#endregion ========================================================================================
+
+//#region api call ==================================================================================
+const deleteShift = async (shiftIds: string[]) => {
+    console.log('Delete shifts with IDs:', shiftIds);
+    confirmModalVariant.value = "warning";
+    confirmModalTitle.value = "Xóa Ca làm việc";
+    if (shiftIds.length === 1) {
+        const shift = tableRows.value.find(r => r.shiftId === shiftIds[0]);
+        confirmModalMessage.value = /* html */ `<span>Ca làm việc <span class="font-semibold">${shift?.shiftCode}</span> sau khi bị xóa sẽ không thể khôi phục. Bạn có muốn tiếp tục xóa không?</span>`;
+    } else {
+        confirmModalMessage.value = /* html */ `<span>Các <span class="font-semibold">Ca làm việc</span> sau khi bị xóa sẽ không thể khôi phục. Bạn có muốn tiếp tục xóa không?</span>`;
+    }
+    confirmModalType.value = "warning";
+    isConfirmModalVisible.value = true;
+    confirmModalAction.value = async () => {
+        // Call API to delete shifts
+        try {
+            await shiftService.bulkDelete(shiftIds);
+            fetchDataPaging(pagingParams.value);
+        } catch (error) {
+            console.error('Error deleting shifts:', error);
+        }
+    };
+};
+
+const updateShiftStatus = async (shiftIds: string[], inactive: boolean) => {
+    console.log(`${inactive ? 'Deactivate' : 'Activate'} shifts with IDs:`, shiftIds);
+    try {
+        const payload = {
+            shiftIds,
+            inactive,
+        };
+        await shiftService.updateStatus(payload);
+
+    } catch (error) {
+        console.error(`Error ${inactive ? 'deactivating' : 'activating'} shifts:`, error);
+    }
+};
+
+const shiftCodeInput = ref<any>(null);
+const shiftNameInput = ref<any>(null);
+const shiftBeginTimeInput = ref<any>(null);
+const shiftEndTimeInput = ref<any>(null);
+const shiftBeginBreakTimeInput = ref<any>(null);
+const shiftEndBreakTimeInput = ref<any>(null);
+
+const handleSaveShift = async () => {
+    // Validate form data
+    resetFormShiftError();
+    if (!validateShiftForm()) {
+        console.log('Validation failed:', formShiftError.value);
+        let focusField = () => { }
+        if (formShiftError.value.shiftCode) {
+            // Show modal error message
+            focusField = () => {
+                shiftCodeInput.value?.$el.querySelector('input')?.focus();
+            };
+            confirmModalMessage.value = formShiftError.value.shiftCode;
+        }
+        else if (formShiftError.value.shiftName) {
+            focusField = () => {
+                shiftNameInput.value?.$el.querySelector('input')?.focus();
+            };
+            confirmModalMessage.value = formShiftError.value.shiftName;
+        }
+        else if (formShiftError.value.shiftBeginTime) {
+            focusField = () => {
+                shiftBeginTimeInput.value?.$el.querySelector('input')?.focus();
+            };
+            confirmModalMessage.value = formShiftError.value.shiftBeginTime;
+        }
+        else if (formShiftError.value.shiftEndTime) {
+            focusField = () => {
+                shiftEndTimeInput.value?.$el.querySelector('input')?.focus();
+            };
+            confirmModalMessage.value = formShiftError.value.shiftEndTime;
+        }
+        else if (formShiftError.value.shiftBeginBreakTime) {
+            focusField = () => {
+                shiftBeginBreakTimeInput.value?.$el.querySelector('input')?.focus();
+            };
+            confirmModalMessage.value = formShiftError.value.shiftBeginBreakTime;
+        }
+        else if (formShiftError.value.shiftEndBreakTime) {
+            focusField = () => {
+                shiftEndBreakTimeInput.value?.$el.querySelector('input')?.focus();
+            };
+            confirmModalMessage.value = formShiftError.value.shiftEndBreakTime;
+        }
+
+        confirmModalVariant.value = 'warning';
+        confirmModalTitle.value = 'Cảnh báo';
+        isConfirmModalVisible.value = true;
+        closeConfirmModalAction.value = () => {
+            isConfirmModalVisible.value = false;
+            //Delay to ensure modal close animation is smooth before focusing field
+            focusField();
+
+        };
+        confirmModalAction.value = () => {
+            isConfirmModalVisible.value = false;
+            //Delay to ensure modal close animation is smooth before focusing field
+            focusField();
+
+        };
+        return;
+    }
+
+    // Convert time fields to HH:mm:ss format if they are not already
+    formShiftData.value.shiftBeginTime = convertToTimeString(formShiftData.value.shiftBeginTime);
+    formShiftData.value.shiftEndTime = convertToTimeString(formShiftData.value.shiftEndTime);
+    formShiftData.value.shiftBeginBreakTime = convertToTimeString(formShiftData.value.shiftBeginBreakTime);
+    formShiftData.value.shiftEndBreakTime = convertToTimeString(formShiftData.value.shiftEndBreakTime);
+    formShiftData.value.shiftWorkingTime = Number(shiftWorkingTime.value);
+    formShiftData.value.shiftBreakingTime = Number(shiftBreakingTime.value);
+
+    // Edit logic
+    if (formShiftData.value.shiftId) {
+        formShiftData.value.modifiedBy = authStore.currentUser.name;
+        const response = await shiftService.update(formShiftData.value.shiftId, formShiftData.value as Shift);
+    } else {
+        formShiftData.value.createdBy = authStore.currentUser.name;
+        formShiftData.value.modifiedBy = authStore.currentUser.name;
+        const response = await shiftService.create(formShiftData.value as Shift);
+    }
+    fetchDataPaging(pagingParams.value);
+    closeAddEditShiftModal(false);
+};
+//#endregion =================================================================================
 
 
 //#region confirm modal state
@@ -23,9 +207,8 @@ const user = {
 
 
 
-import type { Shift } from '../../../types/Shift.ts';
-import ModalConfirm from '../../../components/base/ms-modal/ModalConfirm.vue';
-
+import type { Shift } from '../../../../types/Shift.ts';
+import ModalConfirm from '../../../../components/base/ms-modal/ModalConfirm.vue';
 //#region table settings 
 // Table settings
 const dataColumns = computed(() => {
@@ -405,35 +588,6 @@ const buildCustomFilter = (searchTerm: string) => {
 };
 //#endregion
 
-const fetchDataPaging = async (pagingParams: PagingParams) => {
-    // xây dựng filter
-    pagingParams.filter = filterBuilder();
-    const params = {
-        pageIndex: pagingParams.page,
-        pageSize: pagingParams.pageSize,
-        filter: pagingParams.filter && pagingParams.filter.length > 0 ? JSON.stringify(pagingParams.filter) : "",
-        sort: pagingParams.sort && pagingParams.sort.length > 0 ? JSON.stringify(pagingParams.sort) : "[{\"Selector\":\"ShiftCode\",\"Desc\":false}]",
-        columns: pagingParams.columns && pagingParams.columns.length > 0 ? pagingParams.columns.join(',') : "",
-        customFilter: pagingParams.customFilter && pagingParams.customFilter.length > 0 ? JSON.stringify(pagingParams.customFilter) : "",
-    };
-    const response = await fetch(`${apiDomain}/api/Shifts/dataPaging`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(params),
-    }).then(res => res.json()).then(response => {
-        tableRows.value = response.data.data as Shift[];
-        totalItems.value = response.data.total;
-        totalPages.value = response.data.totalPages;
-        selectedRowIndices.value = [];
-        console.log('Data fetched:', response);
-    }).catch(error => {
-        console.error('Error fetching data:', error);
-    });
-
-}
-
 
 const showMenuId = ref<string | null>(null);
 const toggleMenu = (rowId: string) => {
@@ -450,259 +604,28 @@ const handleDocumentClick = () => {
 };
 
 //#region validate
-const formShiftError = ref({
-    shiftCode: '',
-    shiftName: '',
-    shiftBeginTime: '',
-    shiftEndTime: '',
-    shiftBeginBreakTime: '',
-    shiftEndBreakTime: '',
-    shiftWorkingTime: '',
-    shiftBreakingTime: '',
-});
 
 
-const validateShiftCode = (code: string) => {
-    if (!code) {
-        formShiftError.value.shiftCode = 'Mã ca không được để trống';
-        return false;
-    } else if (code.length > 20) {
-        formShiftError.value.shiftCode = 'Mã ca không được vượt quá 20 ký tự';
-        return false;
-    }
-    formShiftError.value.shiftCode = '';
-    return true;
-};
-const validateShiftName = (name: string) => {
-    if (!name) {
-        formShiftError.value.shiftName = 'Tên ca không được để trống';
-        return false;
-    } else if (name.length > 50) {
-        formShiftError.value.shiftName = 'Tên ca không được vượt quá 50 ký tự';
-        return false;
-    }
-    formShiftError.value.shiftName = '';
-    return true;
-};
-
-const validateShiftBeginTime = (time: string | null) => {
-    if (!time) {
-        formShiftError.value.shiftBeginTime = 'Giờ vào ca không được để trống';
-        return false;
-    }
-    const beginTime = formShiftData.value.shiftBeginTime;
-    const endTime = formShiftData.value.shiftEndTime;
-    if (beginTime === endTime) {
-        formShiftError.value.shiftBeginTime = 'Giờ hết ca không được bằng giờ vào ca.';
-        return false;
-    }
-    formShiftError.value.shiftBeginTime = '';
-    return true;
-};
-
-const validateShiftEndTime = (time: string | null) => {
-    if (!time) {
-        formShiftError.value.shiftEndTime = 'Giờ hết ca không được để trống';
-        return false;
-    }
-    const beginTime = formShiftData.value.shiftBeginTime;
-    const endTime = formShiftData.value.shiftEndTime;
-    if (beginTime === endTime) {
-        formShiftError.value.shiftEndTime = 'Giờ hết ca không được bằng giờ vào ca.';
-        return false;
-    }
-    formShiftError.value.shiftEndTime = '';
-    return true;
-};
-
-const validateShiftBeginBreakTime = (time: string | null) => {
-    if (!time && formShiftData.value.shiftEndBreakTime) {
-        formShiftError.value.shiftBeginBreakTime = 'Bắt đầu nghỉ giữa ca không được để trống khi đã có Kết thúc nghỉ giữa ca.';
-        return false;
-    }
-
-    if (time && formShiftData.value.shiftEndTime && formShiftData.value.shiftBeginTime) {
-        const beginTime = new Date(`2000-01-01T${formShiftData.value.shiftBeginTime}:00`);
-        const endTime = new Date(`2000-01-01T${formShiftData.value.shiftEndTime}:00`);
-
-        // Xử lý ca qua đêm
-        if (endTime <= beginTime) {
-            endTime.setDate(endTime.getDate() + 1);
-        }
-
-        // Hàm phụ trợ đồng bộ ngày: Nếu ca qua đêm và giờ nhập vào < giờ bắt đầu -> nó là của ngày hôm sau
-        const getAdjustedTime = (timeStr: string) => {
-            const timeDate = new Date(`2000-01-01T${timeStr}:00`);
-            if (endTime.getDate() === 2 && timeDate < beginTime) {
-                timeDate.setDate(timeDate.getDate() + 1);
-            }
-            return timeDate;
-        };
-
-        const beginBreakTime = getAdjustedTime(time);
-
-        // 1. Kiểm tra giờ bắt đầu nghỉ có nằm trong khoảng ca làm việc không
-        if (beginBreakTime < beginTime || beginBreakTime > endTime) {
-            formShiftError.value.shiftBeginBreakTime = 'Thời gian bắt đầu nghỉ giữa ca phải nằm trong khoảng thời gian tính từ giờ vào ca đến giờ hết ca. Vui lòng kiểm tra lại.';
-            return false;
-        }
-
-        // 2. Nếu có giờ kết thúc nghỉ, check logic chéo
-        if (formShiftData.value.shiftEndBreakTime) {
-            const endBreakTime = getAdjustedTime(formShiftData.value.shiftEndBreakTime);
-
-            if (beginBreakTime.getTime() === endBreakTime.getTime()) {
-                formShiftError.value.shiftBeginBreakTime = 'Bắt đầu nghỉ giữa ca không được bằng Kết thúc nghỉ giữa ca.';
-                return false;
-            }
-
-            if (beginBreakTime > endBreakTime) {
-                formShiftError.value.shiftBeginBreakTime = 'Bắt đầu nghỉ giữa ca không được lớn hơn Kết thúc nghỉ giữa ca.';
-                return false;
-            }
-        }
-    }
-    formShiftError.value.shiftBeginBreakTime = '';
-    return true;
-};
-
-const validateShiftEndBreakTime = (time: string | null) => {
-    if (!time && formShiftData.value.shiftBeginBreakTime) {
-        formShiftError.value.shiftEndBreakTime = 'Kết thúc nghỉ giữa ca không được để trống khi đã có Bắt đầu nghỉ giữa ca.';
-        return false;
-    }
-
-    if (time && formShiftData.value.shiftEndTime && formShiftData.value.shiftBeginTime) {
-        const beginTime = new Date(`2000-01-01T${formShiftData.value.shiftBeginTime}:00`);
-        const endTime = new Date(`2000-01-01T${formShiftData.value.shiftEndTime}:00`);
-
-        if (endTime <= beginTime) {
-            endTime.setDate(endTime.getDate() + 1);
-        }
-
-        const getAdjustedTime = (timeStr: string) => {
-            const timeDate = new Date(`2000-01-01T${timeStr}:00`);
-            if (endTime.getDate() === 2 && timeDate < beginTime) {
-                timeDate.setDate(timeDate.getDate() + 1);
-            }
-            return timeDate;
-        };
-
-        const endBreakTime = getAdjustedTime(time);
-
-        if (endBreakTime < beginTime || endBreakTime > endTime) {
-            formShiftError.value.shiftEndBreakTime = 'Thời gian kết thúc nghỉ giữa ca phải nằm trong khoảng thời gian tính từ giờ vào ca đến giờ hết ca. Vui lòng kiểm tra lại.';
-            return false;
-        }
-
-        if (formShiftData.value.shiftBeginBreakTime) {
-            const beginBreakTime = getAdjustedTime(formShiftData.value.shiftBeginBreakTime);
-
-            if (endBreakTime.getTime() === beginBreakTime.getTime()) {
-                formShiftError.value.shiftEndBreakTime = 'Kết thúc nghỉ giữa ca không được bằng Bắt đầu nghỉ giữa ca.';
-                return false;
-            }
-
-            if (beginBreakTime > endBreakTime) {
-                formShiftError.value.shiftEndBreakTime = 'Kết thúc nghỉ giữa ca không được nhỏ hơn Bắt đầu nghỉ giữa ca.';
-                return false;
-            }
-        }
-    }
-    formShiftError.value.shiftEndBreakTime = '';
-    return true;
-};
 
 //#region add/edit modal
-const formShiftData = ref({
-    shiftId: '',
-    shiftCode: '',
-    shiftName: '',
-    shiftDescription: '',
-    shiftBeginTime: '' as string | null,
-    shiftEndTime: '' as string | null,
-    shiftBeginBreakTime: '' as string | null,
-    shiftEndBreakTime: '' as string | null,
-    shiftWorkingTime: 0.0000,
-    shiftBreakingTime: 0.0000,
-    shiftInactive: false,
-    createdBy: '',
-    modifiedBy: '',
-});
 
-const formShiftBeforeEditData = ref({
-    shiftId: '',
-    shiftCode: '',
-    shiftName: '',
-    shiftDescription: '',
-    shiftBeginTime: '' as string | null,
-    shiftEndTime: '' as string | null,
-    shiftBeginBreakTime: '' as string | null,
-    shiftEndBreakTime: '' as string | null,
-    shiftWorkingTime: 0.0000,
-    shiftBreakingTime: 0.0000,
-    shiftInactive: false,
-    createdBy: '',
-    modifiedBy: '',
-});
 
-const resetFormShiftError = () => {
-    formShiftError.value = {
-        shiftCode: '',
-        shiftName: '',
-        shiftBeginTime: '',
-        shiftEndTime: '',
-        shiftBeginBreakTime: '',
-        shiftEndBreakTime: '',
-        shiftWorkingTime: '',
-        shiftBreakingTime: '',
-    };
-};
+
 
 const isAddEditShiftModalVisible = ref(false);
 const showAddEditShiftModal = (shiftId: string | null) => {
     resetFormShiftError();
-    // Logic to add a new shift
-    console.log('Show add/edit shift modal for shift ID:', shiftId);
     if (shiftId) {
         // Edit existing shift logic
         const shift = tableRows.value.find((r) => r.shiftId === shiftId);
         if (shift) {
-            formShiftData.value = {
-                shiftId: shift.shiftId,
-                shiftCode: shift.shiftCode,
-                shiftName: shift.shiftName,
-                shiftDescription: shift.shiftDescription,
-                shiftBeginTime: shift.shiftBeginTime,
-                shiftEndTime: shift.shiftEndTime,
-                shiftBeginBreakTime: shift.shiftBeginBreakTime ?? '',
-                shiftEndBreakTime: shift.shiftEndBreakTime ?? '',
-                shiftWorkingTime: shift.shiftWorkingTime,
-                shiftBreakingTime: shift.shiftBreakingTime,
-                shiftInactive: shift.shiftInactive,
-                createdBy: shift.createdBy,
-                modifiedBy: '',
-            };
+            formShiftData.value = { ...shift };
             formShiftBeforeEditData.value = { ...formShiftData.value };
             calculateShiftTimes();
         }
     } else {
         // Add new shift logic
-        formShiftData.value = {
-            shiftId: '',
-            shiftCode: '',
-            shiftName: '',
-            shiftDescription: '',
-            shiftBeginTime: '' as string | null,
-            shiftEndTime: '' as string | null,
-            shiftBeginBreakTime: '' as string | null,
-            shiftEndBreakTime: '' as string | null,
-            shiftWorkingTime: 0,
-            shiftBreakingTime: 0,
-            shiftInactive: false,
-            createdBy: '',
-            modifiedBy: '',
-        };
+        resetFormShiftData();
         formShiftBeforeEditData.value = { ...formShiftData.value };
     }
     isAddEditShiftModalVisible.value = true;
@@ -774,162 +697,10 @@ const closeAddEditShiftModal = (checkUnsaved = true) => {
     // }, 300);
 };
 
-const resetFormShiftData = () => {
-    formShiftData.value = {
-        shiftId: '',
-        shiftCode: '',
-        shiftName: '',
-        shiftDescription: '',
-        shiftBeginTime: '' as string | null,
-        shiftEndTime: '' as string | null,
-        shiftBeginBreakTime: '' as string | null,
-        shiftEndBreakTime: '' as string | null,
-        shiftWorkingTime: 0,
-        shiftBreakingTime: 0,
-        shiftInactive: false,
-        createdBy: '',
-        modifiedBy: '',
-    };
-};
-
-const validateShiftForm = () => {
-    const isValidCode = validateShiftCode(formShiftData.value.shiftCode);
-    const isValidName = validateShiftName(formShiftData.value.shiftName);
-    const isValidBeginTime = validateShiftBeginTime(formShiftData.value.shiftBeginTime);
-    const isValidEndTime = validateShiftEndTime(formShiftData.value.shiftEndTime);
-    const isValidBeginBreakTime = validateShiftBeginBreakTime(formShiftData.value.shiftBeginBreakTime);
-    const isValidEndBreakTime = validateShiftEndBreakTime(formShiftData.value.shiftEndBreakTime);
-
-    return isValidCode && isValidName && isValidBeginTime && isValidEndTime && isValidBeginBreakTime && isValidEndBreakTime;
-};
 
 // Convert time fields to HH:mm:ss format if they are not already
-const convertToTimeString = (time: string | null) => {
-    if (!time) return null;
-    if (time.length === 5) {
-        return time + ':00';
-    }
-    return time;
-};
 
-const shiftCodeInput = ref<any>(null);
-const shiftNameInput = ref<any>(null);
-const shiftBeginTimeInput = ref<any>(null);
-const shiftEndTimeInput = ref<any>(null);
-const shiftBeginBreakTimeInput = ref<any>(null);
-const shiftEndBreakTimeInput = ref<any>(null);
 
-const handleSaveShift = () => {
-    // Validate form data
-    resetFormShiftError();
-    if (!validateShiftForm()) {
-        console.log('Validation failed:', formShiftError.value);
-        let focusField = () => { }
-        if (formShiftError.value.shiftCode) {
-            // Show modal error message
-            focusField = () => {
-                shiftCodeInput.value?.$el.querySelector('input')?.focus();
-            };
-            confirmModalMessage.value = formShiftError.value.shiftCode;
-        }
-        else if (formShiftError.value.shiftName) {
-            focusField = () => {
-                shiftNameInput.value?.$el.querySelector('input')?.focus();
-            };
-            confirmModalMessage.value = formShiftError.value.shiftName;
-        }
-        else if (formShiftError.value.shiftBeginTime) {
-            focusField = () => {
-                shiftBeginTimeInput.value?.$el.querySelector('input')?.focus();
-            };
-            confirmModalMessage.value = formShiftError.value.shiftBeginTime;
-        }
-        else if (formShiftError.value.shiftEndTime) {
-            focusField = () => {
-                shiftEndTimeInput.value?.$el.querySelector('input')?.focus();
-            };
-            confirmModalMessage.value = formShiftError.value.shiftEndTime;
-        }
-        else if (formShiftError.value.shiftBeginBreakTime) {
-            focusField = () => {
-                shiftBeginBreakTimeInput.value?.$el.querySelector('input')?.focus();
-            };
-            confirmModalMessage.value = formShiftError.value.shiftBeginBreakTime;
-        }
-        else if (formShiftError.value.shiftEndBreakTime) {
-            focusField = () => {
-                shiftEndBreakTimeInput.value?.$el.querySelector('input')?.focus();
-            };
-            confirmModalMessage.value = formShiftError.value.shiftEndBreakTime;
-        }
-
-        confirmModalVariant.value = 'warning';
-        confirmModalTitle.value = 'Cảnh báo';
-        isConfirmModalVisible.value = true;
-        closeConfirmModalAction.value = () => {
-            isConfirmModalVisible.value = false;
-            //Delay to ensure modal close animation is smooth before focusing field
-            focusField();
-
-        };
-        confirmModalAction.value = () => {
-            isConfirmModalVisible.value = false;
-            //Delay to ensure modal close animation is smooth before focusing field
-            focusField();
-
-        };
-        return;
-    }
-
-    // Convert time fields to HH:mm:ss format if they are not already
-    formShiftData.value.shiftBeginTime = convertToTimeString(formShiftData.value.shiftBeginTime);
-    formShiftData.value.shiftEndTime = convertToTimeString(formShiftData.value.shiftEndTime);
-    formShiftData.value.shiftBeginBreakTime = convertToTimeString(formShiftData.value.shiftBeginBreakTime);
-    formShiftData.value.shiftEndBreakTime = convertToTimeString(formShiftData.value.shiftEndBreakTime);
-    formShiftData.value.shiftWorkingTime = Number(shiftWorkingTime.value);
-    formShiftData.value.shiftBreakingTime = Number(shiftBreakingTime.value);
-
-    // Edit logic
-    if (formShiftData.value.shiftId) {
-        console.log('Saving edited shift:', formShiftData.value);
-        formShiftData.value.modifiedBy = user.name;
-        // Call API to update shift
-        const response = fetch(`${apiDomain}/api/Shifts/${formShiftData.value.shiftId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(formShiftData.value),
-        }).then(res => res.json()).then(response => {
-            console.log('Shift updated successfully:', response);
-            // Refresh table data after saving
-            fetchDataPaging(pagingParams.value);
-        }).catch(error => {
-            console.error('Error updating shift:', error);
-        });
-    } else {
-        // Add logic
-        console.log('Saving new shift:', formShiftData.value);
-        formShiftData.value.createdBy = user.name;
-        formShiftData.value.modifiedBy = user.name;
-        // Call API to create new shift
-        const response = fetch(`${apiDomain}/api/Shifts`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(formShiftData.value),
-        }).then(res => res.json()).then(response => {
-            console.log('Shift saved successfully:', response);
-            // Refresh table data after saving
-            fetchDataPaging(pagingParams.value);
-        }).catch(error => {
-            console.error('Error saving shift:', error);
-        });
-
-    }
-    closeAddEditShiftModal(false);
-};
 //#endregion
 
 //#region selected rows
@@ -962,106 +733,10 @@ const handleSelectAll = () => {
 //#endregion
 
 //#region delete and update status for selected rows
-const deleteShift = (shiftIds: string[]) => {
-    console.log('Delete shifts with IDs:', shiftIds);
-    confirmModalVariant.value = "warning";
-    confirmModalTitle.value = "Xóa Ca làm việc";
-    if (shiftIds.length === 1) {
-        const shift = tableRows.value.find(r => r.shiftId === shiftIds[0]);
-        confirmModalMessage.value = /* html */ `<span>Ca làm việc <span class="font-semibold">${shift?.shiftCode}</span> sau khi bị xóa sẽ không thể khôi phục. Bạn có muốn tiếp tục xóa không?</span>`;
-    } else {
-        confirmModalMessage.value = /* html */ `<span>Các <span class="font-semibold">Ca làm việc</span> sau khi bị xóa sẽ không thể khôi phục. Bạn có muốn tiếp tục xóa không?</span>`;
-    }
-    confirmModalType.value = "warning";
-    isConfirmModalVisible.value = true;
-    confirmModalAction.value = async () => {
-        // Call API to delete shifts
-        const response = fetch(`${apiDomain}/api/Shifts/bulk-delete`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(shiftIds),
-        }).then(res => res.json()).then(response => {
-            console.log('Shifts deleted successfully:', response);
-            // Refresh table data after deleting
-            fetchDataPaging(pagingParams.value);
-        }).catch(error => {
-            console.error('Error deleting shifts:', error);
-        });
-    };
-};
-
-const updateShiftStatus = (shiftIds: string[], inactive: boolean) => {
-    console.log(`${inactive ? 'Deactivate' : 'Activate'} shifts with IDs:`, shiftIds);
-    // Call API to update shift status
-    const response = fetch(`${apiDomain}/api/Shifts/update-inactive`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ shiftIds, inactive }),
-    }).then(res => res.json()).then(response => {
-        console.log('Shifts status updated successfully:', response);
-        // Refresh table data after updating status
-        fetchDataPaging(pagingParams.value);
-    }).catch(error => {
-        console.error('Error updating shifts status:', error);
-    });
-};
-//#endregion
-
-//#region calculate shift working time and breaking time
-const shiftWorkingTime = ref('');
-const shiftBreakingTime = ref('');
-const calculateShiftTimes = () => {
-    let timeWorking = 0;
-    let timeBreaking = 0;
-    if (formShiftData.value.shiftBeginTime && formShiftData.value.shiftEndTime) {
-        const begin = new Date(`1970-01-01T${formShiftData.value.shiftBeginTime}`);
-        const end = new Date(`1970-01-01T${formShiftData.value.shiftEndTime}`);
-        if (end < begin) {
-            // Nếu giờ kết thúc nhỏ hơn giờ bắt đầu, cộng thêm 1 ngày vào giờ kết thúc để tính toán đúng
-            end.setDate(end.getDate() + 1);
-        }
-        let workingTime = (end.getTime() - begin.getTime()) / (1000 * 60 * 60);
-        if (workingTime < 0) {
-            workingTime += 24; // Handle overnight shifts
-        }
-        timeWorking = workingTime;
-    } else {
-        timeWorking = 0;
-    }
-
-    if (formShiftData.value.shiftBeginBreakTime && formShiftData.value.shiftEndBreakTime) {
-        const breakBegin = new Date(`1970-01-01T${formShiftData.value.shiftBeginBreakTime}`);
-        const breakEnd = new Date(`1970-01-01T${formShiftData.value.shiftEndBreakTime}`);
-        if (breakEnd < breakBegin) {
-            // Nếu giờ kết thúc nghỉ nhỏ hơn giờ bắt đầu nghỉ, cộng thêm 1 ngày vào giờ kết thúc nghỉ để tính toán đúng
-            breakEnd.setDate(breakEnd.getDate() + 1);
-        }
-        let breakingTime = (breakEnd.getTime() - breakBegin.getTime()) / (1000 * 60 * 60);
-        if (breakingTime < 0) {
-            breakingTime += 24; // Handle overnight breaks
-        }
-        timeBreaking = breakingTime;
-    } else {
-        timeBreaking = 0;
-    }
-    timeWorking = timeWorking - timeBreaking; // Trừ thời gian nghỉ giữa ca ra khỏi thời gian làm việc
-    if (timeWorking < 0) {
-        shiftWorkingTime.value = `(${Math.abs(timeWorking).toFixed(3)})`; // Hiển thị thời gian làm việc âm trong trường hợp thời gian nghỉ giữa ca lớn hơn thời gian làm việc
-    } else {
-        shiftWorkingTime.value = timeWorking.toFixed(3);
-    }
-    if (timeBreaking < 0) {
-        shiftBreakingTime.value = `(${Math.abs(timeBreaking).toFixed(3)})`; // Hiển thị thời gian nghỉ giữa ca âm trong trường hợp giờ kết thúc nghỉ nhỏ hơn giờ bắt đầu nghỉ
-    } else {
-        shiftBreakingTime.value = timeBreaking.toFixed(3);
-    }
-};
 
 //#endregion
+
+
 
 
 //#region filter logic
@@ -1495,76 +1170,76 @@ const getDisplayValue = (filter: any) => {
 //#region export excel
 const isExporting = ref(false);
 const connectionId = ref('');
-let connection: any = null;
-let reconnectTimeout: any = null; // Biến lưu timeout để dọn dẹp khi unmount
-let isComponentMounted = false; // Cờ kiểm tra component còn tồn tại không
+// let connection: any = null;
+// let reconnectTimeout: any = null; // Biến lưu timeout để dọn dẹp khi unmount
+// let isComponentMounted = false; // Cờ kiểm tra component còn tồn tại không
 
-// Hàm khởi tạo và bắt đầu kết nối
-const startSignalRConnection = async () => {
-    // Nếu component đã bị hủy thì không cố kết nối nữa
-    if (!isComponentMounted) return;
+// // Hàm khởi tạo và bắt đầu kết nối
+// const startSignalRConnection = async () => {
+//     // Nếu component đã bị hủy thì không cố kết nối nữa
+//     if (!isComponentMounted) return;
 
-    try {
-        await connection.start();
-        connectionId.value = connection.connectionId || '';
-        // console.log("SignalR Connected. Connection ID:", connectionId.value);
-    } catch (err) {
-        console.warn("Không kết nối được đến SignalR, thử lại sau 10s...");
-        // Thử kết nối lại sau 10 giây nếu lỗi
-        reconnectTimeout = setTimeout(startSignalRConnection, 10000);
-    }
-};
+//     try {
+//         await connection.start();
+//         connectionId.value = connection.connectionId || '';
+//         // console.log("SignalR Connected. Connection ID:", connectionId.value);
+//     } catch (err) {
+//         console.warn("Không kết nối được đến SignalR, thử lại sau 10s...");
+//         // Thử kết nối lại sau 10 giây nếu lỗi
+//         reconnectTimeout = setTimeout(startSignalRConnection, 10000);
+//     }
+// };
 
-onMounted(() => {
-    isComponentMounted = true;
+// onMounted(() => {
+//     isComponentMounted = true;
 
-    // 1. Khởi tạo kết nối SignalR tới Backend
-    connection = new signalR.HubConnectionBuilder()
-        .withUrl(`${apiDomain}/hubs/notification`) // Thay port của bạn
-        .withAutomaticReconnect() // Tự động nối lại nếu rớt mạng giữa chừng
-        .configureLogging(signalR.LogLevel.None)
-        .build();
+//     // 1. Khởi tạo kết nối SignalR tới Backend
+//     connection = new signalR.HubConnectionBuilder()
+//         .withUrl(`${apiDomain}/hubs/notification`) // Thay port của bạn
+//         .withAutomaticReconnect() // Tự động nối lại nếu rớt mạng giữa chừng
+//         .configureLogging(signalR.LogLevel.None)
+//         .build();
 
-    // 2. Lắng nghe sự kiện Thành Công từ Server
-    connection.on("ReceiveExportResult", (downloadUrl: any, message: any) => {
-        isExporting.value = false;
-        // alert(message); // Hiển thị Toast message
+//     // 2. Lắng nghe sự kiện Thành Công từ Server
+//     connection.on("ReceiveExportResult", (downloadUrl: any, message: any) => {
+//         isExporting.value = false;
+//         // alert(message); // Hiển thị Toast message
 
-        const fullUrl = `${apiDomain}/${downloadUrl}`;
-        window.location.href = fullUrl;
-    });
+//         const fullUrl = `${apiDomain}/${downloadUrl}`;
+//         window.location.href = fullUrl;
+//     });
 
-    // 3. Lắng nghe sự kiện Lỗi
-    connection.on("ReceiveExportError", (errorMessage: any) => {
-        isExporting.value = false;
-        alert(errorMessage);
-    });
+//     // 3. Lắng nghe sự kiện Lỗi
+//     connection.on("ReceiveExportError", (errorMessage: any) => {
+//         isExporting.value = false;
+//         alert(errorMessage);
+//     });
 
-    // 4. Xử lý khi kết nối bị đóng hoàn toàn (SignalR ngưng tự động nối lại)
-    connection.onclose(() => {
-        console.warn("SignalR connection closed. Đang thử kết nối lại...");
-        if (isComponentMounted) {
-            reconnectTimeout = setTimeout(startSignalRConnection, 10000);
-        }
-    });
+//     // 4. Xử lý khi kết nối bị đóng hoàn toàn (SignalR ngưng tự động nối lại)
+//     connection.onclose(() => {
+//         console.warn("SignalR connection closed. Đang thử kết nối lại...");
+//         if (isComponentMounted) {
+//             reconnectTimeout = setTimeout(startSignalRConnection, 10000);
+//         }
+//     });
 
-    // Bắt đầu kết nối lần đầu
-    startSignalRConnection();
-});
+//     // Bắt đầu kết nối lần đầu
+//     startSignalRConnection();
+// });
 
-onUnmounted(() => {
-    isComponentMounted = false; // Đánh dấu component đã unmount
+// onUnmounted(() => {
+//     isComponentMounted = false; // Đánh dấu component đã unmount
 
-    // Dọn dẹp timeout nếu đang trong thời gian chờ kết nối lại
-    if (reconnectTimeout) {
-        clearTimeout(reconnectTimeout);
-    }
+//     // Dọn dẹp timeout nếu đang trong thời gian chờ kết nối lại
+//     if (reconnectTimeout) {
+//         clearTimeout(reconnectTimeout);
+//     }
 
-    // Dừng kết nối
-    if (connection) {
-        connection.stop();
-    }
-});
+//     // Dừng kết nối
+//     if (connection) {
+//         connection.stop();
+//     }
+// });
 
 
 const requestExportExcelData = ref({

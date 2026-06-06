@@ -2,11 +2,6 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
     {
-        path: '/production/dictionary/shift',
-        component: () => import('../views/production/other-categories/Shift.vue'),
-        meta: { layout: 'ProductionLayout' }
-    },
-    {
         path: '/production/dashboard',
         component: () => import('../views/production/Dashboard.vue'),
         meta: { layout: 'ProductionLayout' }
@@ -264,7 +259,7 @@ const routes = [
     },
     {
         path: '/production/other-categories/shift',
-        component: () => import('../views/production/other-categories/Shift.vue'),
+        component: () => import('../views/production/other-categories/shift/ShiftList.vue'),
         meta: { layout: 'ProductionLayout' }
     },
     {
