@@ -13,7 +13,7 @@ const confirmModalMessage = ref("");
 const confirmModalType = ref("info");
 const confirmModalAction = ref<(() => void) | null>(null);
 const closeConfirmModalAction = ref<(() => void) | null>(null);
-const apiDomain = 'https://localhost:7103';
+const apiDomain = 'https://localhost:7243';
 //#endregion
 
 const user = {
@@ -21,90 +21,243 @@ const user = {
     name: 'Nguyễn Hoàng Long',
 }
 
-//#region export excel
-const isExporting = ref(false);
-const connectionId = ref('');
-let connection: any = null;
-
-onMounted(async () => {
-    // 1. Khởi tạo kết nối SignalR tới Backend
-    connection = new signalR.HubConnectionBuilder()
-        .withUrl(`${apiDomain}/hubs/notification`) // Thay port của bạn
-        .withAutomaticReconnect()
-        .build();
-
-    // 2. Lắng nghe sự kiện Thành Công từ Server
-    connection.on("ReceiveExportResult", (downloadUrl: any, message: any) => {
-        isExporting.value = false;
-        // alert(message); // Hiển thị Toast message (thay alert bằng thư viện Toast của bạn)
-
-        // Tự động trigger tải file
-        const fullUrl = `${apiDomain}/${downloadUrl}`;
-        window.location.href = fullUrl;
-
-        // Hoặc tạo thẻ <a> ẩn để tải:
-        // const link = document.createElement('a');
-        // link.href = fullUrl;
-        // link.setAttribute('download', ''); // Force download
-        // document.body.appendChild(link);
-        // link.click();
-        // document.body.removeChild(link);
-    });
-
-    // 3. Lắng nghe sự kiện Lỗi
-    connection.on("ReceiveExportError", (errorMessage: any) => {
-        isExporting.value = false;
-        alert(errorMessage);
-    });
-
-    // Bắt đầu kết nối
-    await connection.start();
-    // Lấy ConnectionId để lát nữa gửi kèm lúc gọi API
-    connectionId.value = connection.connectionId || '';
-});
-
-onUnmounted(() => {
-    if (connection) connection.stop();
-});
-
-const requestExport = async () => {
-    isExporting.value = true;
-    //Delay 300ms để đảm bảo trạng thái isExporting đã được cập nhật trước khi gọi API
-    const filter = filterBuilder();
-    const filterString = filter && filter.length > 0 ? JSON.stringify(filter) : "";
-    console.log('Requesting export with filter:', filterString);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    try {
-        // Gọi API Export kèm theo connectionId
-        const response = await fetch(`${apiDomain}/api/export/production/shifts?connectionId=${connectionId.value}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                connectionId: connectionId.value,
-                filter: filterString,
-            }),
-        });
-
-        if (response.status === 202) {
-            // API đã nhận, báo user chờ
-            console.log("Đã đưa vào hàng đợi, chờ tín hiệu từ SignalR...");
-        }
-    } catch (error) {
-        isExporting.value = false;
-        // alert("Lỗi gọi API xuất Excel");
-    }
-};
-
-
-//#endregion
 
 
 import type { Shift } from '../../../types/Shift.ts';
 import ModalConfirm from '../../../components/base/ms-modal/ModalConfirm.vue';
 
+//#region table settings 
 // Table settings
+const dataColumns = computed(() => {
+    return fields.filter(f => f.exportable && f.showInTable).map(f => {
+        return {
+            Key: f.key,
+            DisplayName: f.label,
+        };
+    });
+});
+
+const fields = [
+    {
+        index: 0,
+        showInTable: true,
+        key: "Checkbox",
+        label: "",
+        type: "custom",
+        width: '50px',
+        fixed: "left",
+        sortable: false,
+        filterable: false,
+        resizable: false,
+        movable: false,
+        exportable: false,
+        print: false,
+        style: {
+            position: "sticky",
+            left: 0,
+            zIndex: 5,
+            width: '50px',
+            minWidth: "50px",
+            maxWidth: "50px",
+        },
+    },
+    {
+        key: 'shiftCode', label: 'Mã ca', type: "text", resizable: true, filterable: true,
+        movable: true,
+        showInTable: true,
+        exportable: true,
+        filterType: "text",
+        filterData: {
+            operator: '',
+            value: '',
+        },
+        style: {
+            width: '120px',
+        },
+    },
+    {
+        key: 'shiftName', label: 'Tên ca', type: "text", resizable: true, filterable: true,
+        movable: true,
+        showInTable: true,
+        exportable: true,
+        filterType: "text",
+        filterData: {
+            operator: '',
+            value: '',
+        },
+        style: {
+            width: '250px',
+        },
+    },
+    {
+        key: 'shiftBeginTime', label: 'Giờ vào ca', type: 'time', resizable: true, filterable: false,
+        movable: true,
+        showInTable: true,
+        exportable: true,
+        style: {
+            width: '130px',
+        },
+    },
+    {
+        key: 'shiftEndTime', label: 'Giờ hết ca', type: 'time', resizable: true, filterable: false,
+        movable: true,
+        showInTable: true,
+        exportable: true,
+        style: {
+            width: '130px',
+        },
+    },
+    {
+        key: 'shiftBeginBreakTime', label: 'Bắt đầu nghỉ giữa ca', type: 'time', resizable: true, filterable: false,
+        movable: true,
+        showInTable: true,
+        exportable: true,
+        style: {
+            width: '200px',
+        },
+    },
+    {
+        key: 'shiftEndBreakTime', label: 'Kết thúc nghỉ giữa ca', type: 'time', resizable: true, filterable: false,
+        movable: true,
+        showInTable: true,
+        exportable: true,
+        style: {
+            width: '210px',
+        },
+    },
+    {
+        key: 'shiftWorkingTime', label: 'Thời gian làm việc (giờ)', type: 'number', resizable: true, filterable: true,
+        movable: true,
+        showInTable: true,
+        exportable: true,
+        filterType: "number",
+        filterData: {
+            operator: '',
+            value: '',
+        },
+        style: {
+            width: '210px',
+        },
+    },
+    {
+        key: 'shiftBreakingTime', label: 'Thời gian nghỉ giữa ca (giờ)', type: 'number', resizable: true, filterable: true,
+        movable: true,
+        showInTable: true,
+        exportable: true,
+        filterType: "number",
+        filterData: {
+            operator: '',
+            value: '',
+        },
+        style: {
+            width: '230px',
+        },
+    },
+    {
+        key: 'shiftInactive', label: 'Trạng thái', type: 'custom', resizable: true, filterable: true,
+        movable: true,
+        showInTable: true,
+        exportable: true,
+        filterType: "select",
+        filterData: {
+            operator: '',
+            value: '',
+        },
+        selectOptions: [
+            { label: 'Ngừng sử dụng', value: 'true' },
+            { label: 'Đang sử dụng', value: 'false' },
+        ],
+        style: {
+            width: '230px',
+        },
+    },
+    {
+        key: 'createdBy', label: 'Người tạo', type: "text", resizable: true, filterable: true,
+        movable: true,
+        showInTable: true,
+        exportable: true,
+        filterType: "text",
+        filterData: {
+            operator: '',
+            value: '',
+        },
+        style: {
+            width: '200px',
+        },
+    },
+    {
+        key: 'createdDate', label: 'Ngày tạo', type: "date", resizable: true, filterable: true,
+        movable: true,
+        showInTable: true,
+        exportable: true,
+        filterType: "date",
+        filterData: {
+            operator: '',
+            value: '',
+        },
+        style: {
+            width: '160px',
+        },
+    },
+    {
+        key: 'modifiedBy', label: 'Người sửa', type: "text", resizable: true, filterable: true,
+        movable: true,
+        showInTable: true,
+        exportable: true,
+        filterType: "text",
+        filterData: {
+            operator: '',
+            value: '',
+        },
+        style: {
+            width: '160px',
+        },
+    },
+    {
+        key: 'modifiedDate', label: 'Ngày sửa', type: "date", resizable: true, filterable: true,
+        movable: true,
+        showInTable: true,
+        exportable: true,
+        filterType: "date",
+        filterData: {
+            operator: '',
+            value: '',
+        },
+        style: {
+            width: '160px',
+        },
+    },
+    {
+        index: 17,
+        showInTable: true,
+        key: "Action",
+        label: "Hành động",
+        type: "custom",
+        fixed: "right",
+        sortable: false,
+        filterable: false,
+        resizable: false,
+        exportable: false,
+        movable: false,
+        displayOnHover: true,
+        style: {
+            position: "sticky",
+            right: 0,
+            zIndex: 10,
+            overflow: 'visible',
+            width: '120px',
+            borderLeft: 'none',
+        },
+        contentStyle: {
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '8px',
+        },
+    },
+
+];
+
+
 const currentPage = ref(1);
 const pageSize = ref(localStorage.getItem('shiftTablePageSize') || '10');
 const tableRows = ref<Shift[]>([]);
@@ -126,6 +279,8 @@ const pageSizeOptions = [
     }
 ];
 
+
+
 const filter = ref<string[]>([]);
 const sort = ref<string[]>([]);
 const columns = ref<string[]>([]);
@@ -145,7 +300,7 @@ const pagingParams = computed<PagingParams>(() => ({
     pageSize: pageSize.value,
     filter: filter.value,
     sort: sort.value,
-    columns: columns.value,
+    columns: dataColumns.value.map(c => c.Key),
     customFilter: customFilter.value,
 }));
 
@@ -213,6 +368,8 @@ const pageEnd = computed(() => {
     return Math.min(currentPage.value * pageSizeNumber.value, totalItems.value);
 });
 
+//#endregion
+
 //#region Search debounce
 const searchTimeout = ref<number | null>(null);
 const onSearchInput = (value: string) => {
@@ -229,6 +386,7 @@ const onSearchInput = (value: string) => {
 };
 //#endregion
 
+//#region search
 const searchColumns = ['ShiftCode', 'ShiftName', 'CreatedBy', 'ModifiedBy'];
 const searchTerm = ref('');
 
@@ -245,6 +403,7 @@ const buildCustomFilter = (searchTerm: string) => {
     ];
 
 };
+//#endregion
 
 const fetchDataPaging = async (pagingParams: PagingParams) => {
     // xây dựng filter
@@ -253,8 +412,8 @@ const fetchDataPaging = async (pagingParams: PagingParams) => {
         pageIndex: pagingParams.page,
         pageSize: pagingParams.pageSize,
         filter: pagingParams.filter && pagingParams.filter.length > 0 ? JSON.stringify(pagingParams.filter) : "",
-        sort: pagingParams.sort && pagingParams.sort.length > 0 ? JSON.stringify(pagingParams.sort) : "",
-        columns: pagingParams.columns && pagingParams.columns.length > 0 ? JSON.stringify(pagingParams.columns) : "",
+        sort: pagingParams.sort && pagingParams.sort.length > 0 ? JSON.stringify(pagingParams.sort) : "[{\"Selector\":\"ShiftCode\",\"Desc\":false}]",
+        columns: pagingParams.columns && pagingParams.columns.length > 0 ? pagingParams.columns.join(',') : "",
         customFilter: pagingParams.customFilter && pagingParams.customFilter.length > 0 ? JSON.stringify(pagingParams.customFilter) : "",
     };
     const response = await fetch(`${apiDomain}/api/Shifts/dataPaging`, {
@@ -276,185 +435,6 @@ const fetchDataPaging = async (pagingParams: PagingParams) => {
 }
 
 
-
-const fields = [
-    {
-        index: 0,
-        showInTable: true,
-        key: "Checkbox",
-        label: "",
-        type: "custom",
-        width: '50px',
-        fixed: "left",
-        sortable: false,
-        filterable: false,
-        resizable: false,
-        exportable: true,
-        print: false,
-        style: {
-            position: "sticky",
-            left: 0,
-            zIndex: 5,
-            width: '50px',
-            minWidth: "50px",
-            maxWidth: "50px",
-        },
-    },
-    {
-        key: 'shiftCode', label: 'Mã ca', type: "text", resizable: true, filterable: true,
-        filterType: "text",
-        filterData: {
-            operator: '',
-            value: '',
-        },
-        style: {
-            width: '120px',
-        },
-    },
-    {
-        key: 'shiftName', label: 'Tên ca', type: "text", resizable: true, filterable: true,
-        filterType: "text",
-        filterData: {
-            operator: '',
-            value: '',
-        },
-        style: {
-            width: '250px',
-        },
-    },
-    {
-        key: 'shiftBeginTime', label: 'Giờ vào ca', type: 'time', resizable: true, filterable: false,
-        style: {
-            width: '130px',
-        },
-    },
-    {
-        key: 'shiftEndTime', label: 'Giờ hết ca', type: 'time', resizable: true, filterable: false,
-        style: {
-            width: '130px',
-        },
-    },
-    {
-        key: 'shiftBeginBreakTime', label: 'Bắt đầu nghỉ giữa ca', type: 'time', resizable: true, filterable: false,
-        style: {
-            width: '200px',
-        },
-    },
-    {
-        key: 'shiftEndBreakTime', label: 'Kết thúc nghỉ giữa ca', type: 'time', resizable: true, filterable: false,
-        style: {
-            width: '210px',
-        },
-    },
-    {
-        key: 'shiftWorkingTime', label: 'Thời gian làm việc (giờ)', type: 'number', resizable: true, filterable: true,
-        filterType: "number",
-        filterData: {
-            operator: '',
-            value: '',
-        },
-        style: {
-            width: '210px',
-        },
-    },
-    {
-        key: 'shiftBreakingTime', label: 'Thời gian nghỉ giữa ca (giờ)', type: 'number', resizable: true, filterable: true,
-        filterType: "number",
-        filterData: {
-            operator: '',
-            value: '',
-        },
-        style: {
-            width: '230px',
-        },
-    },
-    {
-        key: 'shiftInactive', label: 'Trạng thái', type: 'custom', resizable: true, filterable: true,
-        filterType: "select",
-        filterData: {
-            operator: '',
-            value: '',
-        },
-        selectOptions: [
-            { label: 'Ngừng sử dụng', value: 'true' },
-            { label: 'Đang sử dụng', value: 'false' },
-        ],
-        style: {
-            width: '230px',
-        },
-    },
-    {
-        key: 'createdBy', label: 'Người tạo', type: "text", resizable: true, filterable: true,
-        filterType: "text",
-        filterData: {
-            operator: '',
-            value: '',
-        },
-        style: {
-            width: '200px',
-        },
-    },
-    {
-        key: 'createdDate', label: 'Ngày tạo', type: "date", resizable: true, filterable: true,
-        filterType: "date",
-        filterData: {
-            operator: '',
-            value: '',
-        },
-        style: {
-            width: '160px',
-        },
-    },
-    {
-        key: 'modifiedBy', label: 'Người sửa', type: "text", resizable: true, filterable: true,
-        filterType: "text",
-        filterData: {
-            operator: '',
-            value: '',
-        },
-        style: {
-            width: '160px',
-        },
-    },
-    {
-        key: 'modifiedDate', label: 'Ngày sửa', type: "date", resizable: true, filterable: true,
-        filterType: "date",
-        filterData: {
-            operator: '',
-            value: '',
-        },
-        style: {
-            width: '160px',
-        },
-    },
-    {
-        index: 17,
-        showInTable: true,
-        key: "Action",
-        label: "Hành động",
-        type: "custom",
-        fixed: "right",
-        sortable: false,
-        filterable: false,
-        resizable: false,
-        displayOnHover: true,
-        style: {
-            position: "sticky",
-            right: 0,
-            zIndex: 10,
-            overflow: 'visible',
-            width: '120px',
-            borderLeft: 'none',
-        },
-        contentStyle: {
-            display: 'flex',
-            justifyContent: 'center',
-            gap: '8px',
-        },
-    },
-
-];
-
 const showMenuId = ref<string | null>(null);
 const toggleMenu = (rowId: string) => {
     showMenuId.value = showMenuId.value === rowId ? null : rowId;
@@ -469,6 +449,7 @@ const handleDocumentClick = () => {
     closeMenu();
 };
 
+//#region validate
 const formShiftError = ref({
     shiftCode: '',
     shiftName: '',
@@ -480,7 +461,7 @@ const formShiftError = ref({
     shiftBreakingTime: '',
 });
 
-//#region validate
+
 const validateShiftCode = (code: string) => {
     if (!code) {
         formShiftError.value.shiftCode = 'Mã ca không được để trống';
@@ -535,42 +516,48 @@ const validateShiftEndTime = (time: string | null) => {
 };
 
 const validateShiftBeginBreakTime = (time: string | null) => {
-    // Không bắt buộc, chỉ validate nếu có giá trị
-    // Kiểm tra nếu giờ bắt đầu nghỉ không nằm trong giờ làm việc
     if (!time && formShiftData.value.shiftEndBreakTime) {
         formShiftError.value.shiftBeginBreakTime = 'Bắt đầu nghỉ giữa ca không được để trống khi đã có Kết thúc nghỉ giữa ca.';
         return false;
     }
+
     if (time && formShiftData.value.shiftEndTime && formShiftData.value.shiftBeginTime) {
         const beginTime = new Date(`2000-01-01T${formShiftData.value.shiftBeginTime}:00`);
         const endTime = new Date(`2000-01-01T${formShiftData.value.shiftEndTime}:00`);
-        if (endTime < beginTime) {
-            endTime.setDate(endTime.getDate() + 1); // Nếu giờ kết thúc nhỏ hơn hoặc bằng giờ bắt đầu, cộng thêm 1 ngày để xử lý ca qua đêm
+
+        // Xử lý ca qua đêm
+        if (endTime <= beginTime) {
+            endTime.setDate(endTime.getDate() + 1);
         }
-        //Nếu có giờ kết thúc nghỉ
+
+        // Hàm phụ trợ đồng bộ ngày: Nếu ca qua đêm và giờ nhập vào < giờ bắt đầu -> nó là của ngày hôm sau
+        const getAdjustedTime = (timeStr: string) => {
+            const timeDate = new Date(`2000-01-01T${timeStr}:00`);
+            if (endTime.getDate() === 2 && timeDate < beginTime) {
+                timeDate.setDate(timeDate.getDate() + 1);
+            }
+            return timeDate;
+        };
+
+        const beginBreakTime = getAdjustedTime(time);
+
+        // 1. Kiểm tra giờ bắt đầu nghỉ có nằm trong khoảng ca làm việc không
+        if (beginBreakTime < beginTime || beginBreakTime > endTime) {
+            formShiftError.value.shiftBeginBreakTime = 'Thời gian bắt đầu nghỉ giữa ca phải nằm trong khoảng thời gian tính từ giờ vào ca đến giờ hết ca. Vui lòng kiểm tra lại.';
+            return false;
+        }
+
+        // 2. Nếu có giờ kết thúc nghỉ, check logic chéo
         if (formShiftData.value.shiftEndBreakTime) {
-            const beginBreakTime = new Date(`2000-01-01T${time}:00`);
-            const endBreakTime = new Date(`2000-01-01T${formShiftData.value.shiftEndBreakTime}:00`);
-            // Nếu giờ bắt đầu nghỉ bằng giờ kết thúc nghỉ
-            if (beginBreakTime === endBreakTime) {
-                formShiftError.value.shiftBeginBreakTime = 'Kết thúc nghỉ giữa ca không được bằng Bắt đầu nghỉ giữa ca.';
+            const endBreakTime = getAdjustedTime(formShiftData.value.shiftEndBreakTime);
+
+            if (beginBreakTime.getTime() === endBreakTime.getTime()) {
+                formShiftError.value.shiftBeginBreakTime = 'Bắt đầu nghỉ giữa ca không được bằng Kết thúc nghỉ giữa ca.';
                 return false;
             }
-            // Nếu giờ bắt đầu nghỉ lớn hơn giờ kết thúc nghỉ, cộng thêm 1 ngày cho giờ kết thúc nghỉ để xử lý trường hợp nghỉ qua đêm
-            else if (beginBreakTime > endBreakTime) {
-                endBreakTime.setDate(endBreakTime.getDate() + 1); // Nếu giờ kết thúc nghỉ nhỏ hơn hoặc bằng giờ bắt đầu nghỉ, cộng thêm 1 ngày để xử lý trường hợp nghỉ qua đêm
-            }
-            // Kiểm tra nếu giờ bắt đầu nghỉ không nằm trong khoảng thời gian từ giờ vào ca đến giờ hết ca
-            if (beginBreakTime < beginTime || beginBreakTime > endTime) {
-                formShiftError.value.shiftBeginBreakTime = 'Thời gian bắt đầu nghỉ giữa ca phải nằm trong khoảng thời gian tính từ giờ vào ca đến giờ hết ca. Vui lòng kiểm tra lại.';
-                return false;
-            }
-        } else {
-            const beginBreakTime = new Date(`2000-01-01T${time}:00`);
-            const endTime = new Date(`2000-01-01T${formShiftData.value.shiftEndTime}:00`);
-            // Kiểm tra nếu giờ bắt đầu nghỉ không nằm trong khoảng thời gian từ giờ vào ca đến giờ hết ca
-            if (beginBreakTime < beginTime && beginBreakTime > endTime) {
-                formShiftError.value.shiftBeginBreakTime = 'Thời gian bắt đầu nghỉ giữa ca phải nằm trong khoảng thời gian tính từ giờ vào ca đến giờ hết ca. Vui lòng kiểm tra lại.';
+
+            if (beginBreakTime > endBreakTime) {
+                formShiftError.value.shiftBeginBreakTime = 'Bắt đầu nghỉ giữa ca không được lớn hơn Kết thúc nghỉ giữa ca.';
                 return false;
             }
         }
@@ -580,33 +567,44 @@ const validateShiftBeginBreakTime = (time: string | null) => {
 };
 
 const validateShiftEndBreakTime = (time: string | null) => {
-    // Không bắt buộc, chỉ validate nếu có giá trị
-    // Kiểm tra nếu giờ kết thúc nghỉ không nằm trong giờ làm việc
     if (!time && formShiftData.value.shiftBeginBreakTime) {
         formShiftError.value.shiftEndBreakTime = 'Kết thúc nghỉ giữa ca không được để trống khi đã có Bắt đầu nghỉ giữa ca.';
         return false;
     }
+
     if (time && formShiftData.value.shiftEndTime && formShiftData.value.shiftBeginTime) {
         const beginTime = new Date(`2000-01-01T${formShiftData.value.shiftBeginTime}:00`);
         const endTime = new Date(`2000-01-01T${formShiftData.value.shiftEndTime}:00`);
-        if (endTime < beginTime) {
-            endTime.setDate(endTime.getDate() + 1); // Nếu giờ kết thúc nhỏ hơn hoặc bằng giờ bắt đầu, cộng thêm 1 ngày để xử lý ca qua đêm
+
+        if (endTime <= beginTime) {
+            endTime.setDate(endTime.getDate() + 1);
         }
-        //Nếu có giờ bắt đầu nghỉ
+
+        const getAdjustedTime = (timeStr: string) => {
+            const timeDate = new Date(`2000-01-01T${timeStr}:00`);
+            if (endTime.getDate() === 2 && timeDate < beginTime) {
+                timeDate.setDate(timeDate.getDate() + 1);
+            }
+            return timeDate;
+        };
+
+        const endBreakTime = getAdjustedTime(time);
+
+        if (endBreakTime < beginTime || endBreakTime > endTime) {
+            formShiftError.value.shiftEndBreakTime = 'Thời gian kết thúc nghỉ giữa ca phải nằm trong khoảng thời gian tính từ giờ vào ca đến giờ hết ca. Vui lòng kiểm tra lại.';
+            return false;
+        }
+
         if (formShiftData.value.shiftBeginBreakTime) {
-            const beginBreakTime = new Date(`2000-01-01T${formShiftData.value.shiftBeginBreakTime}:00`);
-            const endBreakTime = new Date(`2000-01-01T${time}:00`);
-            // Nếu giờ kết thúc nghỉ bằng giờ bắt đầu nghỉ
-            if (endBreakTime === beginBreakTime) {
+            const beginBreakTime = getAdjustedTime(formShiftData.value.shiftBeginBreakTime);
+
+            if (endBreakTime.getTime() === beginBreakTime.getTime()) {
                 formShiftError.value.shiftEndBreakTime = 'Kết thúc nghỉ giữa ca không được bằng Bắt đầu nghỉ giữa ca.';
                 return false;
-            }// Nếu giờ kết thúc nghỉ lớn hơn giờ bắt đầu nghỉ, cộng thêm 1 ngày cho giờ kết thúc nghỉ để xử lý trường hợp nghỉ qua đêm
-            else if (beginBreakTime > endBreakTime) {
-                endBreakTime.setDate(endBreakTime.getDate() + 1); // Nếu giờ kết thúc nghỉ nhỏ hơn hoặc bằng giờ bắt đầu nghỉ, cộng thêm 1 ngày để xử lý trường hợp nghỉ qua đêm
             }
-            // Kiểm tra nếu giờ kết thúc nghỉ không nằm trong khoảng thời gian từ giờ vào ca đến giờ hết ca
-            if (endBreakTime < beginTime || endBreakTime > endTime) {
-                formShiftError.value.shiftEndBreakTime = 'Thời gian kết thúc nghỉ giữa ca phải nằm trong khoảng thời gian tính từ giờ vào ca đến giờ hết ca. Vui lòng kiểm tra lại.';
+
+            if (beginBreakTime > endBreakTime) {
+                formShiftError.value.shiftEndBreakTime = 'Kết thúc nghỉ giữa ca không được nhỏ hơn Bắt đầu nghỉ giữa ca.';
                 return false;
             }
         }
@@ -614,9 +612,8 @@ const validateShiftEndBreakTime = (time: string | null) => {
     formShiftError.value.shiftEndBreakTime = '';
     return true;
 };
-//#endregion
 
-
+//#region add/edit modal
 const formShiftData = ref({
     shiftId: '',
     shiftCode: '',
@@ -678,8 +675,8 @@ const showAddEditShiftModal = (shiftId: string | null) => {
                 shiftDescription: shift.shiftDescription,
                 shiftBeginTime: shift.shiftBeginTime,
                 shiftEndTime: shift.shiftEndTime,
-                shiftBeginBreakTime: shift.shiftBeginBreakTime ?? null,
-                shiftEndBreakTime: shift.shiftEndBreakTime ?? null,
+                shiftBeginBreakTime: shift.shiftBeginBreakTime ?? '',
+                shiftEndBreakTime: shift.shiftEndBreakTime ?? '',
                 shiftWorkingTime: shift.shiftWorkingTime,
                 shiftBreakingTime: shift.shiftBreakingTime,
                 shiftInactive: shift.shiftInactive,
@@ -723,8 +720,8 @@ const handleDuplicateShift = (shiftId: string) => {
             shiftDescription: shift.shiftDescription,
             shiftBeginTime: shift.shiftBeginTime,
             shiftEndTime: shift.shiftEndTime,
-            shiftBeginBreakTime: shift.shiftBeginBreakTime ?? null,
-            shiftEndBreakTime: shift.shiftEndBreakTime ?? null,
+            shiftBeginBreakTime: shift.shiftBeginBreakTime,
+            shiftEndBreakTime: shift.shiftEndBreakTime,
             shiftWorkingTime: shift.shiftWorkingTime,
             shiftBreakingTime: shift.shiftBreakingTime,
             shiftInactive: false,
@@ -933,7 +930,7 @@ const handleSaveShift = () => {
     }
     closeAddEditShiftModal(false);
 };
-
+//#endregion
 
 //#region selected rows
 //test selectedRowIndices 0 1 2 3
@@ -1063,7 +1060,9 @@ const calculateShiftTimes = () => {
         shiftBreakingTime.value = timeBreaking.toFixed(3);
     }
 };
-//#region Lifecycle
+
+//#endregion
+
 
 //#region filter logic
 const filterModalRef = ref<any>(null);
@@ -1490,9 +1489,160 @@ const getDisplayValue = (filter: any) => {
     }
     return filter.value;
 };
+//#endregion
+
+
+//#region export excel
+const isExporting = ref(false);
+const connectionId = ref('');
+let connection: any = null;
+let reconnectTimeout: any = null; // Biến lưu timeout để dọn dẹp khi unmount
+let isComponentMounted = false; // Cờ kiểm tra component còn tồn tại không
+
+// Hàm khởi tạo và bắt đầu kết nối
+const startSignalRConnection = async () => {
+    // Nếu component đã bị hủy thì không cố kết nối nữa
+    if (!isComponentMounted) return;
+
+    try {
+        await connection.start();
+        connectionId.value = connection.connectionId || '';
+        // console.log("SignalR Connected. Connection ID:", connectionId.value);
+    } catch (err) {
+        console.warn("Không kết nối được đến SignalR, thử lại sau 10s...");
+        // Thử kết nối lại sau 10 giây nếu lỗi
+        reconnectTimeout = setTimeout(startSignalRConnection, 10000);
+    }
+};
+
+onMounted(() => {
+    isComponentMounted = true;
+
+    // 1. Khởi tạo kết nối SignalR tới Backend
+    connection = new signalR.HubConnectionBuilder()
+        .withUrl(`${apiDomain}/hubs/notification`) // Thay port của bạn
+        .withAutomaticReconnect() // Tự động nối lại nếu rớt mạng giữa chừng
+        .configureLogging(signalR.LogLevel.None)
+        .build();
+
+    // 2. Lắng nghe sự kiện Thành Công từ Server
+    connection.on("ReceiveExportResult", (downloadUrl: any, message: any) => {
+        isExporting.value = false;
+        // alert(message); // Hiển thị Toast message
+
+        const fullUrl = `${apiDomain}/${downloadUrl}`;
+        window.location.href = fullUrl;
+    });
+
+    // 3. Lắng nghe sự kiện Lỗi
+    connection.on("ReceiveExportError", (errorMessage: any) => {
+        isExporting.value = false;
+        alert(errorMessage);
+    });
+
+    // 4. Xử lý khi kết nối bị đóng hoàn toàn (SignalR ngưng tự động nối lại)
+    connection.onclose(() => {
+        console.warn("SignalR connection closed. Đang thử kết nối lại...");
+        if (isComponentMounted) {
+            reconnectTimeout = setTimeout(startSignalRConnection, 10000);
+        }
+    });
+
+    // Bắt đầu kết nối lần đầu
+    startSignalRConnection();
+});
+
+onUnmounted(() => {
+    isComponentMounted = false; // Đánh dấu component đã unmount
+
+    // Dọn dẹp timeout nếu đang trong thời gian chờ kết nối lại
+    if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+    }
+
+    // Dừng kết nối
+    if (connection) {
+        connection.stop();
+    }
+});
+
+
+const requestExportExcelData = ref({
+    fileName: 'Danh_sach_ca_lam_viec',
+    columns: dataColumns.value,
+    customFilter: '',
+    filter: '',
+    sort: '',
+})
+
+const requestExport = async () => {
+    isExporting.value = true;
+    //Delay 300ms để đảm bảo trạng thái isExporting đã được cập nhật trước khi gọi API
+    const filter = filterBuilder();
+    const filterString = filter && filter.length > 0 ? JSON.stringify(filter) : "";
+    const customFilter = searchTerm.value !== '' ? buildCustomFilter(searchTerm.value) : null;
+    const customFilterString = customFilter ? JSON.stringify(customFilter) : "";
+    const sort = "[{\"Selector\":\"ShiftCode\",\"Desc\":false}]";
+    requestExportExcelData.value.filter = filterString;
+    requestExportExcelData.value.customFilter = customFilterString;
+    requestExportExcelData.value.sort = sort;
+
+    console.log('Requesting export with filter:', filterString);
+    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+        // Gọi API Export kèm theo connectionId
+        const response = await fetch(`${apiDomain}/api/shifts/export-excel`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestExportExcelData.value),
+        });
+
+        if (!response.ok) {
+            throw new Error('Lỗi từ phía server khi xuất file Excel');
+        }
+        const blob = await response.blob();
+
+        let fileName = `${requestExportExcelData.value.fileName}.xlsx`;
+        // const contentDisposition = response.headers.get('content-disposition');
+        // if (contentDisposition) {
+        //     const fileNameMatch = contentDisposition.match(/filename=(.+)/);
+        //     if (fileNameMatch && fileNameMatch.length === 2) {
+        //         // Xóa bỏ các ký tự dấu nháy kép thừa nếu có từ phía server trả về
+        //         fileName = fileNameMatch[1].replace(/"/g, '');
+        //     }
+        // }
+
+        // 3. Tạo một URL ảo trỏ vào vùng nhớ chứa file Blob đó trong trình duyệt
+        const url = window.URL.createObjectURL(blob);
+
+        // 4. Tạo thẻ <a> ngầm, cấu hình thuộc tính và giả lập click để tải file về máy
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', fileName);
+
+        document.body.appendChild(link);
+        link.click();
+
+        // 5. Dọn dẹp bộ nhớ sau khi tải xong
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+
+        isExporting.value = false;
+    } catch (error) {
+        isExporting.value = false;
+        // alert("Lỗi gọi API xuất Excel");
+    } finally {
+        isExporting.value = false;
+    }
+};
+
 
 //#endregion
 
+//#region Lifecycle
 onMounted(async () => {
     window.addEventListener('scroll', closeOnScroll, true);
     document.addEventListener('click', handleDocumentClick);
