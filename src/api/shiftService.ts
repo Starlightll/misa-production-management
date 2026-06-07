@@ -78,9 +78,8 @@ export const shiftService = {
      * Xuất khẩu dữ liệu excel
      */
     exportExcel(params: ExportExcelParams): Promise<Blob> {
-        return apiClient.post('/api/Shifts/export-excel', {
-            params,
-            responseType: 'blob' // Đảm bảo nhận về file dưới dạng Blob
+        return apiClient.post('/api/Shifts/export-excel', params, {
+            responseType: 'blob'
         });
     }
 };

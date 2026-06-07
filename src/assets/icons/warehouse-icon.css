@@ -157,3 +157,23 @@
     -webkit-mask-position: -560px -0px;
     mask-position: -560px -0px;
 }
+
+.mi-warehouse.icon16.arrow-up {
+    -webkit-mask-position: -512px 0px;
+    mask-position: -512px 0px;
+}
+
+.mi-warehouse.icon16.arrow-down {
+    -webkit-mask-position: -528px 0px;
+    mask-position: -528px 0px;
+}
+
+.mi-warehouse.icon16.pin {
+    -webkit-mask-position: -432px 0px;
+    mask-position: -432px 0px;
+}
+
+.mi-warehouse.icon16.unpin {
+    -webkit-mask-position: -592px 0px;
+    mask-position: -592px 0px;
+}

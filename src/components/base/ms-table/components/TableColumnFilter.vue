@@ -1,6 +1,7 @@
 <script setup lang="ts">
 
-import { ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import MsInput from '../../ms-input/MsInput.vue';
 
 // const textFilterData = ref({
 //     operator: 'contains',
@@ -19,15 +20,6 @@ import { ref } from 'vue';
 //     value: '',
 // });
 
-// const columnFilters = ref<{
-//     key: string;
-//     type: string;
-//     fieldLabel: string;
-//     operatorLabel: string;
-//     operator: string;
-//     value: any;
-// }[]>([]);
-
 
 // const filterMessage = ref('');
 
@@ -43,6 +35,10 @@ import { ref } from 'vue';
 //         columnFilters.value.push({ key: fieldKey, type: type, fieldLabel: fieldLabel, operatorLabel: operatorLabel, operator, value });
 //     }
 // };
+
+const textDefaultOperator = 'contains';
+const numberDefaultOperator = '=';
+const dateDefaultOperator = '=';
 
 
 const textFilterOptions = [
@@ -78,29 +74,29 @@ const dateFilterOptions = [
     { label: '(Không trống)', value: 'isnotnull' },
 ];
 
-// const textFilterInput = ref<any>(null);
-// const numberFilterInput = ref<any>(null);
-// const dateFilterInput = ref<any>(null);
-// const selectFilterInput = ref<any>(null);
-// const currentFilterField = ref<any>(null);
+const textFilterInput = ref<any>(null);
+const numberFilterInput = ref<any>(null);
+const dateFilterInput = ref<any>(null);
+const selectFilterInput = ref<any>(null);
+const currentFilterField = ref<any>(null);
 
-// const getOperatorLabel = (filterType: string, operatorValue: string) => {
-//     if (filterType === 'text') {
-//         const option = textFilterOptions.find((o) => o.value === operatorValue);
-//         return option ? option.label : operatorValue;
-//     } else if (filterType === 'number') {
-//         const option = numberFilterOptions.find((o) => o.value === operatorValue);
-//         return option ? option.label : operatorValue;
-//     } else if (filterType === 'date') {
-//         const option = dateFilterOptions.find((o) => o.value === operatorValue);
-//         return option ? option.label : operatorValue;
-//     } else if (filterType === 'select') {
-//         const option = currentFilterField.value.selectOptions.find((o: any) => o.value === operatorValue);
-//         console.log('Get operator label for select filter:', option.label);
-//         return option ? option.label : operatorValue;
-//     }
-//     return operatorValue;
-// };
+const getOperatorLabel = (filterType: string, operatorValue: string) => {
+    if (filterType === 'text') {
+        const option = textFilterOptions.find((o) => o.value === operatorValue);
+        return option ? option.label : operatorValue;
+    } else if (filterType === 'number') {
+        const option = numberFilterOptions.find((o) => o.value === operatorValue);
+        return option ? option.label : operatorValue;
+    } else if (filterType === 'date') {
+        const option = dateFilterOptions.find((o) => o.value === operatorValue);
+        return option ? option.label : operatorValue;
+    } else if (filterType === 'select') {
+        const option = props.field.filter?.filterOptions.find((o: any) => o.value === operatorValue);
+        // console.log('Get operator label for select filter:', option?.label);
+        return option ? option.label : operatorValue;
+    }
+    return operatorValue;
+};
 
 
 
@@ -236,6 +232,76 @@ const props = defineProps<{
     field: any;
 }>();
 
+const emit = defineEmits(['apply', 'clear', 'close']);
+
+// Bản sao local để người dùng nhập liệu, tránh ghi đè trực tiếp lên field của cha khi chưa bấm Áp dụng
+const filterData = ref({
+    key: props.field.key,
+    type: props.field.filter?.filterType,
+    operatorLabel: '',
+    operator: '',
+    value: ''
+});
+
+const validateMessage = ref('');
+
+const handleApply = () => {
+    //validate before apply
+    if ((props.field.filter?.filterType === 'text') && !filterData.value.value) {
+        validateMessage.value = 'Vui lòng nhập giá trị để áp dụng filter.';
+        return textFilterInput.value?.$el.querySelector('input')?.focus();
+    }
+    if ((props.field.filter?.filterType === 'number') && !filterData.value.value) {
+        validateMessage.value = 'Vui lòng nhập giá trị để áp dụng filter.';
+        return numberFilterInput.value?.$el.querySelector('input')?.focus();
+    }
+    if ((props.field.filter?.filterType === 'date') && !filterData.value.value) {
+        validateMessage.value = 'Vui lòng nhập giá trị để áp dụng filter.';
+        return dateFilterInput.value?.$el.querySelector('input')?.focus();
+    }
+    if ((props.field.filter?.filterType === 'select') && (filterData.value.value === '' || filterData.value.value === null || filterData.value.value === undefined)) {
+        validateMessage.value = 'Vui lòng chọn giá trị để áp dụng filter.';
+        return selectFilterInput.value?.$el.querySelector('input')?.click();
+    }
+
+    filterData.value.operatorLabel = getOperatorLabel(props.field.filter?.filterType, (filterData.value.type === 'select' ? filterData.value.value : filterData.value.operator));
+    // console.log('Apply filter with data:', filterData.value);
+    emit('apply', filterData.value);
+};
+
+const handleClear = () => {
+    filterData.value.value = '';
+    filterData.value.operatorLabel = '';
+    emit('clear', filterData.value);
+};
+
+const handleClose = () => {
+    emit('close');
+};
+
+onMounted(() => {
+    // Nếu cột này đã có dữ liệu lọc từ trước, nạp lại lên UI local để người dùng sửa
+    if (props.field.filter?.filterData?.operator || props.field.filter?.filterData?.value) {
+        filterData.value.operator = props.field.filter?.filterData?.operator;
+        filterData.value.value = props.field.filter?.filterData?.value;
+    } else {
+        // Thiết lập operator mặc định ban đầu cho từng loại dữ liệu
+        filterData.value.operator = props.field.filter?.filterType === 'text' ? 'contains' : '=';
+    }
+});
+
+const setFilterOperator = (operator: string, label: string) => {
+    filterData.value.operator = operator;
+    filterData.value.operatorLabel = label;
+
+    // if (['isnull', 'isnotnull'].includes(operator)) {
+    //     filterData.value.value = '';
+    // }
+};
+
+const setFilterData = (value: any) => {
+    filterData.value.value = value;
+};
 
 </script>
 <template lang="html">
@@ -244,51 +310,66 @@ const props = defineProps<{
         <div class="flex flex-col gap-4">
             <div class="flex items-center justify-between">
                 <div class="column-filter-text mr-2">Lọc {{ props.field.label.toLowerCase() }}</div>
-                <MsButton serverity="secondary" variant="text" @click="">
+                <MsButton serverity="secondary" variant="text" @click="handleClose">
                     <div class="icon icon16 close mi-warehouse"></div>
                 </MsButton>
             </div>
             <!-- Filter Options -->
             <div class="flex flex-col gap-2">
                 <!-- Text Filter -->
-                <div v-if="props.field.filterType === 'text'">
+                <div v-if="props.field.filter?.filterType === 'text'">
                     <MsSelect placeholder="Chọn điều kiện" :options="textFilterOptions" class="w-full"
-                        valueField="value" labelField="label">
+                        valueField="value" labelField="label" v-model="filterData.operator">
                     </MsSelect>
-                    <MsInput ref="textFilterInput" placeholder="Nhập giá trị lọc" class="w-full mt-2" />
+                    <MsInput ref="textFilterInput" placeholder="Nhập giá trị lọc" class="w-full mt-2"
+                        :readonly="['isnull', 'isnotnull'].includes(filterData.operator)"
+                        :modelValue="['isnull', 'isnotnull'].includes(filterData.operator) ? '' : filterData.value"
+                        @update:modelValue="setFilterData($event)" :error="validateMessage"
+                        v-tooltip.bottom="validateMessage" />
                 </div>
                 <!-- Number Filter -->
-                <div v-if="props.field.filterType === 'number'">
+                <div v-if="props.field.filter?.filterType === 'number'">
                     <MsSelect placeholder="Chọn điều kiện" :options="numberFilterOptions" class="w-full"
-                        valueField="value" labelField="label">
+                        valueField="value" labelField="label" v-model="filterData.operator">
                     </MsSelect>
-                    <MsInput ref="numberFilterInput" type="number" placeholder="Nhập giá trị lọc" class="w-full mt-2" />
+                    <MsInput ref="numberFilterInput" type="number" placeholder="Nhập giá trị lọc" class="w-full mt-2"
+                        :readonly="['isnull', 'isnotnull'].includes(filterData.operator)"
+                        :modelValue="['isnull', 'isnotnull'].includes(filterData.operator) ? '' : filterData.value"
+                        @update:modelValue="setFilterData($event)" :error="validateMessage"
+                        v-tooltip.bottom="validateMessage" />
                 </div>
                 <!-- Date Filter -->
-                <div v-if="props.field.filterType === 'date'">
+                <div v-if="props.field.filter?.filterType === 'date'">
                     <MsSelect placeholder="Chọn điều kiện" :options="dateFilterOptions" class="w-full"
-                        valueField="value" labelField="label">
+                        valueField="value" labelField="label" v-model="filterData.operator">
                     </MsSelect>
-                    <MsDatepicker ref="dateFilterInput" placeholder="Chọn ngày" class="w-full mt-2" :type="'date'" />
+                    <MsDatepicker ref="dateFilterInput" placeholder="Chọn ngày" class="w-full mt-2" :type="'date'"
+                        :readonly="['isnull', 'isnotnull'].includes(filterData.operator)"
+                        :modelValue="['isnull', 'isnotnull'].includes(filterData.operator) ? '' : filterData.value"
+                        @update:modelValue="setFilterData($event)" :error="validateMessage"
+                        v-tooltip.bottom="validateMessage" />
                 </div>
                 <!-- Select Filter -->
-                <div v-if="props.field.filterType === 'select'">
-                    <MsSelect ref="selectFilterInput" placeholder="Chọn giá trị lọc" v-tooltip.bottom=""
-                        :options="props.field.selectOptions" class="w-full" valueField="value" labelField="label">
+                <div v-if="props.field.filter?.filterType === 'select'">
+                    <MsSelect ref="selectFilterInput" placeholder="Chọn giá trị lọc"
+                        :options="props.field.filter?.filterOptions" class="w-full" valueField="value"
+                        labelField="label" v-model="filterData.value"
+                        @update:modelValue="setFilterData($event); setFilterOperator('=', $event.label)"
+                        :error="validateMessage" v-tooltip.bottom="validateMessage">
                     </MsSelect>
                 </div>
             </div>
             <div class="flex items-center justify-between">
                 <div>
-                    <MsButton serverity="secondary" class="bg-gray-100! hover:bg-gray-200!" @click="">
+                    <MsButton serverity="secondary" class="bg-gray-100! hover:bg-gray-200!" @click="handleClear">
                         <div class=" text-(--text)">Bỏ lọc</div>
                     </MsButton>
                 </div>
                 <div class="flex items-center gap-x-2">
-                    <MsButton serverity="secondary" variant="outlined" @click="">
+                    <MsButton serverity="secondary" variant="outlined" @click="handleClose">
                         <div class=" text-(--text)">Hủy</div>
                     </MsButton>
-                    <MsButton @click="">
+                    <MsButton @click="handleApply">
                         <div class="">Áp dụng</div>
                     </MsButton>
                 </div>
@@ -316,36 +397,5 @@ const props = defineProps<{
         font-size: 16px;
         margin-right: 30px;
     }
-}
-
-.filter-conditions {
-    display: flex;
-    align-items: center;
-    row-gap: 4px;
-    flex-wrap: wrap;
-    margin-right: 8px;
-    max-height: 56px;
-    overflow-y: auto;
-
-    .filter-item {
-        display: flex;
-        gap: 8px;
-        height: 24px;
-        padding: 0 8px;
-        border-radius: 4px;
-        position: relative;
-        margin-right: 8px;
-        white-space: normal;
-        align-items: center;
-        background-color: #f3f4f6;
-        max-width: calc(100% - 8px);
-
-        .lable-value-filter {
-            display: flex;
-            gap: 8px;
-        }
-    }
-
-
 }
 </style>

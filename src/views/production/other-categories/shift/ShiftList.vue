@@ -7,9 +7,267 @@ import { useTablePagingFilter } from '../../../../composables/useTablePagingFilt
 
 const message = useMessage();
 
+const fields = ref([
+    {
+        index: 0,
+        showInTable: true,
+        key: "Checkbox",
+        label: "",
+        type: "custom",
+        width: '50px',
+        fixed: "left",
+        sortable: false,
+        filterable: false,
+        resizable: false,
+        movable: false,
+        exportable: false,
+        print: false,
+        style: {
+            position: "sticky",
+            left: 0,
+            zIndex: 5,
+            width: '50px',
+            minWidth: "50px",
+            maxWidth: "50px",
+        },
+    },
+    {
+        key: 'shiftCode', label: 'Mã ca', type: "text", resizable: true,
+        movable: true,
+        showInTable: true,
+        exportable: true,
+        filter: {
+            filterable: true,
+            filterType: "text",
+            filterData: {
+                operatorLabel: '',
+                operator: '',
+                value: '',
+            },
+        },
+        style: {
+            width: '120px',
+        },
+    },
+    {
+        key: 'shiftName', label: 'Tên ca', type: "text", resizable: true,
+        movable: true,
+        showInTable: true,
+        exportable: true,
+        filter: {
+            filterable: true,
+            filterType: "text",
+            filterData: {
+                operatorLabel: '',
+                operator: '',
+                value: '',
+            },
+        },
+        style: {
+            width: '250px',
+        },
+    },
+    {
+        key: 'shiftBeginTime', label: 'Giờ vào ca', type: 'time', resizable: true,
+        movable: true,
+        showInTable: true,
+        exportable: true,
+        style: {
+            width: '130px',
+        },
+    },
+    {
+        key: 'shiftEndTime', label: 'Giờ hết ca', type: 'time', resizable: true,
+        movable: true,
+        showInTable: true,
+        exportable: true,
+        style: {
+            width: '130px',
+        },
+    },
+    {
+        key: 'shiftBeginBreakTime', label: 'Bắt đầu nghỉ giữa ca', type: 'time', resizable: true,
+        movable: true,
+        showInTable: true,
+        exportable: true,
+        style: {
+            width: '200px',
+        },
+    },
+    {
+        key: 'shiftEndBreakTime', label: 'Kết thúc nghỉ giữa ca', type: 'time', resizable: true,
+        movable: true,
+        showInTable: true,
+        exportable: true,
+        style: {
+            width: '210px',
+        },
+    },
+    {
+        key: 'shiftWorkingTime', label: 'Thời gian làm việc (giờ)', type: 'number', resizable: true,
+        movable: true,
+        showInTable: true,
+        exportable: true,
+        filter: {
+            filterable: true,
+            filterType: "number",
+            filterData: {
+                operatorLabel: '',
+                operator: '',
+                value: '',
+            },
+        },
+        style: {
+            width: '210px',
+        },
+    },
+    {
+        key: 'shiftBreakingTime', label: 'Thời gian nghỉ giữa ca (giờ)', type: 'number', resizable: true,
+        movable: true,
+        showInTable: true,
+        exportable: true,
+        filter: {
+            filterable: true,
+            filterType: "number",
+            filterData: {
+                operatorLabel: '',
+                operator: '',
+                value: '',
+            },
+        },
+        style: {
+            width: '230px',
+        },
+    },
+    {
+        key: 'shiftInactive', label: 'Trạng thái', type: 'custom', resizable: true,
+        movable: true,
+        showInTable: true,
+        exportable: true,
+        filter: {
+            filterable: true,
+            filterType: "select",
+            filterData: {
+                operatorLabel: '',
+                operator: '',
+                value: '',
+            },
+            filterOptions: [
+                { label: 'Ngừng sử dụng', value: 'true' },
+                { label: 'Đang sử dụng', value: 'false' },
+            ],
+        },
+        style: {
+            width: '230px',
+        },
+    },
+    {
+        key: 'createdBy', label: 'Người tạo', type: "text", resizable: true,
+        movable: true,
+        showInTable: true,
+        exportable: true,
+        filter: {
+            filterable: true,
+            filterType: "text",
+            filterData: {
+                operatorLabel: '',
+                operator: '',
+                value: '',
+            },
+        },
+        style: {
+            width: '200px',
+        },
+    },
+    {
+        key: 'createdDate', label: 'Ngày tạo', type: "date", resizable: true,
+        movable: true,
+        showInTable: true,
+        exportable: true,
+        filter: {
+            filterable: true,
+            filterType: "date",
+            filterData: {
+                operatorLabel: '',
+                operator: '',
+                value: '',
+            },
+        },
+        style: {
+            width: '160px',
+        },
+    },
+    {
+        key: 'modifiedBy', label: 'Người sửa', type: "text", resizable: true,
+        movable: true,
+        showInTable: true,
+        exportable: true,
+        filter: {
+            filterable: true,
+            filterType: "text",
+            filterData: {
+                operatorLabel: '',
+                operator: '',
+                value: '',
+            },
+        },
+        style: {
+            width: '160px',
+        },
+    },
+    {
+        key: 'modifiedDate', label: 'Ngày sửa', type: "date", resizable: true,
+        movable: true,
+        showInTable: true,
+        exportable: true,
+        filter: {
+            filterable: true,
+            filterType: "date",
+            filterData: {
+                operatorLabel: '',
+                operator: '',
+                value: '',
+            },
+        },
+        style: {
+            width: '160px',
+        },
+    },
+    {
+        index: 17,
+        showInTable: true,
+        key: "Action",
+        label: "Hành động",
+        type: "custom",
+        fixed: "right",
+        sortable: false,
+        filterable: false,
+        resizable: false,
+        exportable: false,
+        movable: false,
+        displayOnHover: true,
+        style: {
+            position: "sticky",
+            right: 0,
+            zIndex: 10,
+            overflow: 'visible',
+            width: '120px',
+            borderLeft: 'none',
+        },
+        contentStyle: {
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '8px',
+        },
+    },
+]);
+
+
 const searchColumns = ['ShiftCode', 'ShiftName', 'CreatedBy', 'ModifiedBy'];
 // 2. Kích hoạt Composable Generic, định nghĩa rõ ràng kiểu dữ liệu là thực thể <Shift>
 const {
+    currentPage,
+    pageSize,
     tableRows,
     totalItems,
     selectedRowIndices,
@@ -17,6 +275,8 @@ const {
     canGoNext,
     pageStart,
     pageEnd,
+    filters,
+    globalFilterArray,
     loadData,
     nextPage,
     prevPage,
@@ -24,16 +284,18 @@ const {
     goToLastPage,
     changePageSize,
     executeSearch,
-    handleFilterChange
+    handleFilterChange,
+    removeFilterFromFilters,
+    clearAllFilters,
 } = useTablePagingFilter<Shift>(
     shiftService.getDataPaging, // Truyền trực tiếp hàm gọi API từ lớp Service lớp trước
     searchColumns,
     'shiftTablePageSize',
-    '[{"Selector":"ShiftCode","Desc":false}]' // Cấu hình sort mặc định cho bảng ca làm việc
+    '[{"Selector":"ShiftCode","Desc":false}]',
+    fields.value, // Truyền mảng cấu hình cột để Composable có thể tự động build filter
 );
 
-const activeColumnKeys = computed(() => fields.filter(f => f.exportable && f.showInTable).map(f => f.key));
-
+const activeColumnKeys = computed(() => fields.value.filter(f => f.exportable && f.showInTable).map(f => f.key));
 
 //#region init data ==================================================================================
 // const fetchDataPaging = async (pagingParams: PagingParams) => {
@@ -188,7 +450,7 @@ import ShiftDetailModal from './components/ShiftDetailModal.vue';
 //#region table settings 
 // Table settings
 const dataColumns = computed(() => {
-    return fields.filter(f => f.exportable && f.showInTable).map(f => {
+    return fields.value.filter(f => f.exportable && f.showInTable).map(f => {
         return {
             Key: f.key,
             DisplayName: f.label,
@@ -196,232 +458,11 @@ const dataColumns = computed(() => {
     });
 });
 
-const fields = [
-    {
-        index: 0,
-        showInTable: true,
-        key: "Checkbox",
-        label: "",
-        type: "custom",
-        width: '50px',
-        fixed: "left",
-        sortable: false,
-        filterable: false,
-        resizable: false,
-        movable: false,
-        exportable: false,
-        print: false,
-        style: {
-            position: "sticky",
-            left: 0,
-            zIndex: 5,
-            width: '50px',
-            minWidth: "50px",
-            maxWidth: "50px",
-        },
-    },
-    {
-        key: 'shiftCode', label: 'Mã ca', type: "text", resizable: true, filterable: true,
-        movable: true,
-        showInTable: true,
-        exportable: true,
-        filterType: "text",
-        filterData: {
-            operator: '',
-            value: '',
-        },
-        style: {
-            width: '120px',
-        },
-    },
-    {
-        key: 'shiftName', label: 'Tên ca', type: "text", resizable: true, filterable: true,
-        movable: true,
-        showInTable: true,
-        exportable: true,
-        filterType: "text",
-        filterData: {
-            operator: '',
-            value: '',
-        },
-        style: {
-            width: '250px',
-        },
-    },
-    {
-        key: 'shiftBeginTime', label: 'Giờ vào ca', type: 'time', resizable: true, filterable: false,
-        movable: true,
-        showInTable: true,
-        exportable: true,
-        style: {
-            width: '130px',
-        },
-    },
-    {
-        key: 'shiftEndTime', label: 'Giờ hết ca', type: 'time', resizable: true, filterable: false,
-        movable: true,
-        showInTable: true,
-        exportable: true,
-        style: {
-            width: '130px',
-        },
-    },
-    {
-        key: 'shiftBeginBreakTime', label: 'Bắt đầu nghỉ giữa ca', type: 'time', resizable: true, filterable: false,
-        movable: true,
-        showInTable: true,
-        exportable: true,
-        style: {
-            width: '200px',
-        },
-    },
-    {
-        key: 'shiftEndBreakTime', label: 'Kết thúc nghỉ giữa ca', type: 'time', resizable: true, filterable: false,
-        movable: true,
-        showInTable: true,
-        exportable: true,
-        style: {
-            width: '210px',
-        },
-    },
-    {
-        key: 'shiftWorkingTime', label: 'Thời gian làm việc (giờ)', type: 'number', resizable: true, filterable: true,
-        movable: true,
-        showInTable: true,
-        exportable: true,
-        filterType: "number",
-        filterData: {
-            operator: '',
-            value: '',
-        },
-        style: {
-            width: '210px',
-        },
-    },
-    {
-        key: 'shiftBreakingTime', label: 'Thời gian nghỉ giữa ca (giờ)', type: 'number', resizable: true, filterable: true,
-        movable: true,
-        showInTable: true,
-        exportable: true,
-        filterType: "number",
-        filterData: {
-            operator: '',
-            value: '',
-        },
-        style: {
-            width: '230px',
-        },
-    },
-    {
-        key: 'shiftInactive', label: 'Trạng thái', type: 'custom', resizable: true, filterable: true,
-        movable: true,
-        showInTable: true,
-        exportable: true,
-        filterType: "select",
-        filterData: {
-            operator: '',
-            value: '',
-        },
-        selectOptions: [
-            { label: 'Ngừng sử dụng', value: 'true' },
-            { label: 'Đang sử dụng', value: 'false' },
-        ],
-        style: {
-            width: '230px',
-        },
-    },
-    {
-        key: 'createdBy', label: 'Người tạo', type: "text", resizable: true, filterable: true,
-        movable: true,
-        showInTable: true,
-        exportable: true,
-        filterType: "text",
-        filterData: {
-            operator: '',
-            value: '',
-        },
-        style: {
-            width: '200px',
-        },
-    },
-    {
-        key: 'createdDate', label: 'Ngày tạo', type: "date", resizable: true, filterable: true,
-        movable: true,
-        showInTable: true,
-        exportable: true,
-        filterType: "date",
-        filterData: {
-            operator: '',
-            value: '',
-        },
-        style: {
-            width: '160px',
-        },
-    },
-    {
-        key: 'modifiedBy', label: 'Người sửa', type: "text", resizable: true, filterable: true,
-        movable: true,
-        showInTable: true,
-        exportable: true,
-        filterType: "text",
-        filterData: {
-            operator: '',
-            value: '',
-        },
-        style: {
-            width: '160px',
-        },
-    },
-    {
-        key: 'modifiedDate', label: 'Ngày sửa', type: "date", resizable: true, filterable: true,
-        movable: true,
-        showInTable: true,
-        exportable: true,
-        filterType: "date",
-        filterData: {
-            operator: '',
-            value: '',
-        },
-        style: {
-            width: '160px',
-        },
-    },
-    {
-        index: 17,
-        showInTable: true,
-        key: "Action",
-        label: "Hành động",
-        type: "custom",
-        fixed: "right",
-        sortable: false,
-        filterable: false,
-        resizable: false,
-        exportable: false,
-        movable: false,
-        displayOnHover: true,
-        style: {
-            position: "sticky",
-            right: 0,
-            zIndex: 10,
-            overflow: 'visible',
-            width: '120px',
-            borderLeft: 'none',
-        },
-        contentStyle: {
-            display: 'flex',
-            justifyContent: 'center',
-            gap: '8px',
-        },
-    },
-
-];
-
-
-const currentPage = ref(1);
-const pageSize = ref(localStorage.getItem('shiftTablePageSize') || '10');
+// const currentPage = ref(1);
+// const pageSize = ref(localStorage.getItem('shiftTablePageSize') || '10');
 // const tableRows = ref<Shift[]>([]);
 // const totalItems = ref(0);
-const totalPages = ref(0);
+// const totalPages = ref(0);
 const pageSizeOptions = [
     {
         label: '10',
@@ -440,28 +481,28 @@ const pageSizeOptions = [
 
 
 
-const filter = ref<string[]>([]);
-const sort = ref<string[]>([]);
-const columns = ref<string[]>([]);
-const customFilter = ref<string[]>([]);
+// const filter = ref<string[]>([]);
+// const sort = ref<string[]>([]);
+// const columns = ref<string[]>([]);
+// const customFilter = ref<string[]>([]);
 
-type PagingParams = {
-    page: number;
-    pageSize: string;
-    filter: string[];
-    sort: string[];
-    columns: string[];
-    customFilter: string[];
-};
+// type PagingParams = {
+//     page: number;
+//     pageSize: string;
+//     filter: string[];
+//     sort: string[];
+//     columns: string[];
+//     customFilter: string[];
+// };
 
-const pagingParams = computed<PagingParams>(() => ({
-    page: currentPage.value,
-    pageSize: pageSize.value,
-    filter: filter.value,
-    sort: sort.value,
-    columns: dataColumns.value.map(c => c.Key),
-    customFilter: customFilter.value,
-}));
+// const pagingParams = computed<PagingParams>(() => ({
+//     page: currentPage.value,
+//     pageSize: pageSize.value,
+//     filter: filter.value,
+//     sort: sort.value,
+//     columns: dataColumns.value.map(c => c.Key),
+//     customFilter: customFilter.value,
+// }));
 
 // const changePageSize = (newSize: string) => {
 //     pageSize.value = newSize;
@@ -511,7 +552,7 @@ const pagingParams = computed<PagingParams>(() => ({
 //     fetchDataPaging(pagingParams.value);
 // };
 
-const pageSizeNumber = computed(() => Number(pageSize.value) || 0);
+// const pageSizeNumber = computed(() => Number(pageSize.value) || 0);
 // const canGoPrev = computed(() => currentPage.value > 1);
 // const canGoNext = computed(() => totalPages.value > 0 && currentPage.value < totalPages.value);
 // const pageStart = computed(() => {
@@ -530,19 +571,19 @@ const pageSizeNumber = computed(() => Number(pageSize.value) || 0);
 //#endregion
 
 //#region Search debounce
-const searchTimeout = ref<number | null>(null);
-const onSearchInput = (value: string) => {
-    console.log('Search input:', value);
-    searchTerm.value = value;
-    if (searchTimeout.value) {
-        clearTimeout(searchTimeout.value);
-    }
-    searchTimeout.value = window.setTimeout(() => {
-        customFilter.value = buildCustomFilter(searchTerm.value) as unknown as string[];
-        currentPage.value = 1;
-        // fetchDataPaging(pagingParams.value);
-    }, 500);
-};
+// const searchTimeout = ref<number | null>(null);
+// const onSearchInput = (value: string) => {
+//     console.log('Search input:', value);
+//     searchTerm.value = value;
+//     if (searchTimeout.value) {
+//         clearTimeout(searchTimeout.value);
+//     }
+//     searchTimeout.value = window.setTimeout(() => {
+//         customFilter.value = buildCustomFilter(searchTerm.value) as unknown as string[];
+//         currentPage.value = 1;
+//         // fetchDataPaging(pagingParams.value);
+//     }, 500);
+// };
 //#endregion
 
 //#region search
@@ -575,9 +616,9 @@ const closeMenu = () => {
     showMenuId.value = null;
 };
 
-const handleDocumentClick = () => {
-    closeMenu();
-};
+// const handleDocumentClick = () => {
+//     closeMenu();
+// };
 
 //#region validate
 
@@ -673,22 +714,22 @@ const handleSelectAll = () => {
 
 
 //#region filter logic
-const filterModalRef = ref<any>(null);
-const filterModalVisible = ref(false);
-const filterModalPosition = ref({ top: '0px', left: '0px', width: `${0}px` });
-const currentFilterField = ref<any>(null);
-const filterModalWidth = 350;
-const filterMessage = ref('');
+// const filterModalRef = ref<any>(null);
+// const filterModalVisible = ref(false);
+// const filterModalPosition = ref({ top: '0px', left: '0px', width: `${0}px` });
+// const currentFilterField = ref<any>(null);
+// const filterModalWidth = 350;
+// const filterMessage = ref('');
 
 // biến lưu các lựa chọn filter của từng cột gồm {key, operator, value} ví dụ {key: "shiftCode", operator: "contains", value: "ca"}
-const columnFilters = ref<{
-    key: string;
-    type: string;
-    fieldLabel: string;
-    operatorLabel: string;
-    operator: string;
-    value: any;
-}[]>([]);
+// const columnFilters = ref<{
+//     key: string;
+//     type: string;
+//     fieldLabel: string;
+//     operatorLabel: string;
+//     operator: string;
+//     value: any;
+// }[]>([]);
 
 
 
@@ -715,90 +756,92 @@ const columnFilters = ref<{
 
 
 
-const filterBuilder = () => {
-    if (!columnFilters.value || columnFilters.value.length === 0) return [];
+// const filterBuilder = () => {
+//     if (!columnFilters.value || columnFilters.value.length === 0) return [];
 
-    const result: any[] = [];
+//     const result: any[] = [];
 
-    columnFilters.value.forEach((filter, index) => {
-        const key = filter.key.charAt(0).toUpperCase() + filter.key.slice(1);
-        const type = filter.type;
-        let value = filter.value;
+//     columnFilters.value.forEach((filter, index) => {
+//         const key = filter.key.charAt(0).toUpperCase() + filter.key.slice(1);
+//         const type = filter.type;
+//         let value = filter.value;
 
-        // --- XỬ LÝ ÉP KIỂU DỮ LIỆU ---
-        if (type === 'number' && value !== '') {
-            value = Number(value);
-        } else if (type === 'select') {
-            value = (value === 'true' || value === true);
-        } else if (type === 'date' && value) {
-            // MỚI: Xử lý Date. Tránh bị lùi ngày do múi giờ khi gọi toISOString()
-            if (value instanceof Date) {
-                const offset = value.getTimezoneOffset() * 60000;
-                value = (new Date(value.getTime() - offset)).toISOString().split('T')[0];
-                // Kết quả: "2026-06-04"
-            }
-        }
+//         // --- XỬ LÝ ÉP KIỂU DỮ LIỆU ---
+//         if (type === 'number' && value !== '') {
+//             value = Number(value);
+//         } else if (type === 'select') {
+//             value = (value === 'true' || value === true);
+//         } else if (type === 'date' && value) {
+//             // MỚI: Xử lý Date. Tránh bị lùi ngày do múi giờ khi gọi toISOString()
+//             if (value instanceof Date) {
+//                 const offset = value.getTimezoneOffset() * 60000;
+//                 value = (new Date(value.getTime() - offset)).toISOString().split('T')[0];
+//                 // Kết quả: "2026-06-04"
+//             }
+//         }
 
-        let condition = [];
-        if (filter.operator === 'isnull') {
-            condition = [[key, "isnull", type], "or", [key, "=", ""]];
-        }
-        else if (filter.operator === 'isnotnull') {
-            condition = [[key, "notnull", type], "and", [key, "<>", ""]];
-        }
-        else {
-            condition = [key, filter.operator, value];
-        }
+//         let condition = [];
+//         if (filter.operator === 'isnull') {
+//             condition = [[key, "isnull", type], "or", [key, "=", ""]];
+//         }
+//         else if (filter.operator === 'isnotnull') {
+//             condition = [[key, "notnull", type], "and", [key, "<>", ""]];
+//         }
+//         else {
+//             condition = [key, filter.operator, value];
+//         }
 
-        result.push(condition);
-        if (index < columnFilters.value.length - 1) {
-            result.push("and");
-        }
-    });
+//         result.push(condition);
+//         if (index < columnFilters.value.length - 1) {
+//             result.push("and");
+//         }
+//     });
 
-    return result;
-};
-
-
-const removeFilterFromColumnFilters = async (fieldKey: string) => {
-    const index = columnFilters.value.findIndex((f) => f.key === fieldKey);
-    if (index !== -1) {
-        const field = fields.find((f) => f.key === fieldKey);
-        if (field) {
-            field.filterData = {
-                operator: '',
-                value: '',
-            };
-        }
-        columnFilters.value.splice(index, 1);
-
-    }
-
-    // await fetchDataPaging(pagingParams.value);
-};
+//     return result;
+// };
 
 
+// const removeFilterFromColumnFilters = async (fieldKey: string) => {
+//     const index = columnFilters.value.findIndex((f) => f.key === fieldKey);
+//     if (index !== -1) {
+//         const field = fields.find((f) => f.key === fieldKey);
+//         if (field?.filter?.filterData) {
+//             field.filter.filterData = {
+//                 operatorLabel: '',
+//                 operator: '',
+//                 value: '',
+//             };
+//         }
+//         columnFilters.value.splice(index, 1);
 
-const clearAllFilters = async () => {
-    // Duyệt qua tất cả các field để xóa filter
-    fields.forEach((field) => {
-        if (field.filterData) {
-            field.filterData.operator = '';
-            field.filterData.value = '';
-        }
-    });
-    // Xóa tất cả filter khỏi columnFilters
-    columnFilters.value = [];
-    // clearFilterData();
-    // await fetchDataPaging(pagingParams.value);
-};
+//     }
+
+//     // await fetchDataPaging(pagingParams.value);
+// };
 
 
-const closeFilterModal = () => {
-    filterModalVisible.value = false;
-    currentFilterField.value = null;
-    filterMessage.value = '';
-};
+
+// const clearAllFilters = async () => {
+//     // Duyệt qua tất cả các field để xóa filter
+//     fields.forEach((field) => {
+//         if (field.filter?.filterData) {
+//             field.filter.filterData.operator = '';
+//             field.filter.filterData.value = '';
+//             field.filter.filterData.operatorLabel = '';
+//         }
+//     });
+//     // Xóa tất cả filter khỏi columnFilters
+//     columnFilters.value = [];
+//     // clearFilterData();
+//     // await fetchDataPaging(pagingParams.value);
+// };
+
+
+// const closeFilterModal = () => {
+//     filterModalVisible.value = false;
+//     currentFilterField.value = null;
+//     filterMessage.value = '';
+// };
 
 // Khai báo biến lưu bộ đếm thời gian
 let closeTimer: ReturnType<typeof setTimeout> | null = null;
@@ -884,6 +927,7 @@ const clearCloseTimer = () => {
 // });
 
 const getDisplayValue = (filter: any) => {
+    console.log('Getting display value for filter:', filter);
     if (filter.type === 'select') {
         return '';
     }
@@ -917,8 +961,7 @@ const requestExportExcelData = ref({
 const requestExport = async () => {
     isExporting.value = true;
     //Delay 300ms để đảm bảo trạng thái isExporting đã được cập nhật trước khi gọi API
-    const filter = filterBuilder();
-    const filterString = filter && filter.length > 0 ? JSON.stringify(filter) : "";
+    const filterString = globalFilterArray.value.length > 0 ? JSON.stringify(globalFilterArray.value) : "";
     const customFilter = searchTerm.value !== '' ? buildCustomFilter(searchTerm.value) : null;
     const customFilterString = customFilter ? JSON.stringify(customFilter) : "";
     const sort = "[{\"Selector\":\"ShiftCode\",\"Desc\":false}]";
@@ -948,6 +991,21 @@ const requestExport = async () => {
     }
 };
 //#endregion
+
+const handleFilter = (filterData: any) => {
+    console.log('Received filter data from table component:', filterData);
+    //Xử lý filterData để phù hợp với định dạng của API nếu cần thiết, sau đó gán vào biến filter để gọi API
+    // Ví dụ, nếu filterData đã có định dạng đúng rồi thì chỉ cần gán thẳng vào filter.value
+    // filter.value = filterData;
+    handleFilterChange(filterData);
+}
+
+const handleClearFilter = (filterData: any) => {
+    //Xử lý xóa filter của cột fieldKey, sau đó gọi API
+    // Ví dụ, nếu API chỉ cần filter.value là đủ thì chỉ cần xóa filter của cột đó khỏi filter.value rồi gán lại
+    // filter.value = filter.value.filter((f: any) => f.key !== fieldKey);
+    removeFilterFromFilters(filterData.key);
+}
 
 
 
@@ -990,18 +1048,18 @@ onBeforeUnmount(() => {
                     <div class="table-container__toolbar__left flex items-center gap-x-4">
                         <MsInput class="w-[240px]" placeholder="Tìm kiếm" icon="mi-warehouse icon16 icon left search"
                             @input="executeSearch($event, activeColumnKeys)" />
-                        <div v-if="columnFilters.length > 0 && selectedRowIndices.length === 0"
+                        <div v-if="filters.length > 0 && selectedRowIndices.length === 0"
                             class="filter-conditions h-full">
-                            <div v-for="(filter, index) in columnFilters" :key="index" class="filter-item">
+                            <div v-for="(filter, index) in filters" :key="index" class="filter-item">
                                 <div class="lable-value-filter">
                                     <span>{{ filter.fieldLabel }}</span>
                                     <span class="text-(--primary-color)">{{ filter.operatorLabel }}</span>
                                     <span>{{ getDisplayValue(filter) }}</span>
                                 </div>
                                 <div class="icon icon16 mi-warehouse close cursor-pointer"
-                                    @click="removeFilterFromColumnFilters(filter.key)"></div>
+                                    @click="removeFilterFromFilters(filter.key)"></div>
                             </div>
-                            <div class="hover:underline text-red-500 cursor-pointer" @click="clearAllFilters">
+                            <div class="hover:underline text-red-500 cursor-pointer" @click=" clearAllFilters()">
                                 Bỏ lọc
                             </div>
                         </div>
@@ -1050,7 +1108,8 @@ onBeforeUnmount(() => {
                 <div class="table-container__table">
                     <div class="table-container__table__content">
                         <MsTableDefault :fields="fields" :rows="tableRows" :focusedRowIndex="focusedRowIndex"
-                            :selectedRowIndices="selectedRowIndices">
+                            :selectedRowIndices="selectedRowIndices" @filter="handleFilter($event)"
+                            @clearFilter="handleClearFilter($event)">
                             <template #title-Checkbox="{ }">
                                 <MsCheckbox type="checkbox" style="width: 16px; height: 16px" @change="handleSelectAll"
                                     :modelValue="selectedRowIndices.length === tableRows.length" />
@@ -1325,7 +1384,36 @@ onBeforeUnmount(() => {
 }
 
 
+.filter-conditions {
+    display: flex;
+    align-items: center;
+    row-gap: 4px;
+    flex-wrap: wrap;
+    margin-right: 8px;
+    max-height: 56px;
+    overflow-y: auto;
 
+    .filter-item {
+        display: flex;
+        gap: 8px;
+        height: 24px;
+        padding: 0 8px;
+        border-radius: 4px;
+        position: relative;
+        margin-right: 8px;
+        white-space: normal;
+        align-items: center;
+        background-color: #f3f4f6;
+        max-width: calc(100% - 8px);
+
+        .lable-value-filter {
+            display: flex;
+            gap: 8px;
+        }
+    }
+
+
+}
 
 
 // Custom confirm modal

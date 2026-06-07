@@ -10,12 +10,21 @@ interface PagingParams {
     customFilter: string;
 }
 
+interface Filter {
+    key: string;
+    type: string;
+    fieldLabel: string;
+    operatorLabel: string;
+    operator: string;
+    value: any;
+}
 
 export function useTablePagingFilter<T>(
     fetchApiFn: (params: PagingParams) => Promise<any>,
     searchColumns: string[] = [],
     localStorageKey: string = 'misaTablePageSize',
-    defaultSort: string = ''
+    defaultSort: string = '',
+    fields: any[] = []
 ) {
     // 1. Các State phản ứng quản lý phân trang
     const currentPage = ref(1);
@@ -25,9 +34,28 @@ export function useTablePagingFilter<T>(
     const totalPages = ref(0);
     const selectedRowIndices = ref<number[]>([]);
 
+
+    const filters = computed(() => {
+        console.log("Tính toán filters từ fields:", fields);
+        let filtersData: any[] = [];
+        fields.forEach(f => {
+            if (f.filter?.filterData && f.filter.filterData.value) {
+                filtersData.push({
+                    key: f.key,
+                    type: f.filter.filterType,
+                    fieldLabel: f.label,
+                    operatorLabel: f.filter.filterData.operatorLabel,
+                    operator: f.filter.filterData.operator,
+                    value: f.filter.filterData.value,
+                });
+            }
+        });
+        return filtersData;
+    });
+
     // State tìm kiếm và lọc cột
     const searchTerm = ref('');
-    const globalFilterArray = ref<any[]>([]); // Lưu mảng filterBuilder từ Table truyền lên
+    // const globalFilterArray = ref<any[]>([]); // Lưu mảng filterBuilder từ Table truyền lên
 
     // 2. Các biến Computed bổ trợ UI phân trang
     const pageSizeNumber = computed(() => Number(pageSize.value) || 0);
@@ -129,11 +157,91 @@ export function useTablePagingFilter<T>(
     };
 
     // Xử lý khi nhận mảng bộ lọc từ Component Table truyền ra
-    const handleFilterChange = (filterArray: any[], activeFields: string[] = []) => {
-        globalFilterArray.value = filterArray;
-        currentPage.value = 1;
+    const handleFilterChange = (filterData: any, activeFields: string[] = []) => {
+        // filterData: field, filterData
+        // Update fields trong mảng fields để lưu lại thông tin filterData cho từng cột, giúp giữ trạng thái lọc khi người dùng mở lại filter của cột đó
+        fields.forEach(f => {
+            if (f.key === filterData.key) {
+                f.filter.filterData.operator = filterData.operator;
+                f.filter.filterData.value = filterData.value;
+                f.filter.filterData.operatorLabel = filterData.operatorLabel;
+            }
+        });
+        console.log("Fields sau khi cập nhật:", fields);
         loadData(activeFields);
     };
+
+    const removeFilterFromFilters = (fieldKey: string) => {
+        // Xóa filter của cột fieldKey khỏi filters.value
+        fields.forEach(f => {
+            if (f.key === fieldKey) {
+                f.filter.filterData.operator = '';
+                f.filter.filterData.value = '';
+                f.filter.filterData.operatorLabel = '';
+            }
+        });
+        console.log("Global Filter sau khi xóa filter của cột", fieldKey, ":", globalFilterArray.value);
+        currentPage.value = 1;
+        loadData();
+    }
+
+    const clearAllFilters = () => {
+        fields.forEach(f => {
+            if (f.filter?.filterData) {
+                f.filter.filterData.operator = '';
+                f.filter.filterData.value = '';
+                f.filter.filterData.operatorLabel = '';
+            }
+        });
+        console.log("Global Filter sau khi xóa tất cả filter:", globalFilterArray.value);
+        currentPage.value = 1;
+        loadData();
+    };
+
+    const globalFilterArray = computed(() => {
+        if (!filters.value || filters.value.length === 0) return [];
+
+        const result: any[] = [];
+
+        filters.value.forEach((filter, index) => {
+            const key = filter.key.charAt(0).toUpperCase() + filter.key.slice(1);
+            const type = filter.type;
+            let value = filter.value;
+
+            // --- XỬ LÝ ÉP KIỂU DỮ LIỆU ---
+            if (type === 'number' && value !== '') {
+                value = Number(value);
+            } else if (type === 'select') {
+                value = (value === 'true' || value === true);
+            } else if (type === 'date' && value) {
+                // MỚI: Xử lý Date. Tránh bị lùi ngày do múi giờ khi gọi toISOString()
+                if (value instanceof Date) {
+                    const offset = value.getTimezoneOffset() * 60000;
+                    value = (new Date(value.getTime() - offset)).toISOString().split('T')[0];
+                    // Kết quả: "2026-06-04"
+                }
+            }
+
+            let condition = [];
+            if (filter.operator === 'isnull') {
+                condition = [[key, "isnull", type], "or", [key, "=", ""]];
+            }
+            else if (filter.operator === 'isnotnull') {
+                condition = [[key, "notnull", type], "and", [key, "<>", ""]];
+            }
+            else {
+                condition = [key, filter.operator, value];
+            }
+
+            result.push(condition);
+            if (index < filters.value.length - 1) {
+                result.push("and");
+            }
+        });
+
+        return result;
+    });
+
 
     return {
         currentPage,
@@ -142,11 +250,13 @@ export function useTablePagingFilter<T>(
         totalItems,
         totalPages,
         selectedRowIndices,
+        filters,
         searchTerm,
         canGoPrev,
         canGoNext,
         pageStart,
         pageEnd,
+        globalFilterArray,
         loadData,
         changePageSize,
         nextPage,
@@ -154,6 +264,8 @@ export function useTablePagingFilter<T>(
         goToFirstPage,
         goToLastPage,
         executeSearch,
-        handleFilterChange
+        handleFilterChange,
+        removeFilterFromFilters,
+        clearAllFilters,
     };
 }
