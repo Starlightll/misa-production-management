@@ -23,12 +23,27 @@ interface ApiResponse<T> {
     message?: string;
 }
 
+interface ExportExcelParams {
+    fileName: string;
+    columns: any[];
+    customFilter: string;
+    filter: string;
+    sort: string;
+}
+
 export const shiftService = {
     /**
      * Lấy danh sách ca làm việc phân trang, bộ lọc
      */
     getDataPaging(params: PagingParams): Promise<ApiResponse<Shift>> {
         return apiClient.post('/api/Shifts/dataPaging', params);
+    },
+
+    /**
+     * Lấy thông tin chi tiết ca làm việc theo ID
+     */
+    getById(id: string): Promise<any> {
+        return apiClient.get(`/api/Shifts/${id}`);
     },
 
     /**
@@ -57,5 +72,15 @@ export const shiftService = {
      */
     updateStatus(payload: { shiftIds: string[]; inactive: boolean }): Promise<any> {
         return apiClient.put('/api/Shifts/update-inactive', payload);
+    },
+
+    /**
+     * Xuất khẩu dữ liệu excel
+     */
+    exportExcel(params: ExportExcelParams): Promise<Blob> {
+        return apiClient.post('/api/Shifts/export-excel', {
+            params,
+            responseType: 'blob' // Đảm bảo nhận về file dưới dạng Blob
+        });
     }
 };

@@ -1,86 +1,117 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, computed, onUnmounted } from 'vue';
-import { onClickOutside } from '@vueuse/core';
+import { onBeforeUnmount, onMounted, ref, computed } from 'vue';
 import MsTableDefault from '../../../../components/base/ms-table/MsTableDefault.vue';
-import * as signalR from '@microsoft/signalr';
-
-import { useAuthStore } from '../../../../stores/auth.ts';
-
-const authStore = useAuthStore();
-
 import { shiftService } from '../../../../api/shiftService.ts';
-import { useShiftForm } from './composables/useShiftForm';
+import { useMessage } from '../../../../composables/useMessage.ts';
+import { useTablePagingFilter } from '../../../../composables/useTablePagingFilter';
 
+const message = useMessage();
+
+const searchColumns = ['ShiftCode', 'ShiftName', 'CreatedBy', 'ModifiedBy'];
+// 2. Kích hoạt Composable Generic, định nghĩa rõ ràng kiểu dữ liệu là thực thể <Shift>
 const {
-    formShiftData,
-    formShiftBeforeEditData,
-    formShiftError,
-    shiftWorkingTime,
-    shiftBreakingTime,
-    validateShiftCode,
-    validateShiftName,
-    validateShiftBeginTime,
-    validateShiftEndTime,
-    validateShiftBeginBreakTime,
-    validateShiftEndBreakTime,
-    calculateShiftTimes,
-    validateShiftForm,
-    resetFormShiftError,
-    resetFormShiftData,
-    convertToTimeString
-} = useShiftForm();
+    tableRows,
+    totalItems,
+    selectedRowIndices,
+    canGoPrev,
+    canGoNext,
+    pageStart,
+    pageEnd,
+    loadData,
+    nextPage,
+    prevPage,
+    goToFirstPage,
+    goToLastPage,
+    changePageSize,
+    executeSearch,
+    handleFilterChange
+} = useTablePagingFilter<Shift>(
+    shiftService.getDataPaging, // Truyền trực tiếp hàm gọi API từ lớp Service lớp trước
+    searchColumns,
+    'shiftTablePageSize',
+    '[{"Selector":"ShiftCode","Desc":false}]' // Cấu hình sort mặc định cho bảng ca làm việc
+);
+
+const activeColumnKeys = computed(() => fields.filter(f => f.exportable && f.showInTable).map(f => f.key));
+
 
 //#region init data ==================================================================================
-const fetchDataPaging = async (pagingParams: PagingParams) => {
-    // xây dựng filter
-    pagingParams.filter = filterBuilder();
+// const fetchDataPaging = async (pagingParams: PagingParams) => {
+//     pagingParams.filter = filterBuilder();
 
-    const params = {
-        pageIndex: pagingParams.page,
-        pageSize: pagingParams.pageSize,
-        filter: pagingParams.filter && pagingParams.filter.length > 0 ? JSON.stringify(pagingParams.filter) : "",
-        sort: pagingParams.sort && pagingParams.sort.length > 0 ? JSON.stringify(pagingParams.sort) : "[{\"Selector\":\"ModifiedDate\",\"ASC\":false}]",
-        columns: pagingParams.columns && pagingParams.columns.length > 0 ? pagingParams.columns.join(',') : "",
-        customFilter: pagingParams.customFilter && pagingParams.customFilter.length > 0 ? JSON.stringify(pagingParams.customFilter) : "",
-    };
-    try {
-        // Gọi thẳng từ service, dữ liệu trả về đã được axios bóc tách sẵn
-        const response = await shiftService.getDataPaging(params);
+//     const params = {
+//         pageIndex: pagingParams.page,
+//         pageSize: pagingParams.pageSize,
+//         filter: pagingParams.filter && pagingParams.filter.length > 0 ? JSON.stringify(pagingParams.filter) : "",
+//         sort: pagingParams.sort && pagingParams.sort.length > 0 ? JSON.stringify(pagingParams.sort) : "[{\"Selector\":\"ShiftCode\",\"DESC\":false}]",
+//         columns: pagingParams.columns && pagingParams.columns.length > 0 ? pagingParams.columns.join(',') : "",
+//         customFilter: pagingParams.customFilter && pagingParams.customFilter.length > 0 ? JSON.stringify(pagingParams.customFilter) : "",
+//     };
+//     try {
+//         const response = await shiftService.getDataPaging(params);
+//         tableRows.value = response.data.data;
+//         totalItems.value = response.data.total;
+//         totalPages.value = response.data.totalPages;
+//         selectedRowIndices.value = [];
+//     } catch (error) {
+//     }
 
-        tableRows.value = response.data.data;
-        totalItems.value = response.data.total;
-        totalPages.value = response.data.totalPages;
-        selectedRowIndices.value = [];
-    } catch (error) {
-        // Lỗi hệ thống đã được Interceptor xử lý log/toast tự động, 
-        // ở đây bạn chỉ xử lý các logic UI riêng biệt nếu cần
-    }
-
-}
+// }
 //#endregion ========================================================================================
 
 //#region api call ==================================================================================
 const deleteShift = async (shiftIds: string[]) => {
-    console.log('Delete shifts with IDs:', shiftIds);
-    confirmModalVariant.value = "warning";
-    confirmModalTitle.value = "Xóa Ca làm việc";
+    let messageContent = '';
     if (shiftIds.length === 1) {
         const shift = tableRows.value.find(r => r.shiftId === shiftIds[0]);
-        confirmModalMessage.value = /* html */ `<span>Ca làm việc <span class="font-semibold">${shift?.shiftCode}</span> sau khi bị xóa sẽ không thể khôi phục. Bạn có muốn tiếp tục xóa không?</span>`;
+        messageContent = /* html */ `<span>Ca làm việc <span class="font-semibold">${shift?.shiftCode}</span> sau khi bị xóa sẽ không thể khôi phục. Bạn có muốn tiếp tục xóa không?</span>`;
     } else {
-        confirmModalMessage.value = /* html */ `<span>Các <span class="font-semibold">Ca làm việc</span> sau khi bị xóa sẽ không thể khôi phục. Bạn có muốn tiếp tục xóa không?</span>`;
+        messageContent = /* html */ `<span>Các <span class="font-semibold">Ca làm việc</span> sau khi bị xóa sẽ không thể khôi phục. Bạn có muốn tiếp tục xóa không?</span>`;
     }
-    confirmModalType.value = "warning";
-    isConfirmModalVisible.value = true;
-    confirmModalAction.value = async () => {
-        // Call API to delete shifts
-        try {
+    message.show({
+        icon: "mi-qtsx icon-warning bg-(--color-warning)!",
+        title: "Xóa Ca làm việc",
+        variant: "danger",
+        acceptText: "Xóa",
+        message: messageContent,
+        onAccept: async () => {
             await shiftService.bulkDelete(shiftIds);
-            fetchDataPaging(pagingParams.value);
-        } catch (error) {
-            console.error('Error deleting shifts:', error);
+            // fetchDataPaging(pagingParams.value);
+            //Xóa dòng trong bảng mà không cần gọi lại API
+            tableRows.value = tableRows.value.filter(r => !shiftIds.includes(r.shiftId));
+            totalItems.value -= shiftIds.length; // Cập nhật lại tổng số items sau khi xóa
+            //Reset selected rows
+            selectedRowIndices.value = [];
+            console.log("Xóa thành công!");
+            // if (tableRows.value.length === 0 && currentPage.value > 1) {
+            //     prevPage(activeColumnKeys.value);
+            // }
+            if (tableRows.value.length === 0) {
+                if (currentPage.value > 1) {
+                    // Nếu ở trang 2, 3, 4... thì lùi về trang trước (hàm prevPage sẽ tự gọi loadData)
+                    prevPage(activeColumnKeys.value);
+                } else if (totalItems.value > 0) {
+                    // Nếu đang ở TRANG ĐẦU TIÊN, nhưng tổng số items vẫn > 0 (tức là vẫn còn dòng ở các trang sau)
+                    // Ta giữ nguyên currentPage = 1 và gọi loadData() để kéo dữ liệu trang sau gối đầu lên trang 1
+                    await loadData(activeColumnKeys.value);
+                }
+                // Trường hợp cuối cùng: currentPage === 1 và totalItems === 0 nghĩa là hệ thống hết sạch dữ liệu,
+                // UI tự động hiển thị bảng trống đúng thực tế, không cần gọi API nữa.
+            }
         }
-    };
+    });
+
+    // confirmModalType.value = "warning";
+    // isConfirmModalVisible.value = true;
+    // confirmModalAction.value = async () => {
+    //     // Call API to delete shifts
+    //     try {
+    //         await shiftService.bulkDelete(shiftIds);
+    //         fetchDataPaging(pagingParams.value);
+    //     } catch (error) {
+    //         console.error('Error deleting shifts:', error);
+    //     }
+    // };
 };
 
 const updateShiftStatus = async (shiftIds: string[], inactive: boolean) => {
@@ -91,102 +122,52 @@ const updateShiftStatus = async (shiftIds: string[], inactive: boolean) => {
             inactive,
         };
         await shiftService.updateStatus(payload);
-
+        //update status in table without call API again
+        tableRows.value = tableRows.value.map(r => {
+            if (shiftIds.includes(r.shiftId)) {
+                return {
+                    ...r,
+                    shiftInactive: inactive,
+                };
+            }
+            return r;
+        });
+        // fetchDataPaging(pagingParams.value);
     } catch (error) {
         console.error(`Error ${inactive ? 'deactivating' : 'activating'} shifts:`, error);
     }
 };
-
-const shiftCodeInput = ref<any>(null);
-const shiftNameInput = ref<any>(null);
-const shiftBeginTimeInput = ref<any>(null);
-const shiftEndTimeInput = ref<any>(null);
-const shiftBeginBreakTimeInput = ref<any>(null);
-const shiftEndBreakTimeInput = ref<any>(null);
-
-const handleSaveShift = async () => {
-    // Validate form data
-    resetFormShiftError();
-    if (!validateShiftForm()) {
-        console.log('Validation failed:', formShiftError.value);
-        let focusField = () => { }
-        if (formShiftError.value.shiftCode) {
-            // Show modal error message
-            focusField = () => {
-                shiftCodeInput.value?.$el.querySelector('input')?.focus();
-            };
-            confirmModalMessage.value = formShiftError.value.shiftCode;
-        }
-        else if (formShiftError.value.shiftName) {
-            focusField = () => {
-                shiftNameInput.value?.$el.querySelector('input')?.focus();
-            };
-            confirmModalMessage.value = formShiftError.value.shiftName;
-        }
-        else if (formShiftError.value.shiftBeginTime) {
-            focusField = () => {
-                shiftBeginTimeInput.value?.$el.querySelector('input')?.focus();
-            };
-            confirmModalMessage.value = formShiftError.value.shiftBeginTime;
-        }
-        else if (formShiftError.value.shiftEndTime) {
-            focusField = () => {
-                shiftEndTimeInput.value?.$el.querySelector('input')?.focus();
-            };
-            confirmModalMessage.value = formShiftError.value.shiftEndTime;
-        }
-        else if (formShiftError.value.shiftBeginBreakTime) {
-            focusField = () => {
-                shiftBeginBreakTimeInput.value?.$el.querySelector('input')?.focus();
-            };
-            confirmModalMessage.value = formShiftError.value.shiftBeginBreakTime;
-        }
-        else if (formShiftError.value.shiftEndBreakTime) {
-            focusField = () => {
-                shiftEndBreakTimeInput.value?.$el.querySelector('input')?.focus();
-            };
-            confirmModalMessage.value = formShiftError.value.shiftEndBreakTime;
-        }
-
-        confirmModalVariant.value = 'warning';
-        confirmModalTitle.value = 'Cảnh báo';
-        isConfirmModalVisible.value = true;
-        closeConfirmModalAction.value = () => {
-            isConfirmModalVisible.value = false;
-            //Delay to ensure modal close animation is smooth before focusing field
-            focusField();
-
-        };
-        confirmModalAction.value = () => {
-            isConfirmModalVisible.value = false;
-            //Delay to ensure modal close animation is smooth before focusing field
-            focusField();
-
-        };
-        return;
-    }
-
-    // Convert time fields to HH:mm:ss format if they are not already
-    formShiftData.value.shiftBeginTime = convertToTimeString(formShiftData.value.shiftBeginTime);
-    formShiftData.value.shiftEndTime = convertToTimeString(formShiftData.value.shiftEndTime);
-    formShiftData.value.shiftBeginBreakTime = convertToTimeString(formShiftData.value.shiftBeginBreakTime);
-    formShiftData.value.shiftEndBreakTime = convertToTimeString(formShiftData.value.shiftEndBreakTime);
-    formShiftData.value.shiftWorkingTime = Number(shiftWorkingTime.value);
-    formShiftData.value.shiftBreakingTime = Number(shiftBreakingTime.value);
-
-    // Edit logic
-    if (formShiftData.value.shiftId) {
-        formShiftData.value.modifiedBy = authStore.currentUser.name;
-        const response = await shiftService.update(formShiftData.value.shiftId, formShiftData.value as Shift);
-    } else {
-        formShiftData.value.createdBy = authStore.currentUser.name;
-        formShiftData.value.modifiedBy = authStore.currentUser.name;
-        const response = await shiftService.create(formShiftData.value as Shift);
-    }
-    fetchDataPaging(pagingParams.value);
-    closeAddEditShiftModal(false);
-};
 //#endregion =================================================================================
+
+
+//#region shift detail modal action
+const shiftDetailModalRef = ref<any>(null);
+
+const openShiftDetailModal = (shiftId: string, state: "add" | "edit" | "duplicate", originalData?: any) => {
+    console.log('Opening Shift Detail Modal with ID:', shiftId, 'State:', state);
+    if (shiftDetailModalRef.value) {
+        shiftDetailModalRef.value.showModal(state, shiftId, originalData);
+    }
+};
+
+//#endregion
+
+const handleSaved = (response: any) => {
+    console.log('Shift saved successfully. Response:', response.data);
+    if (response) {
+        //Nếu có shiftId thì update dữ liệu của shift đó trong tableRows, nếu không có thì thêm mới vào đầu tableRows
+        const savedShift = response.data;
+        const index = tableRows.value.findIndex(r => r.shiftId === savedShift.shiftId
+        );
+        if (index !== -1) {
+            tableRows.value[index] = savedShift;
+        } else {
+            tableRows.value.unshift(savedShift);
+            totalItems.value += 1;
+            console.log('Total items after adding new shift:', totalItems.value);
+        }
+    }
+}
 
 
 //#region confirm modal state
@@ -197,18 +178,13 @@ const confirmModalMessage = ref("");
 const confirmModalType = ref("info");
 const confirmModalAction = ref<(() => void) | null>(null);
 const closeConfirmModalAction = ref<(() => void) | null>(null);
-const apiDomain = 'https://localhost:7243';
+
 //#endregion
-
-const user = {
-    id: 1,
-    name: 'Nguyễn Hoàng Long',
-}
-
 
 
 import type { Shift } from '../../../../types/Shift.ts';
-import ModalConfirm from '../../../../components/base/ms-modal/ModalConfirm.vue';
+import MsMessage from '../../../../components/base/ms-modal/MsMessage.vue';
+import ShiftDetailModal from './components/ShiftDetailModal.vue';
 //#region table settings 
 // Table settings
 const dataColumns = computed(() => {
@@ -443,8 +419,8 @@ const fields = [
 
 const currentPage = ref(1);
 const pageSize = ref(localStorage.getItem('shiftTablePageSize') || '10');
-const tableRows = ref<Shift[]>([]);
-const totalItems = ref(0);
+// const tableRows = ref<Shift[]>([]);
+// const totalItems = ref(0);
 const totalPages = ref(0);
 const pageSizeOptions = [
     {
@@ -487,69 +463,69 @@ const pagingParams = computed<PagingParams>(() => ({
     customFilter: customFilter.value,
 }));
 
-const changePageSize = (newSize: string) => {
-    pageSize.value = newSize;
-    currentPage.value = 1;
-    localStorage.setItem('shiftTablePageSize', newSize);
-    fetchDataPaging(pagingParams.value);
-};
+// const changePageSize = (newSize: string) => {
+//     pageSize.value = newSize;
+//     currentPage.value = 1;
+//     localStorage.setItem('shiftTablePageSize', newSize);
+//     fetchDataPaging(pagingParams.value);
+// };
 
-const nextPage = () => {
-    if (!canGoNext.value) {
-        return;
-    }
-    currentPage.value += 1;
-    fetchDataPaging(pagingParams.value);
-};
+// const nextPage = () => {
+//     if (!canGoNext.value) {
+//         return;
+//     }
+//     currentPage.value += 1;
+//     fetchDataPaging(pagingParams.value);
+// };
 
-const prevPage = () => {
-    if (!canGoPrev.value) {
-        return;
-    }
-    currentPage.value -= 1;
-    fetchDataPaging(pagingParams.value);
-};
+// const prevPage = () => {
+//     if (!canGoPrev.value) {
+//         return;
+//     }
+//     currentPage.value -= 1;
+//     fetchDataPaging(pagingParams.value);
+// };
 
-const goToPage = (page: number) => {
-    if (totalPages.value === 0) {
-        return;
-    }
-    const next = Math.min(Math.max(page, 1), totalPages.value);
-    currentPage.value = next;
-    fetchDataPaging(pagingParams.value);
-};
+// const goToPage = (page: number) => {
+//     if (totalPages.value === 0) {
+//         return;
+//     }
+//     const next = Math.min(Math.max(page, 1), totalPages.value);
+//     currentPage.value = next;
+//     fetchDataPaging(pagingParams.value);
+// };
 
-const goToFirstPage = () => {
-    if (!canGoPrev.value) {
-        return;
-    }
-    currentPage.value = 1;
-    fetchDataPaging(pagingParams.value);
-};
+// const goToFirstPage = () => {
+//     if (!canGoPrev.value) {
+//         return;
+//     }
+//     currentPage.value = 1;
+//     fetchDataPaging(pagingParams.value);
+// };
 
-const goToLastPage = () => {
-    if (!canGoNext.value) {
-        return;
-    }
-    currentPage.value = totalPages.value;
-    fetchDataPaging(pagingParams.value);
-};
+// const goToLastPage = () => {
+//     if (!canGoNext.value) {
+//         return;
+//     }
+//     currentPage.value = totalPages.value;
+//     fetchDataPaging(pagingParams.value);
+// };
 
 const pageSizeNumber = computed(() => Number(pageSize.value) || 0);
-const canGoPrev = computed(() => currentPage.value > 1);
-const canGoNext = computed(() => totalPages.value > 0 && currentPage.value < totalPages.value);
-const pageStart = computed(() => {
-    if (totalItems.value === 0 || pageSizeNumber.value === 0) {
-        return 0;
-    }
-    return (currentPage.value - 1) * pageSizeNumber.value + 1;
-});
-const pageEnd = computed(() => {
-    if (totalItems.value === 0 || pageSizeNumber.value === 0) {
-        return 0;
-    }
-    return Math.min(currentPage.value * pageSizeNumber.value, totalItems.value);
-});
+// const canGoPrev = computed(() => currentPage.value > 1);
+// const canGoNext = computed(() => totalPages.value > 0 && currentPage.value < totalPages.value);
+// const pageStart = computed(() => {
+//     if (totalItems.value === 0 || pageSizeNumber.value === 0) {
+//         return 0;
+//     }
+//     return (currentPage.value - 1) * pageSizeNumber.value + 1;
+// });
+// const pageEnd = computed(() => {
+//     if (totalItems.value === 0 || pageSizeNumber.value === 0) {
+//         return 0;
+//     }
+//     return Math.min(currentPage.value * pageSizeNumber.value, totalItems.value);
+// });
 
 //#endregion
 
@@ -564,13 +540,13 @@ const onSearchInput = (value: string) => {
     searchTimeout.value = window.setTimeout(() => {
         customFilter.value = buildCustomFilter(searchTerm.value) as unknown as string[];
         currentPage.value = 1;
-        fetchDataPaging(pagingParams.value);
+        // fetchDataPaging(pagingParams.value);
     }, 500);
 };
 //#endregion
 
 //#region search
-const searchColumns = ['ShiftCode', 'ShiftName', 'CreatedBy', 'ModifiedBy'];
+
 const searchTerm = ref('');
 
 //Build custom filter string array for search follow format [["ShiftCode","contains","abc"],"or",["ShiftName","contains","abc"],"or",["CreatedBy","contains","abc"],"or",["ModifiedBy","contains","abc"]]
@@ -612,90 +588,47 @@ const handleDocumentClick = () => {
 
 
 
-const isAddEditShiftModalVisible = ref(false);
-const showAddEditShiftModal = (shiftId: string | null) => {
-    resetFormShiftError();
-    if (shiftId) {
-        // Edit existing shift logic
-        const shift = tableRows.value.find((r) => r.shiftId === shiftId);
-        if (shift) {
-            formShiftData.value = { ...shift };
-            formShiftBeforeEditData.value = { ...formShiftData.value };
-            calculateShiftTimes();
-        }
-    } else {
-        // Add new shift logic
-        resetFormShiftData();
-        formShiftBeforeEditData.value = { ...formShiftData.value };
-    }
-    isAddEditShiftModalVisible.value = true;
-};
-
 const handleDuplicateShift = (shiftId: string) => {
-    console.log('Duplicate shift with ID:', shiftId);
-    resetFormShiftError();
     const shift = tableRows.value.find((r) => r.shiftId === shiftId);
-    if (shift) {
-        formShiftData.value = {
-            shiftId: '',
-            shiftCode: '',
-            shiftName: shift.shiftName,
-            shiftDescription: shift.shiftDescription,
-            shiftBeginTime: shift.shiftBeginTime,
-            shiftEndTime: shift.shiftEndTime,
-            shiftBeginBreakTime: shift.shiftBeginBreakTime,
-            shiftEndBreakTime: shift.shiftEndBreakTime,
-            shiftWorkingTime: shift.shiftWorkingTime,
-            shiftBreakingTime: shift.shiftBreakingTime,
-            shiftInactive: false,
-            createdBy: '',
-            modifiedBy: '',
-        };
-        formShiftBeforeEditData.value = { ...formShiftData.value };
-        calculateShiftTimes();
-        isAddEditShiftModalVisible.value = true;
-    }
+    openShiftDetailModal(shiftId, 'duplicate', shift);
 };
 
-const closeAddEditShiftModal = (checkUnsaved = true) => {
-    //Check if form before edit data is different with current form data, if different show confirm modal
-    if (!checkUnsaved) {
-        isAddEditShiftModalVisible.value = false;
-        //Delay to ensure modal close animation is smooth before resetting form data
-        setTimeout(() => {
-            resetFormShiftData();
-        }, 300);
-        return;
-    }
-    const isDataChanged = JSON.stringify(formShiftData.value) !== JSON.stringify(formShiftBeforeEditData.value);
-    if (isDataChanged) {
-        console.log('Data has been changed. Showing confirm modal before closing.');
-        confirmModalVariant.value = 'info';
-        confirmModalTitle.value = 'Thoát và không lưu?';
-        confirmModalMessage.value = 'Nếu bạn thoát, các dữ liệu đang nhập liệu sẽ không được lưu lại.';
-        isConfirmModalVisible.value = true;
-        confirmModalAction.value = () => {
-            isAddEditShiftModalVisible.value = false;
-            isConfirmModalVisible.value = false;
-            //Delay to ensure modal close animation is smooth before resetting form data
-            setTimeout(() => {
-                resetFormShiftData();
-            }, 300);
-        };
-    } else {
-        isAddEditShiftModalVisible.value = false;
-        //Delay to ensure modal close animation is smooth before resetting form data
-        setTimeout(() => {
-            resetFormShiftData();
-        }, 300);
-    }
+// const closeAddEditShiftModal = (checkUnsaved = true) => {
+//     //Check if form before edit data is different with current form data, if different show confirm modal
+//     if (!checkUnsaved) {
+//         //Delay to ensure modal close animation is smooth before resetting form data
+//         setTimeout(() => {
+//             resetFormShiftData();
+//         }, 300);
+//         return;
+//     }
+//     const isDataChanged = JSON.stringify(formShiftData.value) !== JSON.stringify(formShiftBeforeEditData.value);
+//     if (isDataChanged) {
+//         console.log('Data has been changed. Showing confirm modal before closing.');
+//         confirmModalVariant.value = 'info';
+//         confirmModalTitle.value = 'Thoát và không lưu?';
+//         confirmModalMessage.value = 'Nếu bạn thoát, các dữ liệu đang nhập liệu sẽ không được lưu lại.';
+//         isConfirmModalVisible.value = true;
+//         confirmModalAction.value = () => {
+//             isConfirmModalVisible.value = false;
+//             //Delay to ensure modal close animation is smooth before resetting form data
+//             setTimeout(() => {
+//                 resetFormShiftData();
+//             }, 300);
+//         };
+//     } else {
+//         //Delay to ensure modal close animation is smooth before resetting form data
+//         setTimeout(() => {
+//             resetFormShiftData();
+//         }, 300);
+//     }
 
-    // isAddEditShiftModalVisible.value = false;
-    // //Delay to ensure modal close animation is smooth before resetting form data
-    // setTimeout(() => {
-    //     resetFormShiftData();
-    // }, 300);
-};
+//     // isAddEditShiftModalVisible.value = false;
+//     // //Delay to ensure modal close animation is smooth before resetting form data
+//     // setTimeout(() => {
+//     //     resetFormShiftData();
+//     // }, 300);
+// };
 
 
 // Convert time fields to HH:mm:ss format if they are not already
@@ -705,7 +638,7 @@ const closeAddEditShiftModal = (checkUnsaved = true) => {
 
 //#region selected rows
 //test selectedRowIndices 0 1 2 3
-const selectedRowIndices = ref<number[]>([]);
+// const selectedRowIndices = ref<number[]>([]);
 const selectedShift = computed(() => {
     return selectedRowIndices.value.map(index => tableRows.value[index]);
 });
@@ -757,80 +690,29 @@ const columnFilters = ref<{
     value: any;
 }[]>([]);
 
-const textFilterData = ref({
-    operator: 'contains',
-    value: '',
-});
-const numberFilterData = ref({
-    operator: '=',
-    value: '',
-});
-const dateFilterData = ref({
-    operator: '=',
-    value: '',
-});
-const selectFilterData = ref({
-    operator: '=',
-    value: '',
-});
 
-const clearFilterData = () => {
-    textFilterData.value = {
-        operator: 'contains',
-        value: '',
-    };
-    numberFilterData.value = {
-        operator: '=',
-        value: '',
-    };
-    dateFilterData.value = {
-        operator: '=',
-        value: '',
-    };
-    selectFilterData.value = {
-        operator: '=',
-        value: '',
-    };
-};
+
+// const clearFilterData = () => {
+//     textFilterData.value = {
+//         operator: 'contains',
+//         value: '',
+//     };
+//     numberFilterData.value = {
+//         operator: '=',
+//         value: '',
+//     };
+//     dateFilterData.value = {
+//         operator: '=',
+//         value: '',
+//     };
+//     selectFilterData.value = {
+//         operator: '=',
+//         value: '',
+//     };
+// };
 
 // Các tùy chọn filter cho từng loại dữ liệu
-const textFilterOptions = [
-    { label: 'Bằng', value: '=' },
-    { label: 'Khác', value: '<>' },
-    { label: 'Chứa', value: 'contains' },
-    { label: 'Không chứa', value: 'notcontains' },
-    { label: 'Bắt đầu với', value: 'startswith' },
-    { label: 'Kết thúc với', value: 'endswith' },
-    { label: '(Trống)', value: 'isnull' },
-    { label: '(Không trống)', value: 'isnotnull' },
-];
 
-const numberFilterOptions = [
-    { label: 'Bằng', value: '=' },
-    { label: 'Khác', value: '<>' },
-    { label: 'Nhỏ hơn', value: '<' },
-    { label: 'Nhỏ hơn hoặc bằng', value: '<=' },
-    { label: 'Lớn hơn', value: '>' },
-    { label: 'Lớn hơn hoặc bằng', value: '>=' },
-    { label: '(Trống)', value: 'isnull' },
-    { label: '(Không trống)', value: 'isnotnull' },
-];
-
-const dateFilterOptions = [
-    { label: 'Bằng', value: '=' },
-    { label: 'Khác', value: '<>' },
-    { label: 'Nhỏ hơn', value: '<' },
-    { label: 'Nhỏ hơn hoặc bằng', value: '<=' },
-    { label: 'Lớn hơn', value: '>' },
-    { label: 'Lớn hơn hoặc bằng', value: '>=' },
-    { label: '(Trống)', value: 'isnull' },
-    { label: '(Không trống)', value: 'isnotnull' },
-];
-
-const textFilterInput = ref<any>(null);
-const numberFilterInput = ref<any>(null);
-const dateFilterInput = ref<any>(null);
-const selectFilterInput = ref<any>(null);
 
 
 const filterBuilder = () => {
@@ -877,18 +759,6 @@ const filterBuilder = () => {
     return result;
 };
 
-const addFilterToColumnFilters = (fieldKey: string, type: string, fieldLabel: string, operator: string, operatorLabel: string, value: any) => {
-    const existingFilterIndex = columnFilters.value.findIndex((f) => f.key === fieldKey);
-    if (existingFilterIndex !== -1) {
-        columnFilters.value[existingFilterIndex].operator = operator;
-        columnFilters.value[existingFilterIndex].value = value;
-        columnFilters.value[existingFilterIndex].type = type;
-        columnFilters.value[existingFilterIndex].fieldLabel = fieldLabel;
-        columnFilters.value[existingFilterIndex].operatorLabel = operatorLabel;
-    } else {
-        columnFilters.value.push({ key: fieldKey, type: type, fieldLabel: fieldLabel, operatorLabel: operatorLabel, operator, value });
-    }
-};
 
 const removeFilterFromColumnFilters = async (fieldKey: string) => {
     const index = columnFilters.value.findIndex((f) => f.key === fieldKey);
@@ -904,136 +774,10 @@ const removeFilterFromColumnFilters = async (fieldKey: string) => {
 
     }
 
-    await fetchDataPaging(pagingParams.value);
-};
-
-const getOperatorLabel = (filterType: string, operatorValue: string) => {
-    if (filterType === 'text') {
-        const option = textFilterOptions.find((o) => o.value === operatorValue);
-        return option ? option.label : operatorValue;
-    } else if (filterType === 'number') {
-        const option = numberFilterOptions.find((o) => o.value === operatorValue);
-        return option ? option.label : operatorValue;
-    } else if (filterType === 'date') {
-        const option = dateFilterOptions.find((o) => o.value === operatorValue);
-        return option ? option.label : operatorValue;
-    } else if (filterType === 'select') {
-        const option = currentFilterField.value.selectOptions.find((o: any) => o.value === operatorValue);
-        console.log('Get operator label for select filter:', option.label);
-        return option ? option.label : operatorValue;
-    }
-    return operatorValue;
+    // await fetchDataPaging(pagingParams.value);
 };
 
 
-const applyFilter = async () => {
-    if (!currentFilterField.value) return;
-    // Lấy field đang filter hiện tại
-    const field = fields.find((f) => f.key === currentFilterField.value.key);
-    if (!field) return;
-    //Cách 1: Kiểm tra nếu value rỗng thì không thêm filter 
-    if (field.filterType === 'text') {
-        //Kiểm tra nếu textFilterData operator là isnull hoặc isnotnull thì không cần value vẫn áp dụng filter được, ngược lại nếu operator khác mà value rỗng thì sẽ không áp dụng filter và yêu cầu người dùng nhập value
-        if ((textFilterData.value.operator === 'isnull' || textFilterData.value.operator === 'isnotnull') || textFilterData.value.value) {
-            // Thêm filter cho cột này với operator và value đã chọn
-            field.filterData.operator = textFilterData.value.operator;
-            field.filterData.value = textFilterData.value.value;
-            // Cập nhật columnFilters để lưu filter đã áp dụng
-            addFilterToColumnFilters(field.key, field.filterType, field.label, textFilterData.value.operator, getOperatorLabel(field.filterType, textFilterData.value.operator), textFilterData.value.value);
-        } else if (textFilterData.value.value) {
-            // Thêm filter cho cột này với operator và value đã chọn
-            field.filterData.operator = textFilterData.value.operator;
-            field.filterData.value = textFilterData.value.value;
-            // Cập nhật columnFilters để lưu filter đã áp dụng
-            addFilterToColumnFilters(field.key, field.filterType, field.label, textFilterData.value.operator, getOperatorLabel(field.filterType, textFilterData.value.operator), textFilterData.value.value);
-        } else {
-            textFilterInput.value?.$el.querySelector('input')?.focus();
-            filterMessage.value = 'Vui lòng nhập giá trị để áp dụng filter.';
-            return;
-        }
-    } else if (field.filterType === 'number') {
-        //Kiểm tra nếu numberFilterData operator là isnull hoặc isnotnull thì không cần value vẫn áp dụng filter được, ngược lại nếu operator khác mà value rỗng thì sẽ không áp dụng filter và yêu cầu người dùng nhập value
-        if ((numberFilterData.value.operator === 'isnull' || numberFilterData.value.operator === 'isnotnull') || numberFilterData.value.value) {
-            // Thêm filter cho cột này với operator và value đã chọn
-            field.filterData.operator = numberFilterData.value.operator;
-            field.filterData.value = numberFilterData.value.value;
-            // Cập nhật columnFilters để lưu filter đã áp dụng
-            addFilterToColumnFilters(field.key, field.filterType, field.label, numberFilterData.value.operator, getOperatorLabel(field.filterType, numberFilterData.value.operator), numberFilterData.value.value);
-        } else if (numberFilterData.value.value) {
-            // Thêm filter cho cột này với operator và value đã chọn
-            field.filterData.operator = numberFilterData.value.operator;
-            field.filterData.value = numberFilterData.value.value;
-            // Cập nhật columnFilters để lưu filter đã áp dụng
-            addFilterToColumnFilters(field.key, field.filterType, field.label, numberFilterData.value.operator, getOperatorLabel(field.filterType, numberFilterData.value.operator), numberFilterData.value.value);
-        } else {
-            numberFilterInput.value?.$el.querySelector('input')?.focus();
-            filterMessage.value = 'Vui lòng nhập giá trị để áp dụng filter.';
-            return;
-        }
-    } else if (field.filterType === 'date') {
-        //Kiểm tra nếu dateFilterData operator là isnull hoặc isnotnull thì không cần value vẫn áp dụng filter được, ngược lại nếu operator khác mà value rỗng thì sẽ không áp dụng filter và yêu cầu người dùng nhập value
-        if ((dateFilterData.value.operator === 'isnull' || dateFilterData.value.operator === 'isnotnull') || dateFilterData.value.value) {
-            // Thêm filter cho cột này với operator và value đã chọn
-            field.filterData.operator = dateFilterData.value.operator;
-            field.filterData.value = dateFilterData.value.value;
-            // Cập nhật columnFilters để lưu filter đã áp dụng
-            addFilterToColumnFilters(field.key, field.filterType, field.label, dateFilterData.value.operator, getOperatorLabel(field.filterType, dateFilterData.value.operator), dateFilterData.value.value);
-        } else if (dateFilterData.value.value) {
-            // Thêm filter cho cột này với operator và value đã chọn
-            field.filterData.operator = dateFilterData.value.operator;
-            field.filterData.value = dateFilterData.value.value;
-            // Cập nhật columnFilters để lưu filter đã áp dụng
-            addFilterToColumnFilters(field.key, field.filterType, field.label, dateFilterData.value.operator, getOperatorLabel(field.filterType, dateFilterData.value.operator), dateFilterData.value.value);
-        } else {
-            dateFilterInput.value?.$el.querySelector('input')?.focus();
-            filterMessage.value = 'Vui lòng nhập giá trị để áp dụng filter.';
-            return;
-        }
-    } else if (field.filterType === 'select') {
-        console.log('Select filter value:', selectFilterData.value.value);
-        if (selectFilterData.value.value !== '' && selectFilterData.value.value !== null && selectFilterData.value.value !== undefined) {
-            // Thêm filter cho cột này với operator và value đã chọn
-            field.filterData.operator = selectFilterData.value.operator;
-            field.filterData.value = selectFilterData.value.value;
-            // Cập nhật columnFilters để lưu filter đã áp dụng
-            addFilterToColumnFilters(field.key, field.filterType, field.label, selectFilterData.value.operator, getOperatorLabel(field.filterType, selectFilterData.value.value), selectFilterData.value.value);
-        } else {
-            selectFilterInput.value?.$el.querySelector('input')?.focus();
-            filterMessage.value = 'Vui lòng chọn giá trị để áp dụng filter.';
-            return;
-        }
-    }
-
-    //Cách 2: Không kiểm tra xem value có rỗng hay không
-    if (field.filterType === 'text') {
-
-    } else if (field.filterType === 'number') {
-
-    } else if (field.filterType === 'date') {
-
-    } else if (field.filterType === 'select') {
-
-    }
-
-    await fetchDataPaging(pagingParams.value);
-    closeFilterModal();
-
-};
-
-const clearFilter = () => {
-    if (!currentFilterField.value) return;
-    // Lấy field đang filter hiện tại
-    const field = fields.find((f) => f.key === currentFilterField.value.key);
-    if (!field) return;
-
-    // Xóa filter cho cột này
-    field.filterData!.operator = '';
-    field.filterData!.value = '';
-
-    // Xóa filter khỏi columnFilters
-    removeFilterFromColumnFilters(field.key);
-    clearFilterData();
-};
 
 const clearAllFilters = async () => {
     // Duyệt qua tất cả các field để xóa filter
@@ -1045,8 +789,8 @@ const clearAllFilters = async () => {
     });
     // Xóa tất cả filter khỏi columnFilters
     columnFilters.value = [];
-    clearFilterData();
-    await fetchDataPaging(pagingParams.value);
+    // clearFilterData();
+    // await fetchDataPaging(pagingParams.value);
 };
 
 
@@ -1067,85 +811,77 @@ const clearCloseTimer = () => {
     }
 };
 
-const closeOnScroll = (event: Event) => {
-    // Nếu modal đang không mở, không cần làm gì cả
-    if (!filterModalVisible.value) return;
+// const closeOnScroll = (event: Event) => {
+//     // Nếu modal đang không mở, không cần làm gì cả
+//     if (!filterModalVisible.value) return;
 
-    // Lấy ra phần tử DOM đang xảy ra hành động cuộn
-    const target = event.target as Node;
+//     // Lấy ra phần tử DOM đang xảy ra hành động cuộn
+//     const target = event.target as Node;
 
-    // Nếu phần tử đang cuộn LÀ modal, hoặc NẰM BÊN TRONG modal -> BỎ QUA
-    if (filterModalRef.value && filterModalRef.value.contains(target)) {
-        return;
-    }
+//     // Nếu phần tử đang cuộn LÀ modal, hoặc NẰM BÊN TRONG modal -> BỎ QUA
+//     if (filterModalRef.value && filterModalRef.value.contains(target)) {
+//         return;
+//     }
 
-    closeFilterModal();
-};
+//     closeFilterModal();
+// };
 
 // Hàm bắt đầu đếm ngược 500ms để đóng Modal
-const startCloseTimer = () => {
-    // Đảm bảo xóa timer cũ trước khi tạo timer mới để không bị chồng chéo
-    clearCloseTimer();
-
-    closeTimer = setTimeout(() => {
-        filterModalVisible.value = false;
-        currentFilterField.value = null;
-    }, 500);
-};
-
-const showFilterModal = (payload: { field: any, event: MouseEvent }) => {
-    clearCloseTimer();
-    // 1. Lấy thẻ HTML vừa được click
-    const targetEl = payload.event.currentTarget as HTMLElement;
-    const viewportWidth = window.innerWidth;
-
-    // 2. Lấy bộ tọa độ của thẻ đó trên màn hình (Viewport)
-    const rect = targetEl.getBoundingClientRect();
-
-    // 3. Tính toán vị trí cho Modal (Ví dụ cho Modal hiện ngay dưới nút filter)
-    let modalTop = rect.bottom + 4; // Cách viền dưới nút 4px
-    let modalLeft = rect.left - (filterModalWidth - rect.width) / 2; // Cố gắng căn giữa Modal với nút
-
-    if (modalLeft + filterModalWidth > viewportWidth - 10) {
-        // Lật Modal sang trái: Ép mép phải của Modal bằng với mép phải của Icon
-        modalLeft = rect.right - filterModalWidth;
-    }
-
-    // Lưu vào biến state để bind vào style của Modal
-    filterModalPosition.value = {
-        top: `${modalTop}px`,
-        left: `${modalLeft}px`,
-        width: `${filterModalWidth}px`,
-    };
-
-    // Lưu thông tin field để biết đang filter cột nào
-    currentFilterField.value = payload.field;
-    // Duyệt columnFilters để tìm xem cột này đã có filter nào được áp dụng chưa, nếu có thì set giá trị đó vào các biến filterData để hiển thị trong Modal
-    const existingFilter = columnFilters.value.find(f => f.key === payload.field.key);
-    if (existingFilter) {
-        if (currentFilterField.value.filterType === 'number') {
-            numberFilterData.value.operator = existingFilter.operator;
-            numberFilterData.value.value = existingFilter.value;
-        } else if (currentFilterField.value.filterType === 'date') {
-            dateFilterData.value.operator = existingFilter.operator;
-            dateFilterData.value.value = existingFilter.value;
-        } else if (currentFilterField.value.filterType === 'select') {
-            selectFilterData.value.operator = existingFilter.operator;
-            selectFilterData.value.value = existingFilter.value;
-        } else {
-            textFilterData.value.operator = existingFilter.operator;
-            textFilterData.value.value = existingFilter.value;
-        }
-    } else {
-        clearFilterData();
-    }
-    filterModalVisible.value = true;
-};
 
 
-onClickOutside(filterModalRef, (event) => {
-    closeFilterModal();
-});
+// const showFilterModal = (payload: { field: any, event: MouseEvent }) => {
+//     // clearCloseTimer();
+//     // // 1. Lấy thẻ HTML vừa được click
+//     // const targetEl = payload.event.currentTarget as HTMLElement;
+//     // const viewportWidth = window.innerWidth;
+
+//     // // 2. Lấy bộ tọa độ của thẻ đó trên màn hình (Viewport)
+//     // const rect = targetEl.getBoundingClientRect();
+
+//     // // 3. Tính toán vị trí cho Modal (Ví dụ cho Modal hiện ngay dưới nút filter)
+//     // let modalTop = rect.bottom + 4; // Cách viền dưới nút 4px
+//     // let modalLeft = rect.left - (filterModalWidth - rect.width) / 2; // Cố gắng căn giữa Modal với nút
+
+//     // if (modalLeft + filterModalWidth > viewportWidth - 10) {
+//     //     // Lật Modal sang trái: Ép mép phải của Modal bằng với mép phải của Icon
+//     //     modalLeft = rect.right - filterModalWidth;
+//     // }
+
+//     // // Lưu vào biến state để bind vào style của Modal
+//     // filterModalPosition.value = {
+//     //     top: `${modalTop}px`,
+//     //     left: `${modalLeft}px`,
+//     //     width: `${filterModalWidth}px`,
+//     // };
+
+//     // // Lưu thông tin field để biết đang filter cột nào
+//     // currentFilterField.value = payload.field;
+//     // // Duyệt columnFilters để tìm xem cột này đã có filter nào được áp dụng chưa, nếu có thì set giá trị đó vào các biến filterData để hiển thị trong Modal
+//     // const existingFilter = columnFilters.value.find(f => f.key === payload.field.key);
+//     // if (existingFilter) {
+//     //     if (currentFilterField.value.filterType === 'number') {
+//     //         numberFilterData.value.operator = existingFilter.operator;
+//     //         numberFilterData.value.value = existingFilter.value;
+//     //     } else if (currentFilterField.value.filterType === 'date') {
+//     //         dateFilterData.value.operator = existingFilter.operator;
+//     //         dateFilterData.value.value = existingFilter.value;
+//     //     } else if (currentFilterField.value.filterType === 'select') {
+//     //         selectFilterData.value.operator = existingFilter.operator;
+//     //         selectFilterData.value.value = existingFilter.value;
+//     //     } else {
+//     //         textFilterData.value.operator = existingFilter.operator;
+//     //         textFilterData.value.value = existingFilter.value;
+//     //     }
+//     // } else {
+//     //     clearFilterData();
+//     // }
+//     // filterModalVisible.value = true;
+// };
+
+
+// onClickOutside(filterModalRef, (event) => {
+//     closeFilterModal();
+// });
 
 const getDisplayValue = (filter: any) => {
     if (filter.type === 'select') {
@@ -1169,78 +905,6 @@ const getDisplayValue = (filter: any) => {
 
 //#region export excel
 const isExporting = ref(false);
-const connectionId = ref('');
-// let connection: any = null;
-// let reconnectTimeout: any = null; // Biến lưu timeout để dọn dẹp khi unmount
-// let isComponentMounted = false; // Cờ kiểm tra component còn tồn tại không
-
-// // Hàm khởi tạo và bắt đầu kết nối
-// const startSignalRConnection = async () => {
-//     // Nếu component đã bị hủy thì không cố kết nối nữa
-//     if (!isComponentMounted) return;
-
-//     try {
-//         await connection.start();
-//         connectionId.value = connection.connectionId || '';
-//         // console.log("SignalR Connected. Connection ID:", connectionId.value);
-//     } catch (err) {
-//         console.warn("Không kết nối được đến SignalR, thử lại sau 10s...");
-//         // Thử kết nối lại sau 10 giây nếu lỗi
-//         reconnectTimeout = setTimeout(startSignalRConnection, 10000);
-//     }
-// };
-
-// onMounted(() => {
-//     isComponentMounted = true;
-
-//     // 1. Khởi tạo kết nối SignalR tới Backend
-//     connection = new signalR.HubConnectionBuilder()
-//         .withUrl(`${apiDomain}/hubs/notification`) // Thay port của bạn
-//         .withAutomaticReconnect() // Tự động nối lại nếu rớt mạng giữa chừng
-//         .configureLogging(signalR.LogLevel.None)
-//         .build();
-
-//     // 2. Lắng nghe sự kiện Thành Công từ Server
-//     connection.on("ReceiveExportResult", (downloadUrl: any, message: any) => {
-//         isExporting.value = false;
-//         // alert(message); // Hiển thị Toast message
-
-//         const fullUrl = `${apiDomain}/${downloadUrl}`;
-//         window.location.href = fullUrl;
-//     });
-
-//     // 3. Lắng nghe sự kiện Lỗi
-//     connection.on("ReceiveExportError", (errorMessage: any) => {
-//         isExporting.value = false;
-//         alert(errorMessage);
-//     });
-
-//     // 4. Xử lý khi kết nối bị đóng hoàn toàn (SignalR ngưng tự động nối lại)
-//     connection.onclose(() => {
-//         console.warn("SignalR connection closed. Đang thử kết nối lại...");
-//         if (isComponentMounted) {
-//             reconnectTimeout = setTimeout(startSignalRConnection, 10000);
-//         }
-//     });
-
-//     // Bắt đầu kết nối lần đầu
-//     startSignalRConnection();
-// });
-
-// onUnmounted(() => {
-//     isComponentMounted = false; // Đánh dấu component đã unmount
-
-//     // Dọn dẹp timeout nếu đang trong thời gian chờ kết nối lại
-//     if (reconnectTimeout) {
-//         clearTimeout(reconnectTimeout);
-//     }
-
-//     // Dừng kết nối
-//     if (connection) {
-//         connection.stop();
-//     }
-// });
-
 
 const requestExportExcelData = ref({
     fileName: 'Danh_sach_ca_lam_viec',
@@ -1261,77 +925,45 @@ const requestExport = async () => {
     requestExportExcelData.value.filter = filterString;
     requestExportExcelData.value.customFilter = customFilterString;
     requestExportExcelData.value.sort = sort;
-
     console.log('Requesting export with filter:', filterString);
     await new Promise(resolve => setTimeout(resolve, 500));
     try {
         // Gọi API Export kèm theo connectionId
-        const response = await fetch(`${apiDomain}/api/shifts/export-excel`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(requestExportExcelData.value),
-        });
-
-        if (!response.ok) {
-            throw new Error('Lỗi từ phía server khi xuất file Excel');
-        }
-        const blob = await response.blob();
-
+        const response = await shiftService.exportExcel(requestExportExcelData.value);
+        const blob = response;
         let fileName = `${requestExportExcelData.value.fileName}.xlsx`;
-        // const contentDisposition = response.headers.get('content-disposition');
-        // if (contentDisposition) {
-        //     const fileNameMatch = contentDisposition.match(/filename=(.+)/);
-        //     if (fileNameMatch && fileNameMatch.length === 2) {
-        //         // Xóa bỏ các ký tự dấu nháy kép thừa nếu có từ phía server trả về
-        //         fileName = fileNameMatch[1].replace(/"/g, '');
-        //     }
-        // }
-
-        // 3. Tạo một URL ảo trỏ vào vùng nhớ chứa file Blob đó trong trình duyệt
         const url = window.URL.createObjectURL(blob);
-
-        // 4. Tạo thẻ <a> ngầm, cấu hình thuộc tính và giả lập click để tải file về máy
         const link = document.createElement('a');
         link.href = url;
         link.setAttribute('download', fileName);
-
         document.body.appendChild(link);
         link.click();
-
-        // 5. Dọn dẹp bộ nhớ sau khi tải xong
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
-
-
         isExporting.value = false;
     } catch (error) {
         isExporting.value = false;
-        // alert("Lỗi gọi API xuất Excel");
     } finally {
         isExporting.value = false;
     }
 };
-
-
 //#endregion
+
+
+
 
 //#region Lifecycle
 onMounted(async () => {
-    window.addEventListener('scroll', closeOnScroll, true);
-    document.addEventListener('click', handleDocumentClick);
-    await fetchDataPaging(pagingParams.value);
+    // document.addEventListener('click', handleDocumentClick);
+    // await fetchDataPaging(pagingParams.value);
+    loadData(activeColumnKeys.value);
 });
 
 onBeforeUnmount(() => {
 
-    document.removeEventListener('click', handleDocumentClick);
+    // document.removeEventListener('click', handleDocumentClick);
 });
 
-onUnmounted(() => {
-    window.removeEventListener('scroll', closeOnScroll, true);
-});
 
 
 //#endregion
@@ -1343,7 +975,7 @@ onUnmounted(() => {
         <!-- Title -->
         <div class="title-box flex-row flex">
             <div class=" title-box__title">Ca làm việc</div>
-            <MsButton class="" serverity="primary" @click="showAddEditShiftModal(null)">
+            <MsButton class="" serverity="primary" @click="openShiftDetailModal('', 'add')">
                 <div class="icon plus mi-warehouse icon16 bg-white!"></div>
                 <div class="pl-[4px]">Thêm</div>
             </MsButton>
@@ -1357,7 +989,7 @@ onUnmounted(() => {
                     <!-- Left -->
                     <div class="table-container__toolbar__left flex items-center gap-x-4">
                         <MsInput class="w-[240px]" placeholder="Tìm kiếm" icon="mi-warehouse icon16 icon left search"
-                            @input="onSearchInput($event)" />
+                            @input="executeSearch($event, activeColumnKeys)" />
                         <div v-if="columnFilters.length > 0 && selectedRowIndices.length === 0"
                             class="filter-conditions h-full">
                             <div v-for="(filter, index) in columnFilters" :key="index" class="filter-item">
@@ -1405,7 +1037,7 @@ onUnmounted(() => {
                                 :class="isExporting ? 'refresh animate-spin' : 'export'"></div>
                         </MsButton>
                         <MsButton class="" serverity="secondary" variant="outlined" v-tooltip.top="'Làm mới dữ liệu'"
-                            @click="fetchDataPaging(pagingParams)">
+                            @click="loadData(activeColumnKeys)">
                             <div class="icon reload mi-warehouse icon16 bg-gray-600!"></div>
                         </MsButton>
                         <MsButton class="" serverity="secondary" variant="outlined" @click=""
@@ -1418,7 +1050,7 @@ onUnmounted(() => {
                 <div class="table-container__table">
                     <div class="table-container__table__content">
                         <MsTableDefault :fields="fields" :rows="tableRows" :focusedRowIndex="focusedRowIndex"
-                            :selectedRowIndices="selectedRowIndices" @filter="showFilterModal($event)">
+                            :selectedRowIndices="selectedRowIndices">
                             <template #title-Checkbox="{ }">
                                 <MsCheckbox type="checkbox" style="width: 16px; height: 16px" @change="handleSelectAll"
                                     :modelValue="selectedRowIndices.length === tableRows.length" />
@@ -1443,7 +1075,7 @@ onUnmounted(() => {
                             <template #Action="{ row, rowIndex }">
                                 <div class="flex items-center justify-center gap-2 w-full h-full ">
                                     <div class="border border-gray-300 bg-white rounded-lg flex items-center justify-center w-6 h-6 cursor-pointer group"
-                                        @click="showAddEditShiftModal(row.shiftId)">
+                                        @click="openShiftDetailModal(row.shiftId, 'edit')">
                                         <div class="icon icon16 mi-warehouse pencil group-hover:bg-(--primary-color)!"
                                             @click="">
                                         </div>
@@ -1513,11 +1145,11 @@ onUnmounted(() => {
                                     <div class="icon step-backward mi-warehouse icon16 bg-gray-500!"></div>
                                 </MsButton>
                                 <MsButton class="p-1" serverity="secondary" variant="text" :disabled="!canGoPrev"
-                                    :class="{ disabled: !canGoPrev }" @click="prevPage">
+                                    :class="{ disabled: !canGoPrev }" @click.stop="prevPage">
                                     <div class="icon angle-left mi-warehouse icon16 bg-gray-500!"></div>
                                 </MsButton>
                                 <MsButton class="p-1" serverity="secondary" variant="text" :disabled="!canGoNext"
-                                    :class="{ disabled: !canGoNext }" @click="nextPage">
+                                    :class="{ disabled: !canGoNext }" @click.stop="nextPage">
                                     <div class="icon angle-right mi-warehouse icon16 bg-gray-500!"></div>
                                 </MsButton>
                                 <MsButton class="p-1" serverity="secondary" variant="text" :disabled="!canGoNext"
@@ -1531,176 +1163,10 @@ onUnmounted(() => {
             </div>
         </div>
         <!-- Modals -->
-        <!-- Add/Edit shift Modal -->
-        <MsModal :title="'ABC'" :visible="isAddEditShiftModalVisible" width="680px" height="auto">
-            <template #header>
-                <div class="form__popup__header__title">
-                    <div class="form__popup__header__title__text">
-                        {{ formShiftData.shiftId ? 'Sửa ca làm việc' : 'Thêm ca làm việc' }}
-                    </div>
-                </div>
-                <div class="flex gap-2">
-                    <div class="mi-warehouse icon20 ic-help cursor-pointer" @click="" v-tooltip.top="'Trợ giúp'">
-                    </div>
-                    <div class="mi-warehouse icon20 close cursor-pointer" @click="closeAddEditShiftModal()"
-                        v-tooltip.top="'Đóng'">
-                    </div>
-                </div>
-
-            </template>
-            <template #body>
-                <div class="w-full flex gap-4 items-center mb-[16px]">
-                    <label class="w-[150px]">
-                        Mã ca <span class="text-red-500">*</span>
-                    </label>
-                    <div class="flex-1">
-                        <MsInput placeholder="Nhập mã ca làm việc" v-model="formShiftData.shiftCode" :minLength="1"
-                            ref="shiftCodeInput" :maxLength="20"
-                            @blur="formShiftData.shiftCode = formShiftData.shiftCode.trim(); validateShiftCode(formShiftData.shiftCode)"
-                            :error="formShiftError.shiftCode" v-tooltip.bottom="formShiftError.shiftCode" />
-                    </div>
-                </div>
-                <div class="w-full flex gap-4 items-center mb-[16px]">
-                    <label class="w-[150px]">
-                        Tên ca <span class="text-red-500">*</span>
-                    </label>
-                    <div class="flex-1">
-                        <MsInput placeholder="Nhập tên ca làm việc" v-model="formShiftData.shiftName" :minLength="1"
-                            @blur="formShiftData.shiftName = formShiftData.shiftName.trim(); validateShiftName(formShiftData.shiftName)"
-                            ref="shiftNameInput" :maxLength="50" :error="formShiftError.shiftName"
-                            v-tooltip.bottom="formShiftError.shiftName" />
-                    </div>
-                </div>
-
-                <div class="w-full flex items-center mb-[16px]">
-                    <div class="w-1/2 flex gap-4 items-center mr-3">
-                        <label class="w-[150px]">
-                            Giờ vào ca
-                            <span class="text-red-500">*</span>
-                        </label>
-                        <div class="flex-1 max-w-[122px]">
-                            <MsDatepicker placeholder="HH:MM" v-model="formShiftData.shiftBeginTime!"
-                                icon="mi-warehouse clock icon16" :type="'time'" ref="shiftBeginTimeInput"
-                                @blur="validateShiftBeginTime(formShiftData.shiftBeginTime)"
-                                @input="calculateShiftTimes" :error="formShiftError.shiftBeginTime"
-                                v-tooltip.bottom="formShiftError.shiftBeginTime" />
-                        </div>
-                    </div>
-                    <div class="w-1/2 flex gap-4 items-center">
-                        <label class="w-[175px]">
-                            Giờ hết ca
-                            <span class="text-red-500">*</span>
-                        </label>
-                        <div class="flex-1 max-w-[122px]">
-                            <MsDatepicker placeholder="HH:MM" v-model="formShiftData.shiftEndTime!"
-                                icon="mi-warehouse clock icon16" :type="'time'" ref="shiftEndTimeInput"
-                                @blur="validateShiftEndTime(formShiftData.shiftEndTime)" @input="calculateShiftTimes"
-                                :error="formShiftError.shiftEndTime" v-tooltip.bottom="formShiftError.shiftEndTime" />
-                        </div>
-                    </div>
-                </div>
-                <div class="w-full flex items-center mb-[16px]">
-                    <div class="w-1/2 flex gap-4 items-center mr-3">
-                        <label class="w-[150px]">
-                            Bắt đầu nghỉ giữa ca
-                        </label>
-                        <div class="flex-1 max-w-[122px]">
-                            <MsDatepicker ref="shiftBeginBreakTimeInput" placeholder="HH:MM"
-                                v-model="formShiftData.shiftBeginBreakTime!" icon="mi-warehouse clock icon16"
-                                :type="'time'" @blur="validateShiftBeginBreakTime(formShiftData.shiftBeginBreakTime)"
-                                @input="calculateShiftTimes" :error="formShiftError.shiftBeginBreakTime"
-                                v-tooltip.bottom="formShiftError.shiftBeginBreakTime" />
-                        </div>
-                    </div>
-                    <div class="w-1/2 flex gap-4 items-center">
-                        <label class="w-[175px]">
-                            Kết thúc nghỉ giữa ca
-                        </label>
-                        <div class="flex-1 max-w-[122px]">
-                            <MsDatepicker ref="shiftEndBreakTimeInput" placeholder="HH:MM"
-                                v-model="formShiftData.shiftEndBreakTime!" icon="mi-warehouse clock icon16"
-                                :type="'time'" @blur="validateShiftEndBreakTime(formShiftData.shiftEndBreakTime)"
-                                @input="calculateShiftTimes" :error="formShiftError.shiftEndBreakTime"
-                                v-tooltip.bottom="formShiftError.shiftEndBreakTime" />
-                        </div>
-                    </div>
-                </div>
-                <div class="w-full flex items-center mb-[16px]">
-                    <div class="w-1/2 flex gap-4 items-center mr-3">
-                        <label class="w-[150px]">
-                            Thời gian làm việc (giờ)
-                        </label>
-                        <div class="flex-1 max-w-[122px]">
-                            <MsInput textAlign="right" type="text" :readonly="true" :disabled="true"
-                                :textColor="shiftWorkingTime.startsWith('(') ? 'text-red-500' : ''"
-                                v-model="shiftWorkingTime" />
-                        </div>
-                    </div>
-                    <div class="w-1/2 flex gap-4 items-center">
-                        <label class="w-[175px]">
-                            Thời gian nghỉ giữa ca (giờ)
-                        </label>
-                        <div class="flex-1 max-w-[122px]">
-                            <MsInput textAlign="right" type="text" :readonly="true" :disabled="true"
-                                v-model="shiftBreakingTime" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="w-full flex gap-4 items-start">
-                    <label class="w-[150px]">
-                        Mô tả
-                    </label>
-                    <div class="flex-1">
-                        <MsTextArea placeholder="Nhập mô tả ca làm việc" :minLength="1" :maxLength="400" />
-                    </div>
-                </div>
-
-                <div v-if="formShiftData.shiftId" class="w-full flex gap-4 items-start mt-[16px]">
-                    <label class="w-[150px]">
-                        Trạng thái
-                    </label>
-                    <div class="flex-1 flex items-center">
-                        <label class="ms-radio mr-4">
-                            <input type="radio" name="rdname" tabindex="0" value="true"
-                                :checked="!formShiftData.shiftInactive" @change="formShiftData.shiftInactive = false">
-                            <span class="checkmark"></span>
-                            <div class="flex-column ms-radio-content">
-                                <span class="ms-radio--text">Sử dụng</span>
-                            </div>
-                        </label>
-                        <label class="ms-radio mr-4">
-                            <input type="radio" name="rdname" tabindex="0" value="true"
-                                :checked="formShiftData.shiftInactive" @change="formShiftData.shiftInactive = true">
-                            <span class="checkmark"></span>
-                            <div class="flex-column ms-radio-content">
-                                <span class="ms-radio--text">Ngừng sử dụng</span>
-                            </div>
-                        </label>
-                    </div>
-
-                </div>
-
-
-
-            </template>
-            <template #footer>
-                <MsButton class="cancel" @click="closeAddEditShiftModal" :label="'Hủy'" variant="outlined"
-                    serverity="secondary">
-                    Hủy
-                </MsButton>
-                <MsButton class="cancel" @click="handleSaveShift" :label="'Lưu và thêm'" variant="outlined"
-                    serverity="secondary">
-                    Lưu và thêm
-                </MsButton>
-                <MsButton class="submit" @click="handleSaveShift" :label="'Xác nhận'" serverity="primary">
-                    Lưu
-                </MsButton>
-            </template>
-        </MsModal>
+        <ShiftDetailModal ref="shiftDetailModalRef" @saved="handleSaved($event)" />
         <!-- Confirm Modal -->
-        <ModalConfirm :visible="isConfirmModalVisible" :title="confirmModalTitle" :message="confirmModalMessage"
-            :variant="'danger'" @cancel="isConfirmModalVisible = false" @close="isConfirmModalVisible = false" @confirm="
+        <MsMessage :visible="false" :title="confirmModalTitle" :message="confirmModalMessage" :variant="'danger'"
+            @cancel="isConfirmModalVisible = false" @close="isConfirmModalVisible = false" @confirm="
                 confirmModalAction ? confirmModalAction() : null;
             isConfirmModalVisible = false;">
             <template #template>
@@ -1741,80 +1207,8 @@ onUnmounted(() => {
                     </div>
                 </div>
             </template>
-        </ModalConfirm>
-        <!-- Filter Modal -->
-        <div ref="filterModalRef" class="condition-container gap-4" v-if="filterModalVisible"
-            :style="filterModalPosition">
-            <div class="flex flex-col gap-4">
-                <div class="flex items-center justify-between">
-                    <div class="column-filter-text mr-2">Lọc {{ currentFilterField.label.toLowerCase() }}</div>
-                    <MsButton serverity="secondary" variant="text" @click="closeFilterModal">
-                        <div class="icon icon16 close mi-warehouse"></div>
-                    </MsButton>
-                </div>
-                <!-- Filter Options -->
-                <div class="flex flex-col gap-2">
-                    <!-- Text Filter -->
-                    <div v-if="currentFilterField.filterType === 'text'">
-                        <MsSelect placeholder="Chọn điều kiện" :options="textFilterOptions" class="w-full"
-                            valueField="value" labelField="label" v-model="textFilterData.operator">
-                        </MsSelect>
-                        <MsInput ref="textFilterInput" placeholder="Nhập giá trị lọc" class="w-full mt-2"
-                            :readonly="['isnull', 'isnotnull'].includes(textFilterData.operator)"
-                            :modelValue="['isnull', 'isnotnull'].includes(textFilterData.operator) ? '' : textFilterData.value"
-                            @update:modelValue="textFilterData.value = $event" :error="filterMessage"
-                            v-tooltip.bottom="filterMessage" />
-                    </div>
-                    <!-- Number Filter -->
-                    <div v-if="currentFilterField.filterType === 'number'">
-                        <MsSelect placeholder="Chọn điều kiện" :options="numberFilterOptions" class="w-full"
-                            valueField="value" labelField="label" v-model="numberFilterData.operator">
-                        </MsSelect>
-                        <MsInput ref="numberFilterInput" type="number" placeholder="Nhập giá trị lọc"
-                            class="w-full mt-2" textAlign="right"
-                            :readonly="['isnull', 'isnotnull'].includes(numberFilterData.operator)"
-                            :modelValue="['isnull', 'isnotnull'].includes(numberFilterData.operator) ? '' : numberFilterData.value"
-                            @update:modelValue="numberFilterData.value = $event" :error="filterMessage"
-                            v-tooltip.bottom="filterMessage" />
-                    </div>
-                    <!-- Date Filter -->
-                    <div v-if="currentFilterField.filterType === 'date'">
-                        <MsSelect placeholder="Chọn điều kiện" :options="dateFilterOptions" class="w-full"
-                            valueField="value" labelField="label" v-model="dateFilterData.operator">
-                        </MsSelect>
-                        <MsDatepicker ref="dateFilterInput" placeholder="Chọn ngày" class="w-full mt-2" :type="'date'"
-                            :readonly="['isnull', 'isnotnull'].includes(dateFilterData.operator)"
-                            :modelValue="['isnull', 'isnotnull'].includes(dateFilterData.operator) ? '' : dateFilterData.value"
-                            @update:modelValue="dateFilterData.value = $event" :error="filterMessage"
-                            v-tooltip.bottom="filterMessage" />
-                    </div>
-                    <!-- Select Filter -->
-                    <div v-if="currentFilterField.filterType === 'select'">
-                        <MsSelect ref="selectFilterInput" placeholder="Chọn giá trị lọc"
-                            v-tooltip.bottom="filterMessage" :options="currentFilterField.selectOptions" class="w-full"
-                            valueField="value" labelField="label" v-model="selectFilterData.value"
-                            :error="filterMessage">
-                        </MsSelect>
-                    </div>
-                </div>
-                <div class="flex items-center justify-between">
-                    <div>
-                        <MsButton serverity="secondary" class="bg-gray-100! hover:bg-gray-200!"
-                            @click="clearFilter(); closeFilterModal()">
-                            <div class=" text-(--text)">Bỏ lọc</div>
-                        </MsButton>
-                    </div>
-                    <div class="flex items-center gap-x-2">
-                        <MsButton serverity="secondary" variant="outlined" @click="closeFilterModal">
-                            <div class=" text-(--text)">Hủy</div>
-                        </MsButton>
-                        <MsButton @click="applyFilter">
-                            <div class="">Áp dụng</div>
-                        </MsButton>
-                    </div>
-                </div>
-            </div>
-        </div>
+        </MsMessage>
+
     </div>
 </template>
 
@@ -1849,26 +1243,6 @@ onUnmounted(() => {
     }
 }
 
-.form__popup__header__title {
-    flex: 1 1 0%;
-    min-width: 0;
-    align-items: center;
-    font-weight: 700;
-    font-size: 16px;
-    line-height: 36px;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    display: flex;
-
-    .form__popup__header__title__text {
-        font-size: 16px;
-        font-family: Inter;
-        color: #000;
-        margin-right: 0;
-        white-space: nowrap;
-        cursor: text;
-    }
-}
 
 .table-container {
     flex: 1;
@@ -1950,120 +1324,9 @@ onUnmounted(() => {
     opacity: 0.3;
 }
 
-input:checked~.checkmark {
-    border-color: #0e9a62;
-}
-
-.ms-radio {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
-.ms-radio input {
-    position: absolute;
-    cursor: pointer;
-    width: 16px;
-    height: 16px;
-    min-width: 16px;
-    min-height: 16px;
-    margin: 0;
-    padding: 0;
-    opacity: 0;
-}
-
-.checkmark {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    min-width: 16px;
-    min-height: 16px;
-    color: #fff;
-    text-align: center;
-    border-radius: 50%;
-    position: relative;
-    border: 1px solid #717680;
-    background-color: #fff;
-    cursor: pointer;
-}
-
-input:checked~.checkmark:before {
-    content: "";
-    display: inline-block;
-    height: 8px;
-    width: 8px;
-    border-radius: 50%;
-    background-color: #0e9a62;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
-
-.ms-radio-content {
-    justify-content: center;
-    align-items: flex-start;
-    gap: 4px;
-    padding-left: 8px;
-}
-
-.ms-radio:hover input:not(:disabled)+.checkmark {
-    border-color: #0e9a62;
-    box-shadow: 0 0 0 2px #0e9a62;
-}
-
-// Filter modal
-.condition-container {
-    padding: 16px;
-    position: absolute;
-    border: none;
-    z-index: 1002;
-    background: white;
-    min-width: 350px;
-    width: -moz-fit-content;
-    width: fit-content;
-    font-weight: 400;
-    font-size: 13px;
-    border-radius: 8px;
-    box-shadow: 0 0 8px #0000001a, 0 8px 16px #0000001a;
-
-    .column-filter-text {
-        font-weight: 600;
-        font-size: 16px;
-        margin-right: 30px;
-    }
-}
-
-.filter-conditions {
-    display: flex;
-    align-items: center;
-    row-gap: 4px;
-    flex-wrap: wrap;
-    margin-right: 8px;
-    max-height: 56px;
-    overflow-y: auto;
-
-    .filter-item {
-        display: flex;
-        gap: 8px;
-        height: 24px;
-        padding: 0 8px;
-        border-radius: 4px;
-        position: relative;
-        margin-right: 8px;
-        white-space: normal;
-        align-items: center;
-        background-color: #f3f4f6;
-        max-width: calc(100% - 8px);
-
-        .lable-value-filter {
-            display: flex;
-            gap: 8px;
-        }
-    }
 
 
-}
+
 
 // Custom confirm modal
 .confirm-modal {
