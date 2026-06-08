@@ -173,7 +173,22 @@
     mask-position: -432px 0px;
 }
 
+.mi-warehouse.icon16.pinned {
+    -webkit-mask-position: -416px 0px;
+    mask-position: -416px 0px;
+}
+
 .mi-warehouse.icon16.unpin {
     -webkit-mask-position: -592px 0px;
     mask-position: -592px 0px;
+}
+
+.mi-warehouse.icon16.pin-italic {
+    -webkit-mask-position: -400px 0px;
+    mask-position: -400px 0px;
+}
+
+.mi-warehouse.icon16.drag {
+    -webkit-mask-position: -1103px 0px;
+    mask-position: -1103px 0px;
 }

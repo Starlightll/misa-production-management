@@ -30,7 +30,8 @@
         <div class="message-modal__message" v-html="message"></div>
         <!-- Actions -->
         <div class="confirm-modal__actions flex items-center justify-end gap-2 mt-4">
-          <MsButton class="cancel" @click="$emit('cancel')" variant="outlined" serverity="secondary">
+          <MsButton v-if="type === 'confirm'" class="cancel" @click="$emit('cancel')" variant="outlined"
+            serverity="secondary">
             {{ cancelText }}
           </MsButton>
           <MsButton class="submit" @click="$emit('accept')" :serverity="variant === 'danger' ? 'danger' : 'primary'">
@@ -84,6 +85,10 @@ const props = defineProps({
   cancelText: {
     type: String,
     default: 'Hủy',
+  },
+  type: {
+    type: String as () => "confirm" | "message",
+    default: "confirm",
   },
   variant: {
     type: String as () => "info" | "warning" | "error" | "success" | "danger",

@@ -4,6 +4,7 @@ import { useShiftForm } from '../composables/useShiftForm';
 import { shiftService } from '../../../../../api/shiftService';
 import { useAuthStore } from '../../../../../stores/auth';
 import { useMessage } from '../../../../../composables/useMessage';
+import type { isLeftHandSideExpression } from 'typescript';
 
 const message = useMessage();
 
@@ -144,6 +145,7 @@ const handleSave = async () => {
             title: "Cảnh báo",
             variant: "warning",
             acceptText: "Đồng ý",
+            type: "message",
             message: saveMessage,
             onAccept: async () => {
                 focusField();
@@ -178,8 +180,71 @@ const handleSave = async () => {
 
         emit('saved', response); // Emit sự kiện saved với dữ liệu mới
         handleClose(false);
-    } catch (error) {
-        console.error(error);
+    } catch (error: any) {
+        const response = error.response;
+        console.log('Validation error response:', response.data.ErrorCode);
+        if (response && response.data && response.data.ErrorCode === 'MISA_VALIDATE_FAIL') {
+            console.log('Validation error response:', response.data);
+            const errorDetails = response.data.Details;
+            let focusField: () => void = () => { };
+            let messageText = '';
+            errorDetails.forEach((detail: any) => {
+                const detailFieldLowerCase = detail.Field.toLowerCase();
+                //Compare ignore case
+                if (detailFieldLowerCase === 'shiftcode') {
+                    if (detail.Code === 'MISA_DUPLICATE_FIELD') {
+                        formShiftError.value.shiftCode = detail.message;
+                        messageText = /*html*/ `Ca làm việc <b>${'<' + formShiftData.value.shiftCode + '>'}</b> đã tồn tại. Vui lòng kiểm tra lại.`;
+                    }
+                    focusField = () => {
+                        shiftCodeInput.value?.$el.querySelector('input')?.focus();
+                    };
+                }
+                else if (detailFieldLowerCase === 'shiftname') {
+                    focusField = () => {
+                        shiftNameInput.value?.$el.querySelector('input')?.focus();
+                    };
+                    formShiftError.value.shiftName = detail.message;
+                }
+                else if (detailFieldLowerCase === 'shiftbegintime') {
+                    focusField = () => {
+                        shiftBeginTimeInput.value?.$el.querySelector('input')?.focus();
+                    };
+                    formShiftError.value.shiftBeginTime = detail.message;
+                }
+                else if (detailFieldLowerCase === 'shiftendtime') {
+                    focusField = () => {
+                        shiftEndTimeInput.value?.$el.querySelector('input')?.focus();
+                    };
+                    formShiftError.value.shiftEndTime = detail.message;
+                }
+                else if (detailFieldLowerCase === 'shiftbeginbreaktime') {
+                    focusField = () => {
+                        shiftBeginBreakTimeInput.value?.$el.querySelector('input')?.focus();
+                    };
+                    formShiftError.value.shiftBeginBreakTime = detail.message;
+                }
+                else if (detailFieldLowerCase === 'shiftendbreaktime') {
+                    focusField = () => {
+                        shiftEndBreakTimeInput.value?.$el.querySelector('input')?.focus();
+                    };
+                    formShiftError.value.shiftEndBreakTime = detail.message;
+                }
+            });
+            message.show({
+                icon: 'mi-qtsx icon-danger bg-(--color-danger)!',
+                title: "Cảnh báo!",
+                acceptText: "Đóng",
+                type: "message",
+                message: messageText || 'Có lỗi xảy ra khi lưu ca làm việc. Vui lòng kiểm tra lại.',
+                onAccept: async () => {
+                    focusField();
+                },
+                onCancel: async () => {
+                    focusField();
+                }
+            });
+        }
     }
 };
 

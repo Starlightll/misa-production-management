@@ -6,6 +6,7 @@ interface MessageOptions {
     title: string;
     message: string;
     variant?: 'info' | 'warning' | 'danger';
+    type?: 'confirm' | 'message';
     acceptText?: string; // Tùy chỉnh text cho nút xác nhận
     cancelText?: string; // Tùy chỉnh text cho nút hủy
     onAccept?: () => void | Promise<void>;
@@ -21,6 +22,7 @@ export const useMessageStore = defineStore('message', () => {
     const variant = ref<'info' | 'warning' | 'danger'>('info');
     const acceptText = ref('Đồng ý');
     const cancelText = ref('Hủy');
+    const type = ref<'confirm' | 'message'>('confirm');
 
     // Lưu trữ các hàm callback ngầm khi người dùng bấm nút
     const resolveCallback = ref<((value: boolean) => void) | null>(null);
@@ -35,6 +37,7 @@ export const useMessageStore = defineStore('message', () => {
         variant.value = options.variant || 'info';
         acceptText.value = options.acceptText || 'Đồng ý';
         cancelText.value = options.cancelText || 'Hủy';
+        type.value = options.type || 'message';
         onAcceptCallback.value = options.onAccept || null;
         onCancelCallback.value = options.onCancel || null;
 
@@ -75,6 +78,7 @@ export const useMessageStore = defineStore('message', () => {
         title,
         message,
         variant,
+        type,
         acceptText,
         cancelText,
         open,

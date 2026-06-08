@@ -4,6 +4,7 @@ import MsTableDefault from '../../../../components/base/ms-table/MsTableDefault.
 import { shiftService } from '../../../../api/shiftService.ts';
 import { useMessage } from '../../../../composables/useMessage.ts';
 import { useTablePagingFilter } from '../../../../composables/useTablePagingFilter';
+import { toast } from 'vue3-toastify';
 
 const message = useMessage();
 
@@ -36,6 +37,7 @@ const fields = ref([
         movable: true,
         showInTable: true,
         exportable: true,
+        sortable: true,
         filter: {
             filterable: true,
             filterType: "text",
@@ -54,6 +56,7 @@ const fields = ref([
         movable: true,
         showInTable: true,
         exportable: true,
+        sortable: true,
         filter: {
             filterable: true,
             filterType: "text",
@@ -72,6 +75,8 @@ const fields = ref([
         movable: true,
         showInTable: true,
         exportable: true,
+        sortable: true,
+        pinned: true,
         style: {
             width: '130px',
         },
@@ -81,6 +86,7 @@ const fields = ref([
         movable: true,
         showInTable: true,
         exportable: true,
+        sortable: true,
         style: {
             width: '130px',
         },
@@ -90,6 +96,7 @@ const fields = ref([
         movable: true,
         showInTable: true,
         exportable: true,
+        sortable: true,
         style: {
             width: '200px',
         },
@@ -99,6 +106,7 @@ const fields = ref([
         movable: true,
         showInTable: true,
         exportable: true,
+        sortable: true,
         style: {
             width: '210px',
         },
@@ -108,6 +116,7 @@ const fields = ref([
         movable: true,
         showInTable: true,
         exportable: true,
+        sortable: true,
         filter: {
             filterable: true,
             filterType: "number",
@@ -126,6 +135,7 @@ const fields = ref([
         movable: true,
         showInTable: true,
         exportable: true,
+        sortable: true,
         filter: {
             filterable: true,
             filterType: "number",
@@ -144,6 +154,7 @@ const fields = ref([
         movable: true,
         showInTable: true,
         exportable: true,
+        sortable: true,
         filter: {
             filterable: true,
             filterType: "select",
@@ -166,6 +177,7 @@ const fields = ref([
         movable: true,
         showInTable: true,
         exportable: true,
+        sortable: true,
         filter: {
             filterable: true,
             filterType: "text",
@@ -184,6 +196,7 @@ const fields = ref([
         movable: true,
         showInTable: true,
         exportable: true,
+        sortable: true,
         filter: {
             filterable: true,
             filterType: "date",
@@ -202,6 +215,7 @@ const fields = ref([
         movable: true,
         showInTable: true,
         exportable: true,
+        sortable: true,
         filter: {
             filterable: true,
             filterType: "text",
@@ -220,6 +234,7 @@ const fields = ref([
         movable: true,
         showInTable: true,
         exportable: true,
+        sortable: true,
         filter: {
             filterable: true,
             filterType: "date",
@@ -285,6 +300,7 @@ const {
     changePageSize,
     executeSearch,
     handleFilterChange,
+    handleSortChange,
     removeFilterFromFilters,
     clearAllFilters,
 } = useTablePagingFilter<Shift>(
@@ -337,28 +353,37 @@ const deleteShift = async (shiftIds: string[]) => {
         acceptText: "Xóa",
         message: messageContent,
         onAccept: async () => {
-            await shiftService.bulkDelete(shiftIds);
-            // fetchDataPaging(pagingParams.value);
-            //Xóa dòng trong bảng mà không cần gọi lại API
-            tableRows.value = tableRows.value.filter(r => !shiftIds.includes(r.shiftId));
-            totalItems.value -= shiftIds.length; // Cập nhật lại tổng số items sau khi xóa
-            //Reset selected rows
-            selectedRowIndices.value = [];
-            console.log("Xóa thành công!");
-            // if (tableRows.value.length === 0 && currentPage.value > 1) {
-            //     prevPage(activeColumnKeys.value);
-            // }
-            if (tableRows.value.length === 0) {
-                if (currentPage.value > 1) {
-                    // Nếu ở trang 2, 3, 4... thì lùi về trang trước (hàm prevPage sẽ tự gọi loadData)
-                    prevPage(activeColumnKeys.value);
-                } else if (totalItems.value > 0) {
-                    // Nếu đang ở TRANG ĐẦU TIÊN, nhưng tổng số items vẫn > 0 (tức là vẫn còn dòng ở các trang sau)
-                    // Ta giữ nguyên currentPage = 1 và gọi loadData() để kéo dữ liệu trang sau gối đầu lên trang 1
-                    await loadData(activeColumnKeys.value);
+            try {
+                const response = await shiftService.bulkDelete(shiftIds);
+                if (response.isSuccess) {
+                    toast.success(response.message || "Xóa thành công!");
+                    // fetchDataPaging(pagingParams.value);
+                    //Xóa dòng trong bảng mà không cần gọi lại API
+                    tableRows.value = tableRows.value.filter(r => !shiftIds.includes(r.shiftId));
+                    totalItems.value -= shiftIds.length; // Cập nhật lại tổng số items sau khi xóa
+                    //Reset selected rows
+                    selectedRowIndices.value = [];
+                    console.log("Xóa thành công!");
+                    // if (tableRows.value.length === 0 && currentPage.value > 1) {
+                    //     prevPage(activeColumnKeys.value);
+                    // }
+                    if (tableRows.value.length === 0) {
+                        if (currentPage.value > 1) {
+                            // Nếu ở trang 2, 3, 4... thì lùi về trang trước (hàm prevPage sẽ tự gọi loadData)
+                            prevPage(activeColumnKeys.value);
+                        } else if (totalItems.value > 0) {
+                            // Nếu đang ở TRANG ĐẦU TIÊN, nhưng tổng số items vẫn > 0 (tức là vẫn còn dòng ở các trang sau)
+                            // Ta giữ nguyên currentPage = 1 và gọi loadData() để kéo dữ liệu trang sau gối đầu lên trang 1
+                            await loadData(activeColumnKeys.value);
+                        }
+                        // Trường hợp cuối cùng: currentPage === 1 và totalItems === 0 nghĩa là hệ thống hết sạch dữ liệu,
+                        // UI tự động hiển thị bảng trống đúng thực tế, không cần gọi API nữa.
+                    }
+                } else {
+                    toast.error(response.message || "Xóa thất bại. Vui lòng thử lại sau.");
                 }
-                // Trường hợp cuối cùng: currentPage === 1 và totalItems === 0 nghĩa là hệ thống hết sạch dữ liệu,
-                // UI tự động hiển thị bảng trống đúng thực tế, không cần gọi API nữa.
+            } catch (error) {
+                toast.error("Đã xảy ra lỗi. Vui lòng thử lại sau.");
             }
         }
     });
@@ -383,19 +408,26 @@ const updateShiftStatus = async (shiftIds: string[], inactive: boolean) => {
             shiftIds,
             inactive,
         };
-        await shiftService.updateStatus(payload);
-        //update status in table without call API again
-        tableRows.value = tableRows.value.map(r => {
-            if (shiftIds.includes(r.shiftId)) {
-                return {
-                    ...r,
-                    shiftInactive: inactive,
-                };
-            }
-            return r;
-        });
-        // fetchDataPaging(pagingParams.value);
+        const response = await shiftService.updateStatus(payload);
+        if (response.isSuccess) {
+            toast.success(response.message || "Cập nhật trạng thái thành công!");
+            //update status in table without call API again
+            tableRows.value = tableRows.value.map(r => {
+                if (shiftIds.includes(r.shiftId)) {
+                    return {
+                        ...r,
+                        shiftInactive: inactive,
+                    };
+                }
+                return r;
+            });
+            // fetchDataPaging(pagingParams.value);
+        } else {
+            toast.error(response.message || "Cập nhật trạng thái thất bại. Vui lòng thử lại sau.");
+        }
+
     } catch (error) {
+        toast.error("Đã xảy ra lỗi. Vui lòng thử lại sau.");
         console.error(`Error ${inactive ? 'deactivating' : 'activating'} shifts:`, error);
     }
 };
@@ -417,13 +449,13 @@ const openShiftDetailModal = (shiftId: string, state: "add" | "edit" | "duplicat
 const handleSaved = (response: any) => {
     console.log('Shift saved successfully. Response:', response.data);
     if (response) {
-        //Nếu có shiftId thì update dữ liệu của shift đó trong tableRows, nếu không có thì thêm mới vào đầu tableRows
         const savedShift = response.data;
-        const index = tableRows.value.findIndex(r => r.shiftId === savedShift.shiftId
-        );
+        const index = tableRows.value.findIndex(r => r.shiftId === savedShift.shiftId);
         if (index !== -1) {
+            toast.success("Cập nhật ca làm việc thành công!");
             tableRows.value[index] = savedShift;
         } else {
+            toast.success("Thêm mới ca làm việc thành công!");
             tableRows.value.unshift(savedShift);
             totalItems.value += 1;
             console.log('Total items after adding new shift:', totalItems.value);
@@ -447,6 +479,7 @@ const closeConfirmModalAction = ref<(() => void) | null>(null);
 import type { Shift } from '../../../../types/Shift.ts';
 import MsMessage from '../../../../components/base/ms-modal/MsMessage.vue';
 import ShiftDetailModal from './components/ShiftDetailModal.vue';
+import TableDisplaySettings from '../../../../components/base/ms-table/components/TableDisplaySettings.vue';
 //#region table settings 
 // Table settings
 const dataColumns = computed(() => {
@@ -607,7 +640,9 @@ const buildCustomFilter = (searchTerm: string) => {
 
 
 const showMenuId = ref<string | null>(null);
-const toggleMenu = (rowId: string) => {
+const toggleMenu = (rowId: string, rowIndex: number) => {
+    console.log('Toggling menu for row ID:', rowId, 'at index:', rowIndex);
+    focusedRowIndex.value = rowIndex;
     showMenuId.value = showMenuId.value === rowId ? null : rowId;
 };
 const focusedRowIndex = ref<number>(-1);
@@ -928,7 +963,7 @@ const clearCloseTimer = () => {
 
 const getDisplayValue = (filter: any) => {
     console.log('Getting display value for filter:', filter);
-    if (filter.type === 'select') {
+    if (filter.type === 'select' || filter.operator === 'isnull' || filter.operator === 'isnotnull') {
         return '';
     }
     if (filter.type === 'number') {
@@ -983,10 +1018,11 @@ const requestExport = async () => {
         link.click();
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
-        isExporting.value = false;
     } catch (error) {
         isExporting.value = false;
+        toast.error("Có lỗi xảy ra khi tải file Excel.");
     } finally {
+        toast.success("Xuất Excel thành công.");
         isExporting.value = false;
     }
 };
@@ -1005,6 +1041,10 @@ const handleClearFilter = (filterData: any) => {
     // Ví dụ, nếu API chỉ cần filter.value là đủ thì chỉ cần xóa filter của cột đó khỏi filter.value rồi gán lại
     // filter.value = filter.value.filter((f: any) => f.key !== fieldKey);
     removeFilterFromFilters(filterData.key);
+}
+
+const handleSort = (sortData: any) => {
+    handleSortChange(sortData);
 }
 
 
@@ -1109,7 +1149,7 @@ onBeforeUnmount(() => {
                     <div class="table-container__table__content">
                         <MsTableDefault :fields="fields" :rows="tableRows" :focusedRowIndex="focusedRowIndex"
                             :selectedRowIndices="selectedRowIndices" @filter="handleFilter($event)"
-                            @clearFilter="handleClearFilter($event)">
+                            @sort="handleSort($event)" @clearFilter="handleClearFilter($event)">
                             <template #title-Checkbox="{ }">
                                 <MsCheckbox type="checkbox" style="width: 16px; height: 16px" @change="handleSelectAll"
                                     :modelValue="selectedRowIndices.length === tableRows.length" />
@@ -1141,14 +1181,13 @@ onBeforeUnmount(() => {
                                     </div>
 
                                     <div class="border border-gray-300 bg-white rounded-lg flex items-center justify-center w-6 h-6 cursor-pointer group relative"
-                                        @mouseleave="closeMenu"
-                                        @click.stop="toggleMenu(row.id); focusedRowIndex = rowIndex as number; console.log('Focused row index:', focusedRowIndex)">
+                                        @mouseleave="closeMenu" @click="toggleMenu(row.shiftId, rowIndex as number)">
                                         <div
                                             class="icon icon16 mi-warehouse feature-more-blue group-hover:bg-(--primary-color)! group relative">
                                         </div>
                                         <!-- Dropdown menu -->
                                         <div class="pt-5 absolute top-1 right-0 z-50">
-                                            <div v-if="showMenuId === row.id" @click.stop=""
+                                            <div v-if="showMenuId === row.shiftId" @click.stop=""
                                                 class="mt-1 min-w-fit bg-white rounded-lg  overflow-hidden p-2 shadow-gray-300 "
                                                 style="box-shadow: 0 0 8px #0000001a, 0 8px 16px #0000001a;">
                                                 <div class="px-3 py-2 hover:bg-gray-100 rounded-sm cursor-pointer flex whitespace-nowrap items-center gap-2"
@@ -1267,7 +1306,9 @@ onBeforeUnmount(() => {
                 </div>
             </template>
         </MsMessage>
-
+        <Teleport to="body">
+            <TableDisplaySettings :rows="fields" v-if="false" />
+        </Teleport>
     </div>
 </template>
 

@@ -27,7 +27,7 @@ const currentLayout = computed(() => {
     <MsMessage :visible="messageStore.isVisible" :title="messageStore.title" :message="messageStore.message"
       :variant="messageStore.variant" :icon="messageStore.icon" :acceptText="messageStore.acceptText"
       :cancelText="messageStore.cancelText" @close="messageStore.cancel" @cancel="messageStore.cancel"
-      @accept="messageStore.accept" />
+      :type="messageStore.type" @accept="messageStore.accept" />
   </component>
 
 </template>

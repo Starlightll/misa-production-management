@@ -33,6 +33,7 @@ export function useTablePagingFilter<T>(
     const totalItems = ref(0);
     const totalPages = ref(0);
     const selectedRowIndices = ref<number[]>([]);
+    const sortString = ref('');
 
 
     const filters = computed(() => {
@@ -52,6 +53,8 @@ export function useTablePagingFilter<T>(
         });
         return filtersData;
     });
+
+    // const sorts = ref<{ field: any; direction: string }[]>([]);
 
     // State tìm kiếm và lọc cột
     const searchTerm = ref('');
@@ -94,10 +97,12 @@ export function useTablePagingFilter<T>(
             pageIndex: currentPage.value,
             pageSize: pageSize.value,
             filter: globalFilterArray.value.length > 0 ? JSON.stringify(globalFilterArray.value) : "",
-            sort: defaultSort || "[{\"Selector\":\"CreatedDate\",\"Desc\":true}]",
+            sort: sortString.value !== '' ? sortString.value : defaultSort || "[{\"Selector\":\"CreatedDate\",\"Desc\":false}]",
             columns: activeFields.length > 0 ? activeFields.join(',') : "",
             customFilter: buildCustomFilter(searchTerm.value),
         };
+
+        console.log("sortString khi loadData:", sortString.value);
 
         try {
             const response = await fetchApiFn(params);
@@ -170,6 +175,16 @@ export function useTablePagingFilter<T>(
         console.log("Fields sau khi cập nhật:", fields);
         loadData(activeFields);
     };
+
+    const handleSortChange = (sortData: string, activeFields: string[] = []) => {
+        console.log("Nhận sortData từ Table:", sortData);
+        if (sortData && sortData !== '') {
+            sortString.value = sortData;
+        } else {
+            sortString.value = defaultSort || '';
+        }
+        loadData(activeFields);
+    }
 
     const removeFilterFromFilters = (fieldKey: string) => {
         // Xóa filter của cột fieldKey khỏi filters.value
@@ -265,6 +280,7 @@ export function useTablePagingFilter<T>(
         goToLastPage,
         executeSearch,
         handleFilterChange,
+        handleSortChange,
         removeFilterFromFilters,
         clearAllFilters,
     };
