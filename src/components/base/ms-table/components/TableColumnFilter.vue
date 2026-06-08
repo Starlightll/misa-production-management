@@ -3,6 +3,7 @@
 import { computed, onMounted, ref } from 'vue';
 import MsInput from '../../ms-input/MsInput.vue';
 
+
 // const textFilterData = ref({
 //     operator: 'contains',
 //     value: '',
@@ -302,6 +303,7 @@ const setFilterOperator = (operator: string, label: string) => {
 const setFilterData = (value: any) => {
     filterData.value.value = value;
 };
+
 
 </script>
 <template lang="html">

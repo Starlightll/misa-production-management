@@ -1,128 +1,148 @@
 <template lang="html">
-    <div ref="tableRef" class="w-full h-full overflow-auto scrollbar-thin relative">
-        <table class="ms-table">
-            <thead class="ms-thead bg-(--bg-semi-dark)">
-                <tr>
-                    <th v-for="(field, index) in fields.filter((f: any) => f.showInTable !== false)" :key="field.key"
-                        :style="field.style || {}" scope="col" @click.stop="handleColumnHeaderClick(field, $event)"
-                        class="ms-col-th">
-                        <div class="title-wrapper" :style="[
-                            index === fields.length - 1 ? 'border-right: none !important;' : '',
-                        ]">
-                            <!-- Title -->
-                            <div class="title">
-                                <!-- Pin icon -->
-                                <div class="icon pin mi-pin icon16 bg-gray-600!"></div>
-                                <!-- Text -->
-                                <div class="flex-1 flex items-center gap-2" :class="[
+    <div class=" w-full h-full relative">
+        <div v-if="isLoading" class="z-101 loading-icon absolute items-center justify-center">
+            <div class="misa-amis w-14 h-14 animate-spin"></div>
+        </div>
+        <div v-if="!isLoading && rows.length === 0"
+            class="grid-no-data absolute  bg-white/10 flex items-center justify-center z-20">
+            <div class="ic-report-nodata text-center">
+                <img src="../../../assets/icons/bg_report_nodata.svg" alt="No data" />
+                <div>Không có dữ liệu</div>
+            </div>
+        </div>
+        <div ref="tableRef" class="w-full h-full overflow-auto scrollbar-thin relative">
+            <table class="ms-table">
+                <thead class="ms-thead bg-(--bg-semi-dark)">
+                    <tr>
+                        <th v-for="(field, index) in fields.filter((f: any) => f.showInTable !== false)"
+                            :key="field.key" :style="field.style || {}" scope="col"
+                            @click.stop="handleColumnHeaderClick(field, $event)" class="ms-col-th">
+                            <div class="title-wrapper" :style="[
+                                index === fields.length - 1 ? 'border-right: none !important;' : '',
+                            ]">
+                                <!-- Title -->
+                                <div class="title">
+                                    <!-- Pin icon -->
+                                    <div class="icon pin mi-pin icon16 bg-gray-600!"></div>
+                                    <!-- Text -->
+                                    <div class="flex-1 flex items-center gap-2" :class="[
+                                        field.align === 'center' ? 'text-center! justify-center!' : field.align === 'right' ? 'text-end! justify-end!' : field.align === 'left' ? 'text-start! justify-start!' :
+                                            field.type === 'number' ? 'text-end! justify-end!' : field.type === 'date' ? 'text-center! justify-center!' : field.type === 'time' ? 'text-start! justify-start!' : field.type === 'text' ? 'text-left! justify-start!' : 'text-start! justify-start!',
+                                    ]">
+                                        <template v-if="field.type === 'custom'">
+                                            <slot :name="`title-${field.key}`" :field="field">
+                                                {{ field.label }}
+                                            </slot>
+                                        </template>
+                                        <template v-else>
+                                            {{ field.label }}
+                                        </template>
+                                        <!-- Sort icon -->
+                                        <div v-if="field.sortable"
+                                            :class="sortsMap[field.key] ? (sortsMap[field.key] === 'asc' ? 'arrow-up' : 'arrow-down') : 'unsorted'"
+                                            class="icon sort mi-warehouse arrow-up icon16 bg-gray-600!"></div>
+                                    </div>
+
+                                </div>
+                                <!-- Filter icon -->
+                                <div v-if="field.filter?.filterable" class="icon mi-warehouse icon16 bg-gray-600!"
+                                    :class="field.filter?.filterData.value ? 'filtered filter--active' : 'filter'"
+                                    @click.stop="handleFilterClick(field, $event)"></div>
+                            </div>
+
+                            <!-- Resizer -->
+                            <div v-if="field.resizable" class="resizer"></div>
+                        </th>
+                    </tr>
+                </thead>
+
+                <tbody class="ms-tbody bg-white divide-y divide-gray-200">
+                    <div v-if="isLoading" overlay class="z-100 bg-white/50 absolute inset-0 w-full h-full"></div>
+                    <template v-if="rows.length > 0">
+                        <tr v-for="(row, index) in rows" :key="index" class="ms-tr"
+                            @click="emit('row-click', { row, rowIndex: index })"
+                            :class="[index == props.focusedRowIndex ? 'z-10!' : '', props.selectedRowIndices.includes(index) ? 'row-selected' : '']">
+                            <td v-for="field in fields.filter((f: any) => f.showInTable !== false)" :key="field.key"
+                                :style="field.style || {}" class="ms-col-td">
+                                <div class="flex flex-1" :class="[
                                     field.align === 'center' ? 'text-center! justify-center!' : field.align === 'right' ? 'text-end! justify-end!' : field.align === 'left' ? 'text-start! justify-start!' :
                                         field.type === 'number' ? 'text-end! justify-end!' : field.type === 'date' ? 'text-center! justify-center!' : field.type === 'time' ? 'text-start! justify-start!' : field.type === 'text' ? 'text-left! justify-start!' : 'text-start! justify-start!',
+                                    field.displayOnHover ? 'display-on-hover' : '',
                                 ]">
+                                    <!-- Custom type with slot -->
                                     <template v-if="field.type === 'custom'">
-                                        <slot :name="`title-${field.key}`" :field="field">
-                                            {{ field.label }}
-                                        </slot>
-                                    </template>
-                                    <template v-else>
-                                        {{ field.label }}
-                                    </template>
-                                    <!-- Sort icon -->
-                                    <div v-if="field.sortable"
-                                        :class="sortsMap[field.key] ? (sortsMap[field.key] === 'asc' ? 'arrow-up' : 'arrow-down') : 'unsorted'"
-                                        class="icon sort mi-warehouse arrow-up icon16 bg-gray-600!"></div>
-                                </div>
-
-                            </div>
-                            <!-- Filter icon -->
-                            <div v-if="field.filter?.filterable" class="icon mi-warehouse icon16 bg-gray-600!"
-                                :class="field.filter?.filterData.value ? 'filtered filter--active' : 'filter'"
-                                @click.stop="handleFilterClick(field, $event)"></div>
-                        </div>
-
-                        <!-- Resizer -->
-                        <div v-if="field.resizable" class="resizer"></div>
-                    </th>
-                </tr>
-            </thead>
-            <tbody class="ms-tbody bg-white divide-y divide-gray-200">
-                <tr v-for="(row, index) in rows" :key="index" class="ms-tr"
-                    @click="emit('row-click', { row, rowIndex: index })"
-                    :class="[index == props.focusedRowIndex ? 'z-10!' : '', props.selectedRowIndices.includes(index) ? 'row-selected' : '']">
-                    <td v-for="field in fields.filter((f: any) => f.showInTable !== false)" :key="field.key"
-                        :style="field.style || {}" class="ms-col-td">
-                        <div class="flex flex-1" :class="[
-                            field.align === 'center' ? 'text-center! justify-center!' : field.align === 'right' ? 'text-end! justify-end!' : field.align === 'left' ? 'text-start! justify-start!' :
-                                field.type === 'number' ? 'text-end! justify-end!' : field.type === 'date' ? 'text-center! justify-center!' : field.type === 'time' ? 'text-start! justify-start!' : field.type === 'text' ? 'text-left! justify-start!' : 'text-start! justify-start!',
-                            field.displayOnHover ? 'display-on-hover' : '',
-                        ]">
-                            <!-- Custom type with slot -->
-                            <template v-if="field.type === 'custom'">
-                                <!-- <div v-if="field.displayOnHover" class="display-on-hover">
+                                        <!-- <div v-if="field.displayOnHover" class="display-on-hover">
                                     <slot :name="field.key" :row="row" :field="field" :value="row[field.key]">
                                         {{ handleFormat(row[field.key], "text") }}
                                     </slot>
                                 </div> -->
-                                <slot :name="field.key" :row="row" :rowIndex="index" :field="field"
-                                    :value="row[field.key]">
-                                    <div class="">{{ handleFormat(row[field.key], "text") }}</div>
-                                </slot>
-                            </template>
+                                        <slot :name="field.key" :row="row" :rowIndex="index" :field="field"
+                                            :value="row[field.key]">
+                                            <div class="">{{ handleFormat(row[field.key], "text") }}</div>
+                                        </slot>
+                                    </template>
 
-                            <!-- Other types -->
-                            <template v-else>
-                                <div class="text-ellipsis overflow-hidden whitespace-nowrap">{{
-                                    handleFormat(row[field.key], field.type || "text") }}</div>
-                            </template>
-                        </div>
+                                    <!-- Other types -->
+                                    <template v-else>
+                                        <div class="text-ellipsis overflow-hidden whitespace-nowrap">{{
+                                            handleFormat(row[field.key], field.type || "text") }}</div>
+                                    </template>
+                                </div>
 
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
 
-        <!-- Filter Popover -->
-        <div ref="filterPopoverRef" v-if="currentFilterField" class="filter-modal" :style="filterModalStyle"
-            @click.stop>
-            <TableColumnFilter :field="currentFilterField" @remove-filter="" @apply="handleApplyFilter"
-                @clear="handleClearFilter($event)" @close="handleCloseFilter" />
+            <!-- Filter Popover -->
+            <div ref="filterPopoverRef" v-if="currentFilterField" class="filter-modal" :style="filterModalStyle"
+                @click.stop>
+                <TableColumnFilter :field="currentFilterField" @remove-filter="" @apply="handleApplyFilter"
+                    @clear="handleClearFilter($event)" @close="handleCloseFilter" />
+            </div>
+            <!-- Column Sort Popover -->
+            <ul ref="sortPopoverRef" v-if="currentSortField" class="sort-modal" :style="columnSortStyle" @click.stop>
+                <li class="menu-wrapper-item" @click="handleSort('')">
+                    <div class="icon icon16 mi-warehouse empty"></div>
+                    Không sắp xếp
+                </li>
+                <li class="menu-wrapper-item" :class="{ 'active': sortsMap[currentSortField?.key] === 'asc' }"
+                    @click="handleSort('asc')">
+                    <div class="icon icon16 mi-warehouse arrow-up"></div>
+                    Tăng dần
+                    <div class="select-checked"></div>
+                </li>
+                <li class="menu-wrapper-item" :class="{ 'active': sortsMap[currentSortField?.key] === 'desc' }"
+                    @click="handleSort('desc')">
+                    <div class="icon icon16 mi-warehouse arrow-down"></div>
+                    Giảm dần
+                    <div class="select-checked"></div>
+                </li>
+                <div class="menu-border"></div>
+                <li class="menu-wrapper-item" @click.stop="showInDevelopmentMessage()">
+                    <div class="icon icon16 mi-warehouse pin"></div>
+                    Ghim cột
+                    <div class="select-checked"></div>
+                </li>
+                <li class="menu-wrapper-item" @click.stop="showInDevelopmentMessage()">
+                    <div class="icon icon16 mi-warehouse unpin"></div>
+                    Bỏ ghim cột
+                    <div class="select-checked"></div>
+                </li>
+            </ul>
         </div>
-        <!-- Column Sort Popover -->
-        <ul ref="sortPopoverRef" v-if="currentSortField" class="sort-modal" :style="columnSortStyle" @click.stop>
-            <li class="menu-wrapper-item" @click="handleSort('')">
-                <div class="icon icon16 mi-warehouse empty"></div>
-                Không sắp xếp
-            </li>
-            <li class="menu-wrapper-item" :class="{ 'active': sortsMap[currentSortField?.key] === 'asc' }"
-                @click="handleSort('asc')">
-                <div class="icon icon16 mi-warehouse arrow-up"></div>
-                Tăng dần
-                <div class="select-checked"></div>
-            </li>
-            <li class="menu-wrapper-item" :class="{ 'active': sortsMap[currentSortField?.key] === 'desc' }"
-                @click="handleSort('desc')">
-                <div class="icon icon16 mi-warehouse arrow-down"></div>
-                Giảm dần
-                <div class="select-checked"></div>
-            </li>
-            <div class="menu-border"></div>
-            <li class="menu-wrapper-item">
-                <div class="icon icon16 mi-warehouse pin"></div>
-                Ghim cột
-                <div class="select-checked"></div>
-            </li>
-            <li class="menu-wrapper-item">
-                <div class="icon icon16 mi-warehouse unpin"></div>
-                Bỏ ghim cột
-                <div class="select-checked"></div>
-            </li>
-        </ul>
     </div>
+
 </template>
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { formatNumber, formatDate, formatText, formatTime } from '../../../utils/formatter';
 import { onClickOutside } from '@vueuse/core';
 import TableColumnFilter from './components/TableColumnFilter.vue';
+import { useMessage } from '../../../composables/useMessage.ts';
+
+const message = useMessage();
 
 const emit = defineEmits(["row-click", "filter", "clearFilter", "sort"]);
 
@@ -146,6 +166,10 @@ const props = defineProps({
     selectedRowIndices: {
         type: Array as any,
         default: () => [],
+    },
+    isLoading: {
+        type: Boolean,
+        default: false,
     },
 });
 
@@ -217,7 +241,6 @@ const handleColumnHeaderClick = (field: any, event: MouseEvent) => {
 const handleFilterClick = (field: any, event: MouseEvent) => {
     currentFilterField.value = field;
     console.log("Filter clicked for field:", currentFilterField.value);
-    emit("filter", { field, event });
 
     const target = event.currentTarget as HTMLElement;
     if (!target || !tableRef.value) return;
@@ -346,6 +369,18 @@ const handleFormat = (value: any, type: string) => {
             return formatText(value);
     }
 };
+
+const showInDevelopmentMessage = () => {
+    message.show({
+        icon: "mi-qtsx icon-info bg-(--color-info)!",
+        title: "Tính năng đang phát triển",
+        variant: "info",
+        message: "Tính năng này đang được phát triển.",
+        acceptText: "Đóng",
+    });
+};
+
+
 
 </script>
 
@@ -574,5 +609,25 @@ table {
         display: none;
         margin-left: auto;
     }
+}
+
+.grid-no-data {
+    position: absolute;
+    text-align: center;
+    font-style: normal;
+    color: #111827;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -100%);
+}
+
+.loading-icon {
+    position: absolute;
+    text-align: center;
+    font-style: normal;
+    color: #111827;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -100%);
 }
 </style>

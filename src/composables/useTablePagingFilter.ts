@@ -27,6 +27,7 @@ export function useTablePagingFilter<T>(
     fields: any[] = []
 ) {
     // 1. Các State phản ứng quản lý phân trang
+    const isLoading = ref(false);
     const currentPage = ref(1);
     const pageSize = ref(localStorage.getItem(localStorageKey) || '10');
     const tableRows = ref<T[]>([]); // Sử dụng Generic kiểu <T> đại diện cho Shift, Customer, Employee...
@@ -93,6 +94,8 @@ export function useTablePagingFilter<T>(
 
     // 4. Hàm THẦN CHÚ: Tổng hợp tất cả State để gọi API
     const loadData = async (activeFields: string[] = []) => {
+        isLoading.value = true;
+        await new Promise(resolve => setTimeout(resolve, 300));
         const params: PagingParams = {
             pageIndex: currentPage.value,
             pageSize: pageSize.value,
@@ -114,6 +117,8 @@ export function useTablePagingFilter<T>(
             }
         } catch (error) {
             console.error('Lỗi nạp dữ liệu phân trang công cục:', error);
+        } finally {
+            isLoading.value = false;
         }
     };
 
@@ -259,6 +264,7 @@ export function useTablePagingFilter<T>(
 
 
     return {
+        isLoading,
         currentPage,
         pageSize,
         tableRows,

@@ -292,6 +292,7 @@ const {
     pageEnd,
     filters,
     globalFilterArray,
+    isLoading,
     loadData,
     nextPage,
     prevPage,
@@ -1048,6 +1049,16 @@ const handleSort = (sortData: any) => {
 }
 
 
+const showInDevelopmentMessage = () => {
+    message.show({
+        icon: "mi-qtsx icon-info bg-(--color-info)!",
+        title: "Tính năng đang phát triển",
+        variant: "info",
+        message: "Tính năng này đang được phát triển.",
+        acceptText: "Đóng",
+    });
+};
+
 
 
 //#region Lifecycle
@@ -1136,9 +1147,10 @@ onBeforeUnmount(() => {
                         </MsButton>
                         <MsButton class="" serverity="secondary" variant="outlined" v-tooltip.top="'Làm mới dữ liệu'"
                             @click="loadData(activeColumnKeys)">
-                            <div class="icon reload mi-warehouse icon16 bg-gray-600!"></div>
+                            <div class="icon reload mi-warehouse icon16 bg-gray-600!"
+                                :class="{ 'animate-spin': isLoading }"></div>
                         </MsButton>
-                        <MsButton class="" serverity="secondary" variant="outlined" @click=""
+                        <MsButton class="" serverity="secondary" variant="outlined" @click="showInDevelopmentMessage()"
                             v-tooltip.top="'Cài đặt hiển thị'">
                             <div class="icon setting mi-warehouse icon16 bg-gray-600!"></div>
                         </MsButton>
@@ -1149,7 +1161,7 @@ onBeforeUnmount(() => {
                     <div class="table-container__table__content">
                         <MsTableDefault :fields="fields" :rows="tableRows" :focusedRowIndex="focusedRowIndex"
                             :selectedRowIndices="selectedRowIndices" @filter="handleFilter($event)"
-                            @sort="handleSort($event)" @clearFilter="handleClearFilter($event)">
+                            :isLoading="isLoading" @sort="handleSort($event)" @clearFilter="handleClearFilter($event)">
                             <template #title-Checkbox="{ }">
                                 <MsCheckbox type="checkbox" style="width: 16px; height: 16px" @change="handleSelectAll"
                                     :modelValue="selectedRowIndices.length === tableRows.length" />
@@ -1365,7 +1377,7 @@ onBeforeUnmount(() => {
 
         &__content {
             flex: 1;
-            overflow: auto;
+            // overflow: auto;
             background: #fff;
             scrollbar-width: thin;
         }

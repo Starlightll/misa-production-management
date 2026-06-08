@@ -34,3 +34,9 @@
 .icon.left {
     margin: 0 4px 0 0;
 }
+
+.misa-amis {
+    background-image: url(ic-amis.svg);
+    background-repeat: no-repeat;
+    background-size: contain;
+}

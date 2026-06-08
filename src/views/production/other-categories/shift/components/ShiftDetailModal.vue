@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useShiftForm } from '../composables/useShiftForm';
 import { shiftService } from '../../../../../api/shiftService';
 import { useAuthStore } from '../../../../../stores/auth';
@@ -75,7 +75,7 @@ const handleClose = (checkUnsaved = true) => {
             acceptText: "Đồng ý",
             message: 'Nếu bạn thoát, các dữ liệu đang nhập liệu sẽ không được lưu lại.',
             onAccept: async () => {
-                isVisible.value = false; // Tự đóng nội bộ
+                isVisible.value = false;
                 setTimeout(() => {
                     resetFormShiftError();
                     resetFormShiftData();
@@ -83,7 +83,7 @@ const handleClose = (checkUnsaved = true) => {
             },
         });
     } else {
-        isVisible.value = false; // Tự đóng nội bộ
+        isVisible.value = false;
         setTimeout(() => {
             resetFormShiftError();
             resetFormShiftData();
@@ -98,7 +98,8 @@ const shiftEndTimeInput = ref<any>(null);
 const shiftBeginBreakTimeInput = ref<any>(null);
 const shiftEndBreakTimeInput = ref<any>(null);
 
-const handleSave = async () => {
+const handleSave = async (addAnother = false) => {
+    console.log('Form data before save:', formShiftData.value);
     let saveMessage = '';
     if (!validateShiftForm()) {
         console.log('Validation failed:', formShiftError.value);
@@ -179,7 +180,11 @@ const handleSave = async () => {
         }
 
         emit('saved', response); // Emit sự kiện saved với dữ liệu mới
-        handleClose(false);
+        if (addAnother) {
+            showModal('add');
+        } else {
+            isVisible.value = false; // Tự đóng nội bộ
+        }
     } catch (error: any) {
         const response = error.response;
         console.log('Validation error response:', response.data.ErrorCode);
@@ -244,9 +249,44 @@ const handleSave = async () => {
                     focusField();
                 }
             });
+        } else {
+            message.show({
+                icon: 'mi-qtsx icon-danger bg-(--color-danger)!',
+                title: "Cảnh báo!",
+                acceptText: "Đóng",
+                type: "message",
+                message: 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.',
+            });
         }
     }
 };
+
+const handleSaveWithCtrlS = (e: KeyboardEvent) => {
+    if (!isVisible.value) {
+        return; // Nếu modal không mở, không làm gì cả
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        handleSave();
+    }
+};
+
+const handleSaveAndAddNewWithCtrlShiftS = (e: KeyboardEvent) => {
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 's') {
+        e.preventDefault();
+        handleSave(true);
+    }
+};
+
+onMounted(() => {
+    document.addEventListener('keydown', handleSaveWithCtrlS);
+    document.addEventListener('keydown', handleSaveAndAddNewWithCtrlShiftS);
+});
+
+onUnmounted(() => {
+    document.removeEventListener('keydown', handleSaveWithCtrlS);
+    document.removeEventListener('keydown', handleSaveAndAddNewWithCtrlShiftS);
+});
 
 // Expose để cha có thể gọi được
 defineExpose({
@@ -256,7 +296,7 @@ defineExpose({
 </script>
 <template lang="html">
     <!-- Add/Edit shift Modal -->
-    <MsModal :title="'ABC'" :visible="isVisible" width="680px" height="auto">
+    <MsModal :title="'ABC'" :visible="isVisible" width="680px" height="auto" @close="handleClose">
         <template #header>
             <div class="form__popup__header__title">
                 <div class="form__popup__header__title__text">
@@ -329,7 +369,7 @@ defineExpose({
                     <div class="flex-1 max-w-[122px]">
                         <MsDatepicker ref="shiftBeginBreakTimeInput" placeholder="HH:MM"
                             v-model="formShiftData.shiftBeginBreakTime!" icon="mi-warehouse clock icon16" :type="'time'"
-                            @blur="validateShiftBeginBreakTime(formShiftData.shiftBeginBreakTime)"
+                            @blur="validateShiftBeginBreakTime(formShiftData.shiftBeginBreakTime); validateShiftEndBreakTime(formShiftData.shiftEndBreakTime)"
                             @input="calculateShiftTimes" :error="formShiftError.shiftBeginBreakTime"
                             v-tooltip.bottom="formShiftError.shiftBeginBreakTime" />
                     </div>
@@ -341,7 +381,7 @@ defineExpose({
                     <div class="flex-1 max-w-[122px]">
                         <MsDatepicker ref="shiftEndBreakTimeInput" placeholder="HH:MM"
                             v-model="formShiftData.shiftEndBreakTime!" icon="mi-warehouse clock icon16" :type="'time'"
-                            @blur="validateShiftEndBreakTime(formShiftData.shiftEndBreakTime)"
+                            @blur="validateShiftEndBreakTime(formShiftData.shiftEndBreakTime); validateShiftBeginBreakTime(formShiftData.shiftBeginBreakTime)"
                             @input="calculateShiftTimes" :error="formShiftError.shiftEndBreakTime"
                             v-tooltip.bottom="formShiftError.shiftEndBreakTime" />
                     </div>
@@ -407,11 +447,12 @@ defineExpose({
             <MsButton class="cancel" @click="handleClose" :label="'Hủy'" variant="outlined" serverity="secondary">
                 Hủy
             </MsButton>
-            <MsButton class="cancel" @click="handleSave" :label="'Lưu và thêm'" variant="outlined"
-                serverity="secondary">
+            <MsButton class="cancel" @click="handleSave(true);" :label="'Lưu và thêm'" variant="outlined"
+                v-tooltip.top="'Ctrl + Shift + S'" serverity="secondary">
                 Lưu và thêm
             </MsButton>
-            <MsButton class="submit" @click="handleSave" :label="'Xác nhận'" serverity="primary">
+            <MsButton class="submit" @click="handleSave(false);" :label="'Xác nhận'" serverity="primary"
+                v-tooltip.top="'Ctrl + S'">
                 Lưu
             </MsButton>
         </template>

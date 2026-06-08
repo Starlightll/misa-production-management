@@ -81,3 +81,9 @@
     -webkit-mask-position: -249px -168px;
     mask-position: -249px -168px;
 }
+
+.ic-report-nodata {
+    background-image: url(bg_report_nodata.svg);
+    background-repeat: no-repeat;
+    background-size: contain;
+}

@@ -46,10 +46,26 @@
   </div>
 </template>
 <script setup lang="ts">
+import { onMounted, onUnmounted } from 'vue';
 import MsButton from '../ms-button/MsButton.vue';
 
+const emit = defineEmits(["close", "cancel", "submit"]);
 
-defineEmits(["close", "cancel", "submit"]);
+//Thêm close bằng phím tắt ESC
+const handleCloseWithEscape = (e: KeyboardEvent) => {
+  if (e.key === 'Escape') {
+    console.log("Escape key pressed, closing modal.");
+    emit('close');
+  }
+};
+
+onMounted(() => {
+  document.addEventListener('keydown', handleCloseWithEscape);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleCloseWithEscape);
+});
 
 const props = defineProps({
   title: {

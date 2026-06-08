@@ -149,8 +149,8 @@ export function useShiftForm() {
         }
 
         if (time && formShiftData.value.shiftEndTime && formShiftData.value.shiftBeginTime) {
-            const beginTime = new Date(`2000-01-01T${formShiftData.value.shiftBeginTime}:00`);
-            const endTime = new Date(`2000-01-01T${formShiftData.value.shiftEndTime}:00`);
+            const beginTime = new Date(`2000-01-01T${formShiftData.value.shiftBeginTime}` + (formShiftData.value.shiftBeginTime.length === 5 ? ':00' : ''));
+            const endTime = new Date(`2000-01-01T${formShiftData.value.shiftEndTime}` + (formShiftData.value.shiftEndTime.length === 5 ? ':00' : ''));
 
             // Xử lý ca qua đêm
             if (endTime <= beginTime) {
@@ -159,7 +159,7 @@ export function useShiftForm() {
 
             // Hàm phụ trợ đồng bộ ngày: Nếu ca qua đêm và giờ nhập vào < giờ bắt đầu -> nó là của ngày hôm sau
             const getAdjustedTime = (timeStr: string) => {
-                const timeDate = new Date(`2000-01-01T${timeStr}:00`);
+                const timeDate = new Date(`2000-01-01T${timeStr}` + (timeStr.length === 5 ? ':00' : ''));
                 if (endTime.getDate() === 2 && timeDate < beginTime) {
                     timeDate.setDate(timeDate.getDate() + 1);
                 }
@@ -199,16 +199,17 @@ export function useShiftForm() {
             return false;
         }
 
+
         if (time && formShiftData.value.shiftEndTime && formShiftData.value.shiftBeginTime) {
-            const beginTime = new Date(`2000-01-01T${formShiftData.value.shiftBeginTime}:00`);
-            const endTime = new Date(`2000-01-01T${formShiftData.value.shiftEndTime}:00`);
+            const beginTime = new Date(`2000-01-01T${formShiftData.value.shiftBeginTime}` + (formShiftData.value.shiftBeginTime.length === 5 ? ':00' : ''));
+            const endTime = new Date(`2000-01-01T${formShiftData.value.shiftEndTime}` + (formShiftData.value.shiftEndTime.length === 5 ? ':00' : ''));
 
             if (endTime <= beginTime) {
                 endTime.setDate(endTime.getDate() + 1);
             }
 
             const getAdjustedTime = (timeStr: string) => {
-                const timeDate = new Date(`2000-01-01T${timeStr}:00`);
+                const timeDate = new Date(`2000-01-01T${timeStr}` + (timeStr.length === 5 ? ':00' : ''));
                 if (endTime.getDate() === 2 && timeDate < beginTime) {
                     timeDate.setDate(timeDate.getDate() + 1);
                 }
@@ -236,6 +237,7 @@ export function useShiftForm() {
                 }
             }
         }
+        console.log('Shift end break time is valid');
         formShiftError.value.shiftEndBreakTime = '';
         return true;
     };
@@ -248,8 +250,8 @@ export function useShiftForm() {
         let timeWorking = 0;
         let timeBreaking = 0;
         if (formShiftData.value.shiftBeginTime && formShiftData.value.shiftEndTime) {
-            const begin = new Date(`1970-01-01T${formShiftData.value.shiftBeginTime}`);
-            const end = new Date(`1970-01-01T${formShiftData.value.shiftEndTime}`);
+            const begin = new Date(`1970-01-01T${formShiftData.value.shiftBeginTime}` + (formShiftData.value.shiftBeginTime.length === 5 ? ':00' : ''));
+            const end = new Date(`1970-01-01T${formShiftData.value.shiftEndTime}` + (formShiftData.value.shiftEndTime.length === 5 ? ':00' : ''));
             if (end < begin) {
                 // Nếu giờ kết thúc nhỏ hơn giờ bắt đầu, cộng thêm 1 ngày vào giờ kết thúc để tính toán đúng
                 end.setDate(end.getDate() + 1);
@@ -264,8 +266,8 @@ export function useShiftForm() {
         }
 
         if (formShiftData.value.shiftBeginBreakTime && formShiftData.value.shiftEndBreakTime) {
-            const breakBegin = new Date(`1970-01-01T${formShiftData.value.shiftBeginBreakTime}`);
-            const breakEnd = new Date(`1970-01-01T${formShiftData.value.shiftEndBreakTime}`);
+            const breakBegin = new Date(`1970-01-01T${formShiftData.value.shiftBeginBreakTime}` + (formShiftData.value.shiftBeginBreakTime.length === 5 ? ':00' : ''));
+            const breakEnd = new Date(`1970-01-01T${formShiftData.value.shiftEndBreakTime}` + (formShiftData.value.shiftEndBreakTime.length === 5 ? ':00' : ''));
             if (breakEnd < breakBegin) {
                 // Nếu giờ kết thúc nghỉ nhỏ hơn giờ bắt đầu nghỉ, cộng thêm 1 ngày vào giờ kết thúc nghỉ để tính toán đúng
                 breakEnd.setDate(breakEnd.getDate() + 1);
