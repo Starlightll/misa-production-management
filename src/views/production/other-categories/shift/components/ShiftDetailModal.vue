@@ -261,31 +261,28 @@ const handleSave = async (addAnother = false) => {
     }
 };
 
-const handleSaveWithCtrlS = (e: KeyboardEvent) => {
-    if (!isVisible.value) {
-        return; // Nếu modal không mở, không làm gì cả
-    }
-    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-        e.preventDefault();
-        handleSave();
-    }
-};
 
-const handleSaveAndAddNewWithCtrlShiftS = (e: KeyboardEvent) => {
-    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 's') {
+const handleKeyboardShortcuts = (e: KeyboardEvent) => {
+    if (!isVisible.value) return;
+    const isCtrlOrCmd = e.ctrlKey || e.metaKey;
+    const key = e.key.toLowerCase();
+    if (isCtrlOrCmd && key === 's') {
         e.preventDefault();
-        handleSave(true);
+
+        if (e.shiftKey) {
+            handleSave(true);
+        } else {
+            handleSave();
+        }
     }
 };
 
 onMounted(() => {
-    document.addEventListener('keydown', handleSaveWithCtrlS);
-    document.addEventListener('keydown', handleSaveAndAddNewWithCtrlShiftS);
+    document.addEventListener('keydown', handleKeyboardShortcuts);
 });
 
 onUnmounted(() => {
-    document.removeEventListener('keydown', handleSaveWithCtrlS);
-    document.removeEventListener('keydown', handleSaveAndAddNewWithCtrlShiftS);
+    document.removeEventListener('keydown', handleKeyboardShortcuts);
 });
 
 // Expose để cha có thể gọi được
