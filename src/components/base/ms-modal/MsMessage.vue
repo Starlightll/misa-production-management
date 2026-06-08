@@ -59,7 +59,10 @@
   </div>
 </template>
 <script setup lang="ts">
+import { onMounted, onUnmounted } from "vue";
 import MsButton from "../ms-button/MsButton.vue";
+
+
 
 const props = defineProps({
   icon: {
@@ -97,6 +100,22 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["cancel", "accept", "close"]);
+
+
+const handleCloseWithEscape = (e: KeyboardEvent) => {
+  if (e.key === 'Escape') {
+    console.log("Escape key pressed, closing modal.");
+    emit('close');
+  }
+};
+
+onMounted(() => {
+  document.addEventListener('keydown', handleCloseWithEscape);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleCloseWithEscape);
+});
 </script>
 
 <style lang="scss" scoped>

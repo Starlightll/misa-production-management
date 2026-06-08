@@ -309,7 +309,7 @@ const {
     searchColumns,
     'shiftTablePageSize',
     '[{"Selector":"ShiftCode","Desc":false}]',
-    fields.value, // Truyền mảng cấu hình cột để Composable có thể tự động build filter
+    fields.value,
 );
 
 const activeColumnKeys = computed(() => fields.value.filter(f => f.exportable && f.showInTable).map(f => f.key));
@@ -514,7 +514,6 @@ const pageSizeOptions = [
 ];
 
 
-
 // const filter = ref<string[]>([]);
 // const sort = ref<string[]>([]);
 // const columns = ref<string[]>([]);
@@ -620,6 +619,7 @@ const pageSizeOptions = [
 // };
 //#endregion
 
+
 //#region search
 
 const searchTerm = ref('');
@@ -658,13 +658,7 @@ const closeMenu = () => {
 
 //#region validate
 
-
-
 //#region add/edit modal
-
-
-
-
 const handleDuplicateShift = (shiftId: string) => {
     const shift = tableRows.value.find((r) => r.shiftId === shiftId);
     openShiftDetailModal(shiftId, 'duplicate', shift);
