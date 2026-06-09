@@ -44,7 +44,7 @@ export function useTablePagingFilter<T>(
     });
 
     const filters = computed(() => {
-        console.log("Tính toán filters từ fields:", fields);
+        //console.log("Tính toán filters từ fields:", fields);
         let filtersData: any[] = [];
         fields.forEach(f => {
             if (f.filter?.filterData && f.filter.filterData.value) {
@@ -111,7 +111,7 @@ export function useTablePagingFilter<T>(
             customFilter: buildCustomFilter(searchTerm.value),
         };
 
-        console.log("sortString khi loadData:", sortString.value);
+        //console.log("sortString khi loadData:", sortString.value);
 
         try {
             const response = await fetchApiFn(params);
@@ -184,12 +184,12 @@ export function useTablePagingFilter<T>(
                 f.filter.filterData.operatorLabel = filterData.operatorLabel;
             }
         });
-        console.log("Fields sau khi cập nhật:", fields);
+        //console.log("Fields sau khi cập nhật:", fields);
         loadData();
     };
 
     const handleSortChange = (sortData: string) => {
-        console.log("Nhận sortData từ Table:", sortData);
+        //console.log("Nhận sortData từ Table:", sortData);
         if (sortData && sortData !== '') {
             sortString.value = sortData;
         } else {
@@ -207,7 +207,7 @@ export function useTablePagingFilter<T>(
                 f.filter.filterData.operatorLabel = '';
             }
         });
-        console.log("Global Filter sau khi xóa filter của cột", fieldKey, ":", globalFilterArray.value);
+        //console.log("Global Filter sau khi xóa filter của cột", fieldKey, ":", globalFilterArray.value);
         currentPage.value = 1;
         loadData();
     }
@@ -220,7 +220,7 @@ export function useTablePagingFilter<T>(
                 f.filter.filterData.operatorLabel = '';
             }
         });
-        console.log("Global Filter sau khi xóa tất cả filter:", globalFilterArray.value);
+        //console.log("Global Filter sau khi xóa tất cả filter:", globalFilterArray.value);
         currentPage.value = 1;
         loadData();
     };

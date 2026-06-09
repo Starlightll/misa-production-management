@@ -93,7 +93,7 @@ const getOperatorLabel = (filterType: string, operatorValue: string) => {
         return option ? option.label : operatorValue;
     } else if (filterType === 'select') {
         const option = props.field.filter?.filterOptions.find((o: any) => o.value === operatorValue);
-        // console.log('Get operator label for select filter:', option?.label);
+        // //console.log('Get operator label for select filter:', option?.label);
         return option ? option.label : operatorValue;
     }
     return operatorValue;
@@ -165,7 +165,7 @@ const getOperatorLabel = (filterType: string, operatorValue: string) => {
 //             return;
 //         }
 //     } else if (field.filterType === 'select') {
-//         console.log('Select filter value:', selectFilterData.value.value);
+//         //console.log('Select filter value:', selectFilterData.value.value);
 //         if (selectFilterData.value.value !== '' && selectFilterData.value.value !== null && selectFilterData.value.value !== undefined) {
 //             // Thêm filter cho cột này với operator và value đã chọn
 //             field.filterData.operator = selectFilterData.value.operator;
@@ -266,7 +266,7 @@ const handleApply = () => {
     }
 
     filterData.value.operatorLabel = getOperatorLabel(props.field.filter?.filterType, (filterData.value.type === 'select' ? filterData.value.value : filterData.value.operator));
-    // console.log('Apply filter with data:', filterData.value);
+    // //console.log('Apply filter with data:', filterData.value);
     emit('apply', filterData.value);
 };
 

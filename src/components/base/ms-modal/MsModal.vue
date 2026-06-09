@@ -52,7 +52,7 @@ const emit = defineEmits(["close", "cancel", "submit"]);
 
 const handleCloseWithEscape = (e: KeyboardEvent) => {
   if (e.key === 'Escape') {
-    console.log("Escape key pressed, closing modal.");
+    //console.log("Escape key pressed, closing modal.");
     emit('close');
   }
 };

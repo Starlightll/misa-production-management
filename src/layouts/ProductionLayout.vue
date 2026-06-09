@@ -8,7 +8,7 @@ const isExpanded = ref(false);
 const toggleCollapse = () => {
     isCollapsed.value = !isCollapsed.value;
     localStorage.setItem('sidebarCollapsed', isCollapsed.value.toString());
-    console.log('Sidebar collapsed:', isCollapsed.value);
+    //console.log('Sidebar collapsed:', isCollapsed.value);
 };
 
 const collapseOnHover = () => {

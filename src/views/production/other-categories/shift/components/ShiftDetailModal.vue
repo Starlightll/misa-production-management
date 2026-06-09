@@ -99,10 +99,10 @@ const shiftBeginBreakTimeInput = ref<any>(null);
 const shiftEndBreakTimeInput = ref<any>(null);
 
 const handleSave = async (addAnother = false) => {
-    console.log('Form data before save:', formShiftData.value);
+    //console.log('Form data before save:', formShiftData.value);
     let saveMessage = '';
     if (!validateShiftForm()) {
-        console.log('Validation failed:', formShiftError.value);
+        //console.log('Validation failed:', formShiftError.value);
         let focusField = () => { }
         if (formShiftError.value.shiftCode) {
             // Show modal error message
@@ -187,9 +187,9 @@ const handleSave = async (addAnother = false) => {
         }
     } catch (error: any) {
         const response = error.response;
-        console.log('Validation error response:', response.data.ErrorCode);
+        //console.log('Validation error response:', response.data.ErrorCode);
         if (response && response.data && response.data.ErrorCode === 'MISA_VALIDATE_FAIL') {
-            console.log('Validation error response:', response.data);
+            //console.log('Validation error response:', response.data);
             const errorDetails = response.data.Details;
             let focusField: () => void = () => { };
             let messageText = '';

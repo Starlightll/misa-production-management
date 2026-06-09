@@ -41,7 +41,7 @@ export function useTableDisplaySettings({ props, tableCompRef }: UseTableDisplay
 
     // Hàm helper map dữ liệu thô từ props sang cấu trúc của Modal Settings
     const mapIncomingFields = (targetFields: any[]) => {
-        console.log('Mapping incoming fields:', targetFields);
+        //console.log('Mapping incoming fields:', targetFields);
         const cols = targetFields.filter((col: any) => col.exportable);
         return cols.map((col: any) => ({
             columnIndex: col.index,
@@ -56,7 +56,7 @@ export function useTableDisplaySettings({ props, tableCompRef }: UseTableDisplay
 
     // Hàm helper sắp xếp ưu tiên pinned lên đầu
     const sortPinnedFirst = (cols: any[]) => {
-        console.log('Sorting columns with pinned first:', cols);
+        //console.log('Sorting columns with pinned first:', cols);
         return cols.sort((a: any, b: any) => {
             if (a.columnPinned && !b.columnPinned) return -1;
             if (!a.columnPinned && b.columnPinned) return 1;
@@ -84,7 +84,7 @@ export function useTableDisplaySettings({ props, tableCompRef }: UseTableDisplay
     };
 
     const handleQuickPinColumn = (field: any, pin: boolean) => {
-        console.log('Quick pinning column:', field);
+        //console.log('Quick pinning column:', field);
         const currentIndex = allColumns.value.findIndex(c => c.columnKey === field.key);
         if (currentIndex === -1) return;
 

@@ -259,8 +259,8 @@ const toggleHoGiaDinhSelection = (id: number): void => {
     selectedHoGiaDinhIds.value.add(id);
   }
   checkIsAllSelected();
-  console.log(
-    "Selected Ho Gia Dinh IDs:",
+  //console.log(
+  "Selected Ho Gia Dinh IDs:",
     Array.from(selectedHoGiaDinhIds.value),
   );
 };

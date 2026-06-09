@@ -237,7 +237,7 @@ export function useShiftForm() {
                 }
             }
         }
-        console.log('Shift end break time is valid');
+        //console.log('Shift end break time is valid');
         formShiftError.value.shiftEndBreakTime = '';
         return true;
     };

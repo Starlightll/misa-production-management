@@ -373,7 +373,7 @@ const activeColumnKeys = computed(() => fields.value.filter((f: any) => f.export
 
 //#region api call ==================================================================================
 const deleteShift = async (shiftIds: string[]) => {
-    console.log("Deleting shifts with IDs:", shiftIds);
+    //console.log("Deleting shifts with IDs:", shiftIds);
     let messageContent = '';
     if (shiftIds.length === 1) {
         const shift = tableRows.value.find(r => r.shiftId === shiftIds[0]);
@@ -399,7 +399,7 @@ const deleteShift = async (shiftIds: string[]) => {
                     //Reset selected rows
                     // selectedRowIndices.value = [];
                     selectedItems.value = [];
-                    console.log("Xóa thành công!");
+                    //console.log("Xóa thành công!");
                     // if (tableRows.value.length === 0 && currentPage.value > 1) {
                     //     prevPage(activeColumnKeys.value);
                     // }
@@ -438,7 +438,7 @@ const deleteShift = async (shiftIds: string[]) => {
 };
 
 const updateShiftStatus = async (shiftIds: string[], inactive: boolean) => {
-    console.log(`${inactive ? 'Deactivate' : 'Activate'} shifts with IDs:`, shiftIds);
+    //console.log(`${inactive ? 'Deactivate' : 'Activate'} shifts with IDs:`, shiftIds);
     try {
         const payload = {
             shiftIds,
@@ -471,7 +471,7 @@ const updateShiftStatus = async (shiftIds: string[], inactive: boolean) => {
 const shiftDetailModalRef = ref<any>(null);
 
 const openShiftDetailModal = (shiftId: string, state: "add" | "edit" | "duplicate", originalData?: any) => {
-    console.log('Opening Shift Detail Modal with ID:', shiftId, 'State:', state);
+    //console.log('Opening Shift Detail Modal with ID:', shiftId, 'State:', state);
     if (shiftDetailModalRef.value) {
         shiftDetailModalRef.value.showModal(state, shiftId, originalData);
     }
@@ -480,7 +480,7 @@ const openShiftDetailModal = (shiftId: string, state: "add" | "edit" | "duplicat
 //#endregion
 
 const handleSaved = (response: any) => {
-    console.log('Shift saved successfully. Response:', response.data);
+    //console.log('Shift saved successfully. Response:', response.data);
     if (response) {
         const savedShift = response.data;
         const index = tableRows.value.findIndex(r => r.shiftId === savedShift.shiftId);
@@ -491,7 +491,7 @@ const handleSaved = (response: any) => {
             toast.success("Thêm mới ca làm việc thành công!");
             tableRows.value.unshift(savedShift);
             totalItems.value += 1;
-            console.log('Total items after adding new shift:', totalItems.value);
+            //console.log('Total items after adding new shift:', totalItems.value);
         }
     }
 }
@@ -638,7 +638,7 @@ const pageSizeOptions = [
 //#region Search debounce
 // const searchTimeout = ref<number | null>(null);
 // const onSearchInput = (value: string) => {
-//     console.log('Search input:', value);
+//     //console.log('Search input:', value);
 //     searchTerm.value = value;
 //     if (searchTimeout.value) {
 //         clearTimeout(searchTimeout.value);
@@ -674,7 +674,7 @@ const buildCustomFilter = (searchTerm: string) => {
 
 const showMenuId = ref<string | null>(null);
 const toggleMenu = (rowId: string, rowIndex: number) => {
-    console.log('Toggling menu for row ID:', rowId, 'at index:', rowIndex);
+    //console.log('Toggling menu for row ID:', rowId, 'at index:', rowIndex);
     focusedRowIndex.value = rowIndex;
     showMenuId.value = showMenuId.value === rowId ? null : rowId;
 };
@@ -707,7 +707,7 @@ const handleDuplicateShift = (shiftId: string) => {
 //     }
 //     const isDataChanged = JSON.stringify(formShiftData.value) !== JSON.stringify(formShiftBeforeEditData.value);
 //     if (isDataChanged) {
-//         console.log('Data has been changed. Showing confirm modal before closing.');
+//         //console.log('Data has been changed. Showing confirm modal before closing.');
 //         confirmModalVariant.value = 'info';
 //         confirmModalTitle.value = 'Thoát và không lưu?';
 //         confirmModalMessage.value = 'Nếu bạn thoát, các dữ liệu đang nhập liệu sẽ không được lưu lại.';
@@ -776,7 +776,7 @@ const handleSelectItem = (item: any) => {
             selectedItems.value.push(item);
         }
     }
-    console.log('Selected items:', selectedItems.value);
+    //console.log('Selected items:', selectedItems.value);
 };
 
 const handleSelectAllItems = () => {
@@ -790,7 +790,7 @@ const handleSelectAllItems = () => {
             }
         });
     }
-    console.log('Selected items after select all:', selectedItems.value);
+    //console.log('Selected items after select all:', selectedItems.value);
 };
 
 //#endregion
@@ -1016,7 +1016,7 @@ const clearCloseTimer = () => {
 // });
 
 const getDisplayValue = (filter: any) => {
-    console.log('Getting display value for filter:', filter);
+    //console.log('Getting display value for filter:', filter);
     if (filter.type === 'select' || filter.operator === 'isnull' || filter.operator === 'isnotnull') {
         return '';
     }
@@ -1064,8 +1064,8 @@ const requestExport = async () => {
     requestExportExcelData.value.customFilter = customFilterString;
     requestExportExcelData.value.sort = sort;
     requestExportExcelData.value.columns = columnsData;
-    console.log('Requesting export with filter:', filterString);
-    console.log('Request:', requestExportExcelData);
+    //console.log('Requesting export with filter:', filterString);
+    //console.log('Request:', requestExportExcelData);
     await new Promise(resolve => setTimeout(resolve, 500));
     try {
         // Gọi API Export kèm theo connectionId
@@ -1091,7 +1091,7 @@ const requestExport = async () => {
 //#endregion
 
 const handleFilter = (filterData: any) => {
-    console.log('Received filter data from table component:', filterData);
+    //console.log('Received filter data from table component:', filterData);
     //Xử lý filterData để phù hợp với định dạng của API nếu cần thiết, sau đó gán vào biến filter để gọi API
     // Ví dụ, nếu filterData đã có định dạng đúng rồi thì chỉ cần gán thẳng vào filter.value
     // filter.value = filterData;
@@ -1121,8 +1121,8 @@ const showTableDisplaySettings = () => {
 
 
 const handleApplyTableDisplaySettings = (updatedColumns: any[], showMessage: boolean = true) => {
-    console.log('Updated columns from Table Display Settings:', updatedColumns);
-    console.log('Default fields', defaultFields.value);
+    //console.log('Updated columns from Table Display Settings:', updatedColumns);
+    //console.log('Default fields', defaultFields.value);
     updatedColumns.forEach(element => {
         const field = fields.value.find((f: any) => f.key === element.columnKey);
         if (field) {
@@ -1136,7 +1136,7 @@ const handleApplyTableDisplaySettings = (updatedColumns: any[], showMessage: boo
             };
         }
     });
-    console.log('Updated fields after applying display settings:', fields.value);
+    //console.log('Updated fields after applying display settings:', fields.value);
     fields.value.sort((a: any, b: any) => (a.index || 0) - (b.index || 0));
     // Cập nhật lại activeColumnKeys để loadData với cột mới
     loadData();

@@ -185,7 +185,7 @@ const MenuItems = {
 }
 
 const isParentActive = (pathPrefix: string) => {
-    // console.log('Checking active for path prefix:', pathPrefix, 'Current route path:', route.path);
+    // //console.log('Checking active for path prefix:', pathPrefix, 'Current route path:', route.path);
     return route.path.startsWith(pathPrefix);
 };
 
@@ -196,12 +196,12 @@ const isPanelActive = (urls: string[]) => {
 const groupExpandIndex = ref(-1);
 
 const toggleExpandGroup = (index: number) => {
-    // console.log('Toggling group expand for index:', index);
+    // //console.log('Toggling group expand for index:', index);
     if (groupExpandIndex.value === index) {
         groupExpandIndex.value = -1;
     } else {
         groupExpandIndex.value = index;
-        console.log('Group expand set to index:', index);
+        //console.log('Group expand set to index:', index);
     }
 };
 
@@ -455,7 +455,7 @@ const handleSidebarMouseEnter = () => {
                                     <router-link to="/production/production-execution/handoverreturn"
                                         class="sub-menu-panel__item">
                                         <div class="sub-menu-panel__item__text">{{ t('sidebar.execution.handoverReturn')
-                                            }}</div>
+                                        }}</div>
                                     </router-link>
                                 </div>
                             </div>
@@ -516,7 +516,7 @@ const handleSidebarMouseEnter = () => {
                                         class="sub-menu-panel__item">
                                         <div class="sub-menu-panel__item__text">{{
                                             t('sidebar.productQualityItems.qualityStandard')
-                                        }}</div>
+                                            }}</div>
                                     </router-link>
                                     <router-link to="/production/product-quality/quality-error"
                                         class="sub-menu-panel__item">
@@ -563,7 +563,7 @@ const handleSidebarMouseEnter = () => {
                     </router-link>
                     <router-link to="/production/production-material/opn-inventory-stock" class="sub-menu__item">
                         <div class="sub-menu__item__text">{{ t('sidebar.productionMaterialItems.opnInventoryStock')
-                            }}</div>
+                        }}</div>
                     </router-link>
                 </div>
             </div>
@@ -696,7 +696,7 @@ const handleSidebarMouseEnter = () => {
                                 </div>
                                 <router-link to="/production/other-categories/shift" class="sub-menu-panel__item">
                                     <div class="sub-menu-panel__item__text">{{ t('sidebar.otherCategoriesItems.shift')
-                                    }}</div>
+                                        }}</div>
                                 </router-link>
                                 <router-link to="/production/other-categories/holiday-schedule"
                                     class="sub-menu-panel__item">
@@ -711,7 +711,7 @@ const handleSidebarMouseEnter = () => {
                             </div>
                             <div class="sub-menu-panel__section">
                                 <div class="sub-menu-panel__title">{{ t('sidebar.others')
-                                }}</div>
+                                    }}</div>
                                 <router-link to="/production/other-categories/organization"
                                     class="sub-menu-panel__item">
                                     <div class="sub-menu-panel__item__text">{{
@@ -719,7 +719,7 @@ const handleSidebarMouseEnter = () => {
                                 </router-link>
                                 <router-link to="/production/other-categories/stock" class="sub-menu-panel__item">
                                     <div class="sub-menu-panel__item__text">{{ t('sidebar.otherCategoriesItems.stock')
-                                    }}</div>
+                                        }}</div>
                                 </router-link>
                                 <router-link to="/production/other-categories/unit" class="sub-menu-panel__item">
                                     <div class="sub-menu-panel__item__text">{{ t('sidebar.otherCategoriesItems.unit') }}
@@ -727,7 +727,7 @@ const handleSidebarMouseEnter = () => {
                                 </router-link>
                                 <router-link to="/production/other-categories/reason" class="sub-menu-panel__item">
                                     <div class="sub-menu-panel__item__text">{{ t('sidebar.otherCategoriesItems.reason')
-                                    }}</div>
+                                        }}</div>
                                 </router-link>
                                 <router-link to="/production/other-categories/currency" class="sub-menu-panel__item">
                                     <div class="sub-menu-panel__item__text">{{

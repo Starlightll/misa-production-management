@@ -285,7 +285,7 @@ const handleColumnHeaderClick = (field: any, event: MouseEvent) => {
     if (!field.sortable) {
         return;
     }
-    console.log("Column header clicked:", field);
+    //console.log("Column header clicked:", field);
     currentSortField.value = field;
     const target = event.currentTarget as HTMLElement;
     if (!target || !tableRef.value) return;
@@ -328,7 +328,7 @@ const handleColumnHeaderClick = (field: any, event: MouseEvent) => {
 
 const handleFilterClick = (field: any, event: MouseEvent) => {
     currentFilterField.value = field;
-    console.log("Filter clicked for field:", currentFilterField.value);
+    //console.log("Filter clicked for field:", currentFilterField.value);
 
     const target = event.currentTarget as HTMLElement;
     if (!target || !tableRef.value) return;
@@ -373,13 +373,13 @@ const handleCloseFilter = () => {
 };
 
 const handleApplyFilter = (filterData: any) => {
-    console.log("Áp dụng filter với dữ liệu:", filterData);
+    //console.log("Áp dụng filter với dữ liệu:", filterData);
     handleCloseFilter();
     emit("filter", filterData);
 };
 
 const handleClearFilter = (filterData: any) => {
-    console.log("Xóa filter với dữ liệu:", filterData);
+    //console.log("Xóa filter với dữ liệu:", filterData);
     handleCloseFilter();
     emit("clearFilter", filterData);
 };
@@ -390,7 +390,7 @@ const handleSort = (direction: string) => {
     const existingSortIndex = sorts.value.findIndex(s => s.field.key === currentSortField.value.key);
     if (direction === '') {
         if (existingSortIndex >= 0) {
-            console.log("Xóa trạng thái sort của trường:", currentSortField.value.key);
+            //console.log("Xóa trạng thái sort của trường:", currentSortField.value.key);
             sorts.value.splice(existingSortIndex, 1);
         }
     }
@@ -402,7 +402,7 @@ const handleSort = (direction: string) => {
             sorts.value.push({ field: currentSortField.value, direction: direction });
         }
     }
-    // console.log("Mảng Sorts sau khi xử lý:", sorts.value);
+    // //console.log("Mảng Sorts sau khi xử lý:", sorts.value);
     const sortString = sorts.value.length > 0
         ? JSON.stringify(sorts.value.map(s => ({ Selector: s.field.key, Desc: s.direction === 'desc' ? true : false })))
         : "";
@@ -412,7 +412,7 @@ const handleSort = (direction: string) => {
 
 // Quick pin column handler
 const quickPin = (field: any) => {
-    console.log("Quick pin column:", field);
+    //console.log("Quick pin column:", field);
     handleQuickPinColumn(field, field.pinned !== true);
     const dataToApply = getAppliedColumns();
     emit("quick-pin-column", dataToApply);
@@ -420,7 +420,7 @@ const quickPin = (field: any) => {
 };
 
 const quickUnpin = (field: any) => {
-    console.log("Quick unpin column:", field);
+    //console.log("Quick unpin column:", field);
     handleQuickPinColumn(field, false);
     const dataToApply = getAppliedColumns();
     emit("quick-pin-column", dataToApply);

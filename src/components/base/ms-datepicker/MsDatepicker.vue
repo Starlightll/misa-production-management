@@ -93,7 +93,7 @@ const handleBlur = (event: FocusEvent) => {
   const container = event.currentTarget as HTMLElement;
   const nextTarget = event.relatedTarget as HTMLElement;
   if (!container.contains(nextTarget)) {
-    console.log("Datepicker blurred");
+    //console.log("Datepicker blurred");
     emit("blur", event);
   }
 };
@@ -273,7 +273,7 @@ const displayValue = computed(() => {
   //format time to
   if (resolvedType.value === "time") {
     const parsedTime = parseTime(props.modelValue);
-    console.log("Parsed time:", props.modelValue, parsedTime);
+    //console.log("Parsed time:", props.modelValue, parsedTime);
     return parsedTime || props.modelValue;
   }
   if (resolvedType.value === "datetime") {
