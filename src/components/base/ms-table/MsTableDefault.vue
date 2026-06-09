@@ -22,7 +22,8 @@
                                 <!-- Title -->
                                 <div class="title">
                                     <!-- Pin icon -->
-                                    <div class="icon pin mi-pin icon16 bg-gray-600!"></div>
+                                    <div class="icon pin mi-warehouse icon16 bg-gray-600!"
+                                        :class="pinnedMap[field.key] ? 'pinned' : ''"></div>
                                     <!-- Text -->
                                     <div class="flex-1 flex items-center gap-2" :class="[
                                         field.align === 'center' ? 'text-center! justify-center!' : field.align === 'right' ? 'text-end! justify-end!' : field.align === 'left' ? 'text-start! justify-start!' :
@@ -103,7 +104,7 @@
                                         </template>
                                     </div>
                                     <div class="h-full"
-                                        :class="[index === lastPinnedColumnIndex ? 'border-r-2 border-(--border)' : '']">
+                                        :class="[index === lastPinnedColumnIndex && field.pinned ? 'border-r-2 border-(--border)' : '']">
                                     </div>
                                 </div>
 
@@ -138,12 +139,14 @@
                     <div class="select-checked"></div>
                 </li>
                 <div class="menu-border"></div>
-                <li class="menu-wrapper-item" @click.stop="showInDevelopmentMessage()">
-                    <div class="icon icon16 mi-warehouse pin"></div>
+                <li class="menu-wrapper-item" @click.stop="quickPin(currentSortField)"
+                    :class="pinnedMap[currentSortField?.key] ? 'active' : ''">
+                    <div class="icon icon16 mi-warehouse pin">
+                    </div>
                     Ghim cột
                     <div class="select-checked"></div>
                 </li>
-                <li class="menu-wrapper-item" @click.stop="showInDevelopmentMessage()">
+                <li class="menu-wrapper-item" @click.stop="quickUnpin(currentSortField)">
                     <div class="icon icon16 mi-warehouse unpin"></div>
                     Bỏ ghim cột
                     <div class="select-checked"></div>
@@ -159,13 +162,18 @@ import { formatNumber, formatDate, formatText, formatTime } from '../../../utils
 import { onClickOutside } from '@vueuse/core';
 import TableColumnFilter from './components/TableColumnFilter.vue';
 import { useMessage } from '../../../composables/useMessage.ts';
+import { useTableDisplaySettings } from '../../../composables/useTableDisplaySettings.ts';
 
 const message = useMessage();
 
-const emit = defineEmits(["row-click", "filter", "clearFilter", "sort"]);
+const emit = defineEmits(["row-click", "filter", "clearFilter", "sort", "quick-pin-column"]);
 
 const props = defineProps({
     fields: {
+        type: Array as any,
+        required: true,
+    },
+    defaultFields: {
         type: Array as any,
         required: true,
     },
@@ -191,6 +199,11 @@ const props = defineProps({
     },
 });
 
+const {
+    handleQuickPinColumn,
+    getAppliedColumns,
+} = useTableDisplaySettings({ props });
+
 const tbodyRef = ref<HTMLElement | null>(null);
 
 const currentFilterField = ref<any | null>(null);
@@ -207,6 +220,14 @@ const sortsMap = computed(() => {
     const map: { [key: string]: string } = {};
     sorts.value.forEach(s => {
         map[s.field.key] = s.direction;
+    });
+    return map;
+});
+
+const pinnedMap = computed(() => {
+    const map: { [key: string]: boolean } = {};
+    props.fields.forEach((field: any) => {
+        map[field.key] = field.pinned === true;
     });
     return map;
 });
@@ -240,9 +261,7 @@ const visibleFields = computed(() => {
                 const widthStr = field.style?.width || '0px';
                 const widthNum = parseInt(widthStr.replace('px', '')) || 0;
                 accumulatedLeft += widthNum;
-                if (field.exportable) {
-                    lastPinnedColumnIndex = index;
-                }
+                lastPinnedColumnIndex = index;
             }
 
             return {
@@ -380,6 +399,23 @@ const handleSort = (direction: string) => {
         ? JSON.stringify(sorts.value.map(s => ({ Selector: s.field.key, Desc: s.direction === 'desc' ? true : false })))
         : "";
     emit("sort", sortString);
+    currentSortField.value = null;
+};
+
+// Quick pin column handler
+const quickPin = (field: any) => {
+    console.log("Quick pin column:", field);
+    handleQuickPinColumn(field, field.pinned !== true);
+    const dataToApply = getAppliedColumns();
+    emit("quick-pin-column", dataToApply);
+    currentSortField.value = null;
+};
+
+const quickUnpin = (field: any) => {
+    console.log("Quick unpin column:", field);
+    handleQuickPinColumn(field, false);
+    const dataToApply = getAppliedColumns();
+    emit("quick-pin-column", dataToApply);
     currentSortField.value = null;
 };
 
@@ -536,6 +572,10 @@ table {
 
                 .pin {
                     display: none;
+                }
+
+                .pinned {
+                    display: block !important;
                 }
 
                 .sort {

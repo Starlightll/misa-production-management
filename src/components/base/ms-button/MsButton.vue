@@ -80,7 +80,7 @@ const handleClick = (event: MouseEvent) => {
   cursor: not-allowed;
   opacity: 0.6;
   box-shadow: none !important;
-  pointer-events: none;
+  // pointer-events: none;
   /* Ngăn chặn hover khi disabled */
 }
 

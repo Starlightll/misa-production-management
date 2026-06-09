@@ -34,6 +34,7 @@ export function useTablePagingFilter<T>(
     const totalItems = ref(0);
     const totalPages = ref(0);
     const selectedRowIndices = ref<number[]>([]);
+    const selectedItems = ref<string[]>([]); // item ids
     const sortString = ref('');
 
     const columns = computed(() => {
@@ -276,6 +277,7 @@ export function useTablePagingFilter<T>(
         totalItems,
         totalPages,
         selectedRowIndices,
+        selectedItems,
         filters,
         searchTerm,
         canGoPrev,

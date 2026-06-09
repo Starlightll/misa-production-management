@@ -303,7 +303,8 @@ defineExpose({
             <div class="flex gap-2">
                 <div class="mi-warehouse icon20 ic-help cursor-pointer" @click="" v-tooltip.top="'Trợ giúp'">
                 </div>
-                <div class="mi-warehouse icon20 close cursor-pointer" @click="handleClose()" v-tooltip.top="'Đóng'">
+                <div class="mi-warehouse icon20 close cursor-pointer" @click="handleClose()"
+                    v-tooltip.top="'Đóng (ESC)'">
                 </div>
             </div>
 

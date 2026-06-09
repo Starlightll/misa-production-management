@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, computed } from 'vue';
+import { onBeforeUnmount, onMounted, ref, computed, watch } from 'vue';
 import MsTableDefault from '../../../../components/base/ms-table/MsTableDefault.vue';
 import { shiftService } from '../../../../api/shiftService.ts';
 import { useMessage } from '../../../../composables/useMessage.ts';
@@ -278,7 +278,7 @@ const defaultFields = ref([
         index: 14,
         showInTable: true,
         key: "Action",
-        label: "Hành động",
+        label: "",
         type: "custom",
         fixed: "right",
         sortable: false,
@@ -303,7 +303,12 @@ const defaultFields = ref([
     },
 ]);
 
-const fields = ref(JSON.parse(JSON.stringify(defaultFields.value)));
+const fields = ref(JSON.parse(localStorage.getItem('shiftTableFields') || JSON.stringify(defaultFields.value)));
+//Watch fields change to update localStorage
+watch(fields, (newFields) => {
+    localStorage.setItem('shiftTableFields', JSON.stringify(newFields));
+}, { deep: true });
+
 
 const searchColumns = ['ShiftCode', 'ShiftName', 'CreatedBy', 'ModifiedBy'];
 // 2. Kích hoạt Composable Generic, định nghĩa rõ ràng kiểu dữ liệu là thực thể <Shift>
@@ -313,6 +318,7 @@ const {
     tableRows,
     totalItems,
     selectedRowIndices,
+    selectedItems,
     canGoPrev,
     canGoNext,
     pageStart,
@@ -761,6 +767,10 @@ const handleSelectAll = () => {
     }
 };
 
+const handleSelectItems = (items: any) => {
+
+}
+
 //#endregion
 
 //#region delete and update status for selected rows
@@ -1009,7 +1019,7 @@ const isExporting = ref(false);
 
 const requestExportExcelData = ref({
     fileName: 'Danh_sach_ca_lam_viec',
-    columns: dataColumns.value,
+    columns: [],
     customFilter: '',
     filter: '',
     sort: '',
@@ -1022,10 +1032,18 @@ const requestExport = async () => {
     const customFilter = searchTerm.value !== '' ? buildCustomFilter(searchTerm.value) : null;
     const customFilterString = customFilter ? JSON.stringify(customFilter) : "";
     const sort = "[{\"Selector\":\"ShiftCode\",\"Desc\":false}]";
+    const columnsData = fields.value.filter((f: any) => f.exportable && f.showInTable).map((f: any) => {
+        return {
+            Key: f.key,
+            DisplayName: f.displayLabel || f.label,
+        };
+    });
     requestExportExcelData.value.filter = filterString;
     requestExportExcelData.value.customFilter = customFilterString;
     requestExportExcelData.value.sort = sort;
+    requestExportExcelData.value.columns = columnsData;
     console.log('Requesting export with filter:', filterString);
+    console.log('Request:', requestExportExcelData);
     await new Promise(resolve => setTimeout(resolve, 500));
     try {
         // Gọi API Export kèm theo connectionId
@@ -1069,12 +1087,18 @@ const handleSort = (sortData: any) => {
     handleSortChange(sortData);
 }
 
+const displayTableDisplaySettings = ref(false);
 const isShowingTableDisplaySettings = ref(false);
 const handleCloseTableDisplaySettings = () => {
     isShowingTableDisplaySettings.value = false;
 }
 
-const handleApplyTableDisplaySettings = (updatedColumns: any[]) => {
+const showTableDisplaySettings = () => {
+    isShowingTableDisplaySettings.value = true;
+}
+
+
+const handleApplyTableDisplaySettings = (updatedColumns: any[], showMessage: boolean = true) => {
     console.log('Updated columns from Table Display Settings:', updatedColumns);
     console.log('Default fields', defaultFields.value);
     updatedColumns.forEach(element => {
@@ -1093,7 +1117,7 @@ const handleApplyTableDisplaySettings = (updatedColumns: any[]) => {
     console.log('Updated fields after applying display settings:', fields.value);
     fields.value.sort((a: any, b: any) => (a.index || 0) - (b.index || 0));
     // Cập nhật lại activeColumnKeys để loadData với cột mới
-    // loadData(activeColumnKeys.value);
+    loadData();
     // isShowingTableDisplaySettings.value = false;
     // message.show({
     //     icon: "mi-qtsx icon-info bg-(--color-success)!",
@@ -1102,8 +1126,11 @@ const handleApplyTableDisplaySettings = (updatedColumns: any[]) => {
     //     message: "Cài đặt hiển thị đã được áp dụng.",
     //     acceptText: "Đóng",
     // });
-    toast.success("Cài đặt hiển thị đã được áp dụng.");
+    if (showMessage) {
+        toast.success("Cài đặt hiển thị đã được áp dụng.");
+    }
 }
+
 
 
 const showInDevelopmentMessage = () => {
@@ -1139,7 +1166,7 @@ onBeforeUnmount(() => {
     <div class="layout">
         <!-- Title -->
         <div class="title-box flex-row flex">
-            <div class=" title-box__title">Ca làm việc</div>
+            <div class=" title-box__title ">Ca làm việc</div>
             <MsButton class="" serverity="primary" @click="openShiftDetailModal('', 'add')">
                 <div class="icon plus mi-warehouse icon16 bg-white!"></div>
                 <div class="pl-[4px]">Thêm</div>
@@ -1206,8 +1233,8 @@ onBeforeUnmount(() => {
                             <div class="icon reload mi-warehouse icon16 bg-gray-600!"
                                 :class="{ 'animate-spin': isLoading }"></div>
                         </MsButton>
-                        <MsButton class="" serverity="secondary" variant="outlined"
-                            @click="isShowingTableDisplaySettings = true" v-tooltip.top="'Cài đặt hiển thị'">
+                        <MsButton class="" serverity="secondary" variant="outlined" @click="showTableDisplaySettings"
+                            v-tooltip.top="'Cài đặt hiển thị'">
                             <div class="icon setting mi-warehouse icon16 bg-gray-600!"></div>
                         </MsButton>
                     </div>
@@ -1216,8 +1243,10 @@ onBeforeUnmount(() => {
                 <div class="table-container__table">
                     <div class="table-container__table__content">
                         <MsTableDefault :fields="fields" :rows="tableRows" :focusedRowIndex="focusedRowIndex"
-                            :selectedRowIndices="selectedRowIndices" @filter="handleFilter($event)"
-                            :isLoading="isLoading" @sort="handleSort($event)" @clearFilter="handleClearFilter($event)">
+                            :defaultFields="defaultFields" :selectedRowIndices="selectedRowIndices"
+                            @filter="handleFilter($event)" :isLoading="isLoading" @sort="handleSort($event)"
+                            @clearFilter="handleClearFilter($event)"
+                            @quick-pin-column="handleApplyTableDisplaySettings($event, false)">
                             <template #title-Checkbox="{ }">
                                 <MsCheckbox type="checkbox" style="width: 16px; height: 16px" @change="handleSelectAll"
                                     :modelValue="selectedRowIndices.length === tableRows.length" />
@@ -1292,7 +1321,9 @@ onBeforeUnmount(() => {
                     <!-- Left -->
                     <div>
                         <div>
-                            <span>Tổng số: <span class="font-bold">{{ totalItems }}</span></span>
+                            <span class="whitespace-nowrap">Tổng số: <span class="font-bold">
+                                    {{ totalItems }}</span>
+                            </span>
                         </div>
                     </div>
                     <!-- Right -->
@@ -1303,7 +1334,8 @@ onBeforeUnmount(() => {
                                 class="w-20!" valueField="value" labelField="label" v-model="pageSize"
                                 @change="changePageSize($event.value)">
                             </MsSelect>
-                            <span class="font-bold">{{ pageStart }} - {{ pageEnd }}</span>
+                            <span class="font-bold">{{ isLoading ? 0 : pageStart }} - {{ isLoading ? 0 : pageEnd
+                            }}</span>
                             <!-- Pagination controls -->
                             <div class="flex">
                                 <MsButton class="p-1" serverity="secondary" variant="text" :disabled="!canGoPrev"

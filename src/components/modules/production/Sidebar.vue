@@ -383,7 +383,7 @@ const handleSidebarMouseEnter = () => {
                 <div class="sub-menu"
                     :style="{ height: groupExpandIndex === GROUP_PLAN_INDEX && !isCollapsed || (groupExpandIndex === GROUP_PLAN_INDEX && isSidebarExpanded) ? `${calculateSubmenuHeight(GROUP_PLAN_INDEX)}px` : '0' }">
                     <router-link to="/production/production-plan/sale-order-plan" class="sub-menu__item"
-                        :v-tooltip.right="t('sidebar.plan.saleOrderPlan')">
+                        v-tooltip.right="t('sidebar.plan.saleOrderPlan')">
                         <div class="sub-menu__item__text">{{ t('sidebar.plan.saleOrderPlan') }}</div>
                     </router-link>
                     <router-link to="/production/production-plan/overall-plan" class="sub-menu__item">
@@ -393,7 +393,7 @@ const handleSidebarMouseEnter = () => {
                         <div class="sub-menu__item__text">{{ t('sidebar.plan.detailPlan') }}</div>
                     </router-link>
                     <router-link to="/production/production-plan/material-plan" class="sub-menu__item"
-                        :v-tooltip.right="t('sidebar.plan.materialPlan')">
+                        v-tooltip.right="t('sidebar.plan.materialPlan')">
                         <div class="sub-menu__item__text">{{ t('sidebar.plan.materialPlan') }}</div>
                     </router-link>
                     <router-link to="/production/production-plan/material-purchase-request" class="sub-menu__item">
@@ -430,13 +430,13 @@ const handleSidebarMouseEnter = () => {
                         <div class="sub-menu__item__text">{{ t('sidebar.execution.statistics') }}</div>
                     </router-link>
                     <router-link to="/production/production-execution/product-request" class="sub-menu__item"
-                        :v-tooltip.right="t('sidebar.execution.productRequest')">
+                        v-tooltip.right="t('sidebar.execution.productRequest')">
                         <div class="sub-menu__item__text">{{ t('sidebar.execution.productRequest') }}</div>
                     </router-link>
                     <div class="sub-menu__item relative group" @mouseenter="openHandoverSubmenu" :class="{
                         'active-sub-panel-parent': isPanelActive(['/production/production-execution/handover', '/production/production-execution/handoverreturn'])
                     }" @mouseleave="handoverSubmenuOpen = false;">
-                        <div class="sub-menu__item__text" :v-tooltip.top-start="t('sidebar.execution.handover')">
+                        <div class="sub-menu__item__text" v-tooltip.top-start="t('sidebar.execution.handover')">
                             {{ t('sidebar.execution.handover') }}
                         </div>
                         <div class="dropdown icon-menu mi-warehouse icon20 icon-chevron-right"></div>
@@ -455,14 +455,14 @@ const handleSidebarMouseEnter = () => {
                                     <router-link to="/production/production-execution/handoverreturn"
                                         class="sub-menu-panel__item">
                                         <div class="sub-menu-panel__item__text">{{ t('sidebar.execution.handoverReturn')
-                                        }}</div>
+                                            }}</div>
                                     </router-link>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <router-link to="/production/production-execution/handover-overview" class="sub-menu__item"
-                        :v-tooltip.right="t('sidebar.execution.handoverOverview')">
+                        v-tooltip.right="t('sidebar.execution.handoverOverview')">
                         <div class="sub-menu__item__text">{{ t('sidebar.execution.handoverOverview') }}</div>
                     </router-link>
                 </div>
@@ -516,7 +516,7 @@ const handleSidebarMouseEnter = () => {
                                         class="sub-menu-panel__item">
                                         <div class="sub-menu-panel__item__text">{{
                                             t('sidebar.productQualityItems.qualityStandard')
-                                            }}</div>
+                                        }}</div>
                                     </router-link>
                                     <router-link to="/production/product-quality/quality-error"
                                         class="sub-menu-panel__item">
@@ -546,7 +546,7 @@ const handleSidebarMouseEnter = () => {
                 <div class="sub-menu"
                     :style="{ height: groupExpandIndex === GROUP_PRODUCTION_MATERIAL_INDEX && !isCollapsed || (groupExpandIndex === GROUP_PRODUCTION_MATERIAL_INDEX && isSidebarExpanded) ? `${calculateSubmenuHeight(GROUP_PRODUCTION_MATERIAL_INDEX)}px` : '0' }">
                     <router-link to="/production/production-material/request-material" class="sub-menu__item"
-                        :v-tooltip.right="t('sidebar.productionMaterialItems.requestMaterial')">
+                        v-tooltip.right="t('sidebar.productionMaterialItems.requestMaterial')">
                         <div class="sub-menu__item__text">{{ t('sidebar.productionMaterialItems.requestMaterial') }}
                         </div>
                     </router-link>
@@ -563,7 +563,7 @@ const handleSidebarMouseEnter = () => {
                     </router-link>
                     <router-link to="/production/production-material/opn-inventory-stock" class="sub-menu__item">
                         <div class="sub-menu__item__text">{{ t('sidebar.productionMaterialItems.opnInventoryStock')
-                        }}</div>
+                            }}</div>
                     </router-link>
                 </div>
             </div>
@@ -590,19 +590,19 @@ const handleSidebarMouseEnter = () => {
                         <div class="sub-menu__item__text">{{ t('sidebar.dictionaryItems.inventoryItem') }}</div>
                     </router-link>
                     <router-link to="/production/dictionary/inventoryitemgroup" class="sub-menu__item"
-                        :v-tooltip.right="t('sidebar.dictionaryItems.inventoryItemGroup')">
+                        v-tooltip.right="t('sidebar.dictionaryItems.inventoryItemGroup')">
                         <div class="sub-menu__item__text">{{ t('sidebar.dictionaryItems.inventoryItemGroup') }}</div>
                     </router-link>
                     <router-link to="/production/dictionary/billOfMaterials" class="sub-menu__item"
-                        :v-tooltip.right="t('sidebar.dictionaryItems.billOfMaterials')">
+                        v-tooltip.right="t('sidebar.dictionaryItems.billOfMaterials')">
                         <div class="sub-menu__item__text">{{ t('sidebar.dictionaryItems.billOfMaterials') }}</div>
                     </router-link>
                     <router-link to="/production/dictionary/billOfDisassembly" class="sub-menu__item"
-                        :v-tooltip.right="t('sidebar.dictionaryItems.billOfDisassembly')">
+                        v-tooltip.right="t('sidebar.dictionaryItems.billOfDisassembly')">
                         <div class="sub-menu__item__text">{{ t('sidebar.dictionaryItems.billOfDisassembly') }}</div>
                     </router-link>
                     <router-link to="/production/dictionary/alternativeMaterialList" class="sub-menu__item"
-                        :v-tooltip.right="t('sidebar.dictionaryItems.alternativeMaterialList')">
+                        v-tooltip.right="t('sidebar.dictionaryItems.alternativeMaterialList')">
                         <div class="sub-menu__item__text">{{ t('sidebar.dictionaryItems.alternativeMaterialList') }}
                         </div>
                     </router-link>
@@ -696,7 +696,7 @@ const handleSidebarMouseEnter = () => {
                                 </div>
                                 <router-link to="/production/other-categories/shift" class="sub-menu-panel__item">
                                     <div class="sub-menu-panel__item__text">{{ t('sidebar.otherCategoriesItems.shift')
-                                        }}</div>
+                                    }}</div>
                                 </router-link>
                                 <router-link to="/production/other-categories/holiday-schedule"
                                     class="sub-menu-panel__item">
@@ -711,7 +711,7 @@ const handleSidebarMouseEnter = () => {
                             </div>
                             <div class="sub-menu-panel__section">
                                 <div class="sub-menu-panel__title">{{ t('sidebar.others')
-                                    }}</div>
+                                }}</div>
                                 <router-link to="/production/other-categories/organization"
                                     class="sub-menu-panel__item">
                                     <div class="sub-menu-panel__item__text">{{
@@ -719,7 +719,7 @@ const handleSidebarMouseEnter = () => {
                                 </router-link>
                                 <router-link to="/production/other-categories/stock" class="sub-menu-panel__item">
                                     <div class="sub-menu-panel__item__text">{{ t('sidebar.otherCategoriesItems.stock')
-                                        }}</div>
+                                    }}</div>
                                 </router-link>
                                 <router-link to="/production/other-categories/unit" class="sub-menu-panel__item">
                                     <div class="sub-menu-panel__item__text">{{ t('sidebar.otherCategoriesItems.unit') }}
@@ -727,7 +727,7 @@ const handleSidebarMouseEnter = () => {
                                 </router-link>
                                 <router-link to="/production/other-categories/reason" class="sub-menu-panel__item">
                                     <div class="sub-menu-panel__item__text">{{ t('sidebar.otherCategoriesItems.reason')
-                                        }}</div>
+                                    }}</div>
                                 </router-link>
                                 <router-link to="/production/other-categories/currency" class="sub-menu-panel__item">
                                     <div class="sub-menu-panel__item__text">{{
