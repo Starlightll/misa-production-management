@@ -34,7 +34,7 @@ export function useTablePagingFilter<T>(
     const totalItems = ref(0);
     const totalPages = ref(0);
     const selectedRowIndices = ref<number[]>([]);
-    const selectedItems = ref<string[]>([]); // item ids
+    const selectedItems = ref<any[]>([]); // item
     const sortString = ref('');
 
     const columns = computed(() => {
@@ -119,7 +119,8 @@ export function useTablePagingFilter<T>(
                 tableRows.value = response.data.data || [];
                 totalItems.value = response.data.total || 0;
                 totalPages.value = response.data.totalPages || 0;
-                selectedRowIndices.value = []; // Reset tích chọn dòng sau khi reload dữ liệu
+                // selectedRowIndices.value = []; // Reset tích chọn dòng sau khi reload dữ liệu
+                selectedItems.value = [];
             }
         } catch (error) {
             console.error('Lỗi nạp dữ liệu phân trang công cục:', error);

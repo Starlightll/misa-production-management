@@ -73,7 +73,7 @@
                     <div v-if="isLoading" overlay class="z-100 bg-white/50 absolute inset-0 w-full h-full"></div>
                     <template v-if="rows.length > 0">
                         <tr v-for="(row, index) in rows" :key="index" class="ms-tr"
-                            @click="emit('row-click', { row, rowIndex: index })" :class="[index == props.focusedRowIndex ? 'z-10!' : '', props.selectedRowIndices.includes(index) ? 'row-selected' : '',
+                            @click="emit('row-click', { row, rowIndex: index })" :class="[index == props.focusedRowIndex ? 'z-10!' : '', props.selectedItems.some((item: any) => item[props.rowKey] === row[props.rowKey]) ? 'row-selected' : '',
                             ]">
                             <td v-for="(field, index) in visibleFields" :key="field.key" :style="field.tdStyle || {}"
                                 class="ms-col-td">
@@ -192,6 +192,14 @@ const props = defineProps({
     selectedRowIndices: {
         type: Array as any,
         default: () => [],
+    },
+    selectedItems: {
+        type: Array as any,
+        default: () => [],
+    },
+    rowKey: {
+        type: String,
+        default: 'id'
     },
     isLoading: {
         type: Boolean,

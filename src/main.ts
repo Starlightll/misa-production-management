@@ -19,10 +19,10 @@ app
     .use(i18n)
     .use(pinia)
     .use(Vue3Toastify, {
-        autoClose: 3000,
+        autoClose: 600,
         position: 'top-center',
         theme: 'colored',
-        multiple: true,
+        multiple: false,
         transition: 'slide'
     } as ToastContainerOptions);
 globalComponents(app);

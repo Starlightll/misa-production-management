@@ -373,6 +373,7 @@ const activeColumnKeys = computed(() => fields.value.filter((f: any) => f.export
 
 //#region api call ==================================================================================
 const deleteShift = async (shiftIds: string[]) => {
+    console.log("Deleting shifts with IDs:", shiftIds);
     let messageContent = '';
     if (shiftIds.length === 1) {
         const shift = tableRows.value.find(r => r.shiftId === shiftIds[0]);
@@ -396,7 +397,8 @@ const deleteShift = async (shiftIds: string[]) => {
                     tableRows.value = tableRows.value.filter(r => !shiftIds.includes(r.shiftId));
                     totalItems.value -= shiftIds.length; // Cập nhật lại tổng số items sau khi xóa
                     //Reset selected rows
-                    selectedRowIndices.value = [];
+                    // selectedRowIndices.value = [];
+                    selectedItems.value = [];
                     console.log("Xóa thành công!");
                     // if (tableRows.value.length === 0 && currentPage.value > 1) {
                     //     prevPage(activeColumnKeys.value);
@@ -446,14 +448,11 @@ const updateShiftStatus = async (shiftIds: string[], inactive: boolean) => {
         if (response.isSuccess) {
             toast.success(response.message || "Cập nhật trạng thái thành công!");
             //update status in table without call API again
-            tableRows.value = tableRows.value.map(r => {
-                if (shiftIds.includes(r.shiftId)) {
-                    return {
-                        ...r,
-                        shiftInactive: inactive,
-                    };
+            shiftIds.forEach(id => {
+                const shift = tableRows.value.find(r => r.shiftId === id);
+                if (shift) {
+                    shift.shiftInactive = inactive;
                 }
-                return r;
             });
             // fetchDataPaging(pagingParams.value);
         } else {
@@ -767,9 +766,32 @@ const handleSelectAll = () => {
     }
 };
 
-const handleSelectItems = (items: any) => {
+//Store id of selected rows in a variable to use in delete or update status action
+const handleSelectItem = (item: any) => {
+    if (item && item.shiftId) {
+        const existingItem = selectedItems.value.find((i: any) => i.shiftId === item.shiftId);
+        if (existingItem) {
+            selectedItems.value = selectedItems.value.filter((i: any) => i.shiftId !== item.shiftId);
+        } else {
+            selectedItems.value.push(item);
+        }
+    }
+    console.log('Selected items:', selectedItems.value);
+};
 
-}
+const handleSelectAllItems = () => {
+    if (selectedItems.value.length === tableRows.value.length) {
+        selectedItems.value = [];
+    } else {
+        tableRows.value.forEach((item: any) => {
+            const existingItem = selectedItems.value.find((i: any) => i.shiftId === item.shiftId);
+            if (!existingItem) {
+                selectedItems.value.push(item);
+            }
+        });
+    }
+    console.log('Selected items after select all:', selectedItems.value);
+};
 
 //#endregion
 
@@ -1182,8 +1204,7 @@ onBeforeUnmount(() => {
                     <div class="table-container__toolbar__left flex items-center gap-x-4">
                         <MsInput class="w-[240px]" placeholder="Tìm kiếm" icon="mi-warehouse icon16 icon left search"
                             @input="executeSearch($event)" />
-                        <div v-if="filters.length > 0 && selectedRowIndices.length === 0"
-                            class="filter-conditions h-full">
+                        <div v-if="filters.length > 0 && selectedItems.length === 0" class="filter-conditions h-full">
                             <div v-for="(filter, index) in filters" :key="index" class="filter-item">
                                 <div class="lable-value-filter">
                                     <span>{{ filter.fieldLabel }}</span>
@@ -1197,25 +1218,25 @@ onBeforeUnmount(() => {
                                 Bỏ lọc
                             </div>
                         </div>
-                        <div class="flex items-center gap-x-2" v-if="selectedRowIndices.length > 0">
-                            <div>Đã chọn: <span class="font-bold">{{ selectedRowIndices.length }}</span></div>
+                        <div class="flex items-center gap-x-2" v-if="selectedItems.length > 0">
+                            <div>Đã chọn: <span class="font-bold">{{ selectedItems.length }}</span></div>
                             <div class="hover:underline text-(--primary-color) cursor-pointer"
-                                @click="selectedRowIndices.length > 0 && (selectedRowIndices = [])">Bỏ chọn
+                                @click="selectedItems.length > 0 && (selectedItems = [])">Bỏ chọn
                             </div>
                             <MsButton :serverity="'success'" :variant="'outlined'"
-                                @click="updateShiftStatus(selectedShift.map(shift => shift.shiftId), false)"
-                                v-if="selectedShift.some(shift => shift.shiftInactive)">
+                                @click="updateShiftStatus(selectedItems.map(shift => shift.shiftId), false)"
+                                v-if="selectedItems.some(shift => shift.shiftInactive)">
                                 <div class="icon active mi-warehouse icon16 bg-(--color-success)!"></div>
                                 <div class="pl-[4px] text-(--color-success)">Sử dụng</div>
                             </MsButton>
                             <MsButton :serverity="'danger'" :variant="'outlined'"
-                                @click="updateShiftStatus(selectedShift.map(shift => shift.shiftId), true)"
-                                v-if="selectedShift.some(shift => !shift.shiftInactive)">
+                                @click="updateShiftStatus(selectedItems.map(shift => shift.shiftId), true)"
+                                v-if="selectedItems.some(shift => !shift.shiftInactive)">
                                 <div class="icon empty mi-warehouse icon16 bg-(--color-danger)!"></div>
                                 <div class="pl-[4px] text-(--color-danger)">Ngừng sử dụng</div>
                             </MsButton>
-                            <MsButton @click="deleteShift(selectedShift.map(shift => shift.shiftId))"
-                                :serverity="'danger'" :variant="'outlined'" v-if="selectedRowIndices.length > 0">
+                            <MsButton @click="deleteShift(selectedItems.map(shift => shift.shiftId))"
+                                :serverity="'danger'" :variant="'outlined'" v-if="selectedItems.length > 0">
                                 <div class="icon trash mi-warehouse icon16 bg-(--color-danger)!"></div>
                                 <div class="pl-[4px] text-(--color-danger)">Xóa</div>
                             </MsButton>
@@ -1243,18 +1264,19 @@ onBeforeUnmount(() => {
                 <div class="table-container__table">
                     <div class="table-container__table__content">
                         <MsTableDefault :fields="fields" :rows="tableRows" :focusedRowIndex="focusedRowIndex"
-                            :defaultFields="defaultFields" :selectedRowIndices="selectedRowIndices"
+                            :defaultFields="defaultFields" :selectedItems="selectedItems" :rowKey="'shiftId'"
                             @filter="handleFilter($event)" :isLoading="isLoading" @sort="handleSort($event)"
                             @clearFilter="handleClearFilter($event)"
                             @quick-pin-column="handleApplyTableDisplaySettings($event, false)">
                             <template #title-Checkbox="{ }">
-                                <MsCheckbox type="checkbox" style="width: 16px; height: 16px" @change="handleSelectAll"
-                                    :modelValue="selectedRowIndices.length === tableRows.length" />
+                                <MsCheckbox type="checkbox" style="width: 16px; height: 16px"
+                                    @change="handleSelectAllItems()"
+                                    :modelValue="selectedItems.length === tableRows.length && tableRows.length > 0" />
                             </template>
                             <template #Checkbox="{ row }">
                                 <MsCheckbox type="checkbox" style="width: 16px; height: 16px"
-                                    @change="handleSelectRow(row)"
-                                    :modelValue="selectedRowIndices.includes(tableRows.findIndex(r => r.shiftId === row.shiftId))" />
+                                    @change="handleSelectItem(row)"
+                                    :modelValue="selectedItems.some((item: any) => item.shiftId === row.shiftId)" />
                             </template>
                             <template #shiftInactive="{ row }">
                                 <!-- Active -->
