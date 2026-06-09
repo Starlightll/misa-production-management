@@ -14,11 +14,10 @@
             <table class="ms-table">
                 <thead class="ms-thead bg-(--bg-semi-dark)">
                     <tr>
-                        <th v-for="(field, index) in fields.filter((f: any) => f.showInTable !== false)"
-                            :key="field.key" :style="field.style || {}" scope="col"
-                            @click.stop="handleColumnHeaderClick(field, $event)" class="ms-col-th">
+                        <th v-for="(field, index) in visibleFields" :key="field.key" :style="field.thStyle || {}"
+                            scope="col" @click.stop="handleColumnHeaderClick(field, $event)" class="ms-col-th">
                             <div class="title-wrapper" :style="[
-                                index === fields.length - 1 ? 'border-right: none !important;' : '',
+                                index === visibleFields.length - 1 ? 'border-right: none !important;' : '',
                             ]">
                                 <!-- Title -->
                                 <div class="title">
@@ -31,11 +30,18 @@
                                     ]">
                                         <template v-if="field.type === 'custom'">
                                             <slot :name="`title-${field.key}`" :field="field">
-                                                {{ field.label }}
+                                                {{ field.displayLabel || field.label }}
                                             </slot>
                                         </template>
                                         <template v-else>
-                                            {{ field.label }}
+                                            <div :style="{
+                                                maxWidth: field.style?.width ? `calc(${field.style.width} - ${sortsMap[field.key] ? '64px' : '32px'}) ` : 'calc(100% - 32px)',
+                                                textOverflow: 'ellipsis',
+                                                overflow: 'hidden',
+                                                whiteSpace: 'nowrap',
+                                            }">
+                                                {{ field.displayLabel || field.label }}
+                                            </div>
                                         </template>
                                         <!-- Sort icon -->
                                         <div v-if="field.sortable"
@@ -45,9 +51,15 @@
 
                                 </div>
                                 <!-- Filter icon -->
-                                <div v-if="field.filter?.filterable" class="icon mi-warehouse icon16 bg-gray-600!"
-                                    :class="field.filter?.filterData.value ? 'filtered filter--active' : 'filter'"
-                                    @click.stop="handleFilterClick(field, $event)"></div>
+                                <div v-if="field.filter?.filterable" class="flex items-center bg-[#F3F4F6]" :style="{
+                                    position: 'absolute',
+                                    right: '10px',
+                                }">
+                                    <div class="icon mi-warehouse icon16 bg-gray-600!"
+                                        :class="field.filter?.filterData.value ? 'filtered filter--active' : 'filter'"
+                                        @click.stop="handleFilterClick(field, $event)"></div>
+                                </div>
+
                             </div>
 
                             <!-- Resizer -->
@@ -56,37 +68,43 @@
                     </tr>
                 </thead>
 
-                <tbody class="ms-tbody bg-white divide-y divide-gray-200">
+                <tbody ref="tbodyRef" class="ms-tbody bg-white divide-y divide-gray-200">
                     <div v-if="isLoading" overlay class="z-100 bg-white/50 absolute inset-0 w-full h-full"></div>
                     <template v-if="rows.length > 0">
                         <tr v-for="(row, index) in rows" :key="index" class="ms-tr"
-                            @click="emit('row-click', { row, rowIndex: index })"
-                            :class="[index == props.focusedRowIndex ? 'z-10!' : '', props.selectedRowIndices.includes(index) ? 'row-selected' : '']">
-                            <td v-for="field in fields.filter((f: any) => f.showInTable !== false)" :key="field.key"
-                                :style="field.style || {}" class="ms-col-td">
-                                <div class="flex flex-1" :class="[
-                                    field.align === 'center' ? 'text-center! justify-center!' : field.align === 'right' ? 'text-end! justify-end!' : field.align === 'left' ? 'text-start! justify-start!' :
-                                        field.type === 'number' ? 'text-end! justify-end!' : field.type === 'date' ? 'text-center! justify-center!' : field.type === 'time' ? 'text-start! justify-start!' : field.type === 'text' ? 'text-left! justify-start!' : 'text-start! justify-start!',
-                                    field.displayOnHover ? 'display-on-hover' : '',
-                                ]">
-                                    <!-- Custom type with slot -->
-                                    <template v-if="field.type === 'custom'">
-                                        <!-- <div v-if="field.displayOnHover" class="display-on-hover">
+                            @click="emit('row-click', { row, rowIndex: index })" :class="[index == props.focusedRowIndex ? 'z-10!' : '', props.selectedRowIndices.includes(index) ? 'row-selected' : '',
+                            ]">
+                            <td v-for="(field, index) in visibleFields" :key="field.key" :style="field.tdStyle || {}"
+                                class="ms-col-td">
+                                <div class="flex items-center h-full">
+                                    <div class="flex flex-1 px-4" :class="[
+                                        field.align === 'center' ? 'text-center! justify-center!' : field.align === 'right' ? 'text-end! justify-end!' : field.align === 'left' ? 'text-start! justify-start!' :
+                                            field.type === 'number' ? 'text-end! justify-end!' : field.type === 'date' ? 'text-center! justify-center!' : field.type === 'time' ? 'text-start! justify-start!' : field.type === 'text' ? 'text-left! justify-start!' : 'text-start! justify-start!',
+                                        field.displayOnHover ? 'display-on-hover' : '',
+
+                                    ]">
+                                        <!-- Custom type with slot -->
+                                        <template v-if="field.type === 'custom'">
+                                            <!-- <div v-if="field.displayOnHover" class="display-on-hover">
                                     <slot :name="field.key" :row="row" :field="field" :value="row[field.key]">
                                         {{ handleFormat(row[field.key], "text") }}
                                     </slot>
-                                </div> -->
-                                        <slot :name="field.key" :row="row" :rowIndex="index" :field="field"
-                                            :value="row[field.key]">
-                                            <div class="">{{ handleFormat(row[field.key], "text") }}</div>
-                                        </slot>
-                                    </template>
+                                        </div> -->
+                                            <slot :name="field.key" :row="row" :rowIndex="index" :field="field"
+                                                :value="row[field.key]">
+                                                <div class="">{{ handleFormat(row[field.key], "text") }}</div>
+                                            </slot>
+                                        </template>
 
-                                    <!-- Other types -->
-                                    <template v-else>
-                                        <div class="text-ellipsis overflow-hidden whitespace-nowrap">{{
-                                            handleFormat(row[field.key], field.type || "text") }}</div>
-                                    </template>
+                                        <!-- Other types -->
+                                        <template v-else>
+                                            <div class="text-ellipsis overflow-hidden whitespace-nowrap">{{
+                                                handleFormat(row[field.key], field.type || "text") }}</div>
+                                        </template>
+                                    </div>
+                                    <div class="h-full"
+                                        :class="[index === lastPinnedColumnIndex ? 'border-r-2 border-(--border)' : '']">
+                                    </div>
                                 </div>
 
                             </td>
@@ -173,6 +191,7 @@ const props = defineProps({
     },
 });
 
+const tbodyRef = ref<HTMLElement | null>(null);
 
 const currentFilterField = ref<any | null>(null);
 const currentSortField = ref<any | null>(null);
@@ -190,6 +209,48 @@ const sortsMap = computed(() => {
         map[s.field.key] = s.direction;
     });
     return map;
+});
+
+let lastPinnedColumnIndex = -1;
+const visibleFields = computed(() => {
+    let accumulatedLeft = 0;
+
+    return props.fields
+        .filter((f: any) => f.showInTable !== false)
+        .map((field: any, index: number) => {
+            // Xác định xem cột này có được ghim bên trái hay không
+            const isPinned = field.pinned === true || field.fixed === 'left' || field.key === 'Checkbox';
+
+            // Sao chép style gốc tránh mutate props trực tiếp
+            const thStyle = { ...(field.style || {}) };
+            const tdStyle = { ...(field.style || {}) };
+
+            if (isPinned) {
+                // Style cho thẻ <th> (Tiêu đề bảng)
+                thStyle.position = 'sticky';
+                thStyle.left = `${accumulatedLeft}px`;
+                thStyle.zIndex = 55; // Cao hơn z-index: 50 của các hàng thead tr thông thường
+
+                // Style cho thẻ <td> (Ô dữ liệu body)
+                tdStyle.position = 'sticky';
+                tdStyle.left = `${accumulatedLeft}px`;
+                tdStyle.zIndex = 5;  // Đủ cao để đè lên các ô thường khi cuộn ngang, nhưng thấp hơn thead
+
+                // Lấy độ rộng dạng số (ví dụ: '120px' -> 120) để cộng dồn cho cột ghim kế tiếp
+                const widthStr = field.style?.width || '0px';
+                const widthNum = parseInt(widthStr.replace('px', '')) || 0;
+                accumulatedLeft += widthNum;
+                if (field.exportable) {
+                    lastPinnedColumnIndex = index;
+                }
+            }
+
+            return {
+                ...field,
+                thStyle,
+                tdStyle
+            };
+        });
 });
 
 
@@ -380,6 +441,10 @@ const showInDevelopmentMessage = () => {
     });
 };
 
+defineExpose({
+    tbodyRef
+});
+
 
 
 </script>
@@ -513,7 +578,7 @@ table {
     }
 
     .ms-col-td {
-        padding: 0 16px;
+        // padding: 0 16px;
         height: 32px;
         vertical-align: middle;
         border-bottom: 1px solid #E5E7EB;

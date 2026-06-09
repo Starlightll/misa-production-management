@@ -8,7 +8,8 @@ import { toast } from 'vue3-toastify';
 
 const message = useMessage();
 
-const fields = ref([
+// Default fields definition with all properties for table configuration, sorting, filtering, etc.
+const defaultFields = ref([
     {
         index: 0,
         showInTable: true,
@@ -33,11 +34,13 @@ const fields = ref([
         },
     },
     {
-        key: 'shiftCode', label: 'Mã ca', type: "text", resizable: true,
+        index: 1,
+        key: 'shiftCode', label: 'Mã ca', displayLabel: 'Mã ca', type: "text", resizable: true,
         movable: true,
         showInTable: true,
         exportable: true,
         sortable: true,
+        pinned: false,
         filter: {
             filterable: true,
             filterType: "text",
@@ -52,11 +55,13 @@ const fields = ref([
         },
     },
     {
-        key: 'shiftName', label: 'Tên ca', type: "text", resizable: true,
+        index: 2,
+        key: 'shiftName', label: 'Tên ca', displayLabel: 'Tên ca', type: "text", resizable: true,
         movable: true,
         showInTable: true,
         exportable: true,
         sortable: true,
+        pinned: false,
         filter: {
             filterable: true,
             filterType: "text",
@@ -71,52 +76,61 @@ const fields = ref([
         },
     },
     {
-        key: 'shiftBeginTime', label: 'Giờ vào ca', type: 'time', resizable: true,
+        index: 3,
+        key: 'shiftBeginTime', label: 'Giờ vào ca', displayLabel: 'Giờ vào ca', type: 'time', resizable: true,
         movable: true,
         showInTable: true,
         exportable: true,
         sortable: true,
-        pinned: true,
+        pinned: false,
         style: {
             width: '130px',
         },
     },
     {
-        key: 'shiftEndTime', label: 'Giờ hết ca', type: 'time', resizable: true,
+        index: 4,
+        key: 'shiftEndTime', label: 'Giờ hết ca', displayLabel: 'Giờ hết ca', type: 'time', resizable: true,
         movable: true,
         showInTable: true,
         exportable: true,
         sortable: true,
+        pinned: false,
         style: {
             width: '130px',
         },
     },
     {
-        key: 'shiftBeginBreakTime', label: 'Bắt đầu nghỉ giữa ca', type: 'time', resizable: true,
+        index: 5,
+        key: 'shiftBeginBreakTime', label: 'Bắt đầu nghỉ giữa ca', displayLabel: 'Bắt đầu nghỉ giữa ca', type: 'time', resizable: true,
         movable: true,
         showInTable: true,
         exportable: true,
         sortable: true,
+        pinned: false,
         style: {
             width: '200px',
         },
     },
     {
-        key: 'shiftEndBreakTime', label: 'Kết thúc nghỉ giữa ca', type: 'time', resizable: true,
+        index: 6,
+        key: 'shiftEndBreakTime', label: 'Kết thúc nghỉ giữa ca', displayLabel: 'Kết thúc nghỉ giữa ca', type: 'time', resizable: true,
         movable: true,
         showInTable: true,
         exportable: true,
         sortable: true,
+        pinned: false,
         style: {
             width: '210px',
         },
     },
     {
-        key: 'shiftWorkingTime', label: 'Thời gian làm việc (giờ)', type: 'number', resizable: true,
+        index: 7,
+        key: 'shiftWorkingTime', label: 'Thời gian làm việc (giờ)', displayLabel: 'Thời gian làm việc (giờ)', type: 'number', resizable: true,
         movable: true,
         showInTable: true,
         exportable: true,
         sortable: true,
+        pinned: false,
         filter: {
             filterable: true,
             filterType: "number",
@@ -131,11 +145,13 @@ const fields = ref([
         },
     },
     {
-        key: 'shiftBreakingTime', label: 'Thời gian nghỉ giữa ca (giờ)', type: 'number', resizable: true,
+        index: 8,
+        key: 'shiftBreakingTime', label: 'Thời gian nghỉ giữa ca (giờ)', displayLabel: 'Thời gian nghỉ giữa ca (giờ)', type: 'number', resizable: true,
         movable: true,
         showInTable: true,
         exportable: true,
         sortable: true,
+        pinned: false,
         filter: {
             filterable: true,
             filterType: "number",
@@ -150,11 +166,13 @@ const fields = ref([
         },
     },
     {
+        index: 9,
         key: 'shiftInactive', label: 'Trạng thái', type: 'custom', resizable: true,
         movable: true,
         showInTable: true,
         exportable: true,
         sortable: true,
+        pinned: false,
         filter: {
             filterable: true,
             filterType: "select",
@@ -173,11 +191,13 @@ const fields = ref([
         },
     },
     {
-        key: 'createdBy', label: 'Người tạo', type: "text", resizable: true,
+        index: 10,
+        key: 'createdBy', label: 'Người tạo', displayLabel: 'Người tạo', type: "text", resizable: true,
         movable: true,
         showInTable: true,
         exportable: true,
         sortable: true,
+        pinned: false,
         filter: {
             filterable: true,
             filterType: "text",
@@ -192,11 +212,13 @@ const fields = ref([
         },
     },
     {
-        key: 'createdDate', label: 'Ngày tạo', type: "date", resizable: true,
+        index: 11,
+        key: 'createdDate', label: 'Ngày tạo', displayLabel: 'Ngày tạo', type: "date", resizable: true,
         movable: true,
         showInTable: true,
         exportable: true,
         sortable: true,
+        pinned: false,
         filter: {
             filterable: true,
             filterType: "date",
@@ -211,11 +233,13 @@ const fields = ref([
         },
     },
     {
-        key: 'modifiedBy', label: 'Người sửa', type: "text", resizable: true,
+        index: 12,
+        key: 'modifiedBy', label: 'Người sửa', displayLabel: 'Người sửa', type: "text", resizable: true,
         movable: true,
         showInTable: true,
         exportable: true,
         sortable: true,
+        pinned: false,
         filter: {
             filterable: true,
             filterType: "text",
@@ -230,11 +254,13 @@ const fields = ref([
         },
     },
     {
-        key: 'modifiedDate', label: 'Ngày sửa', type: "date", resizable: true,
+        index: 13,
+        key: 'modifiedDate', label: 'Ngày sửa', displayLabel: 'Ngày sửa', type: "date", resizable: true,
         movable: true,
         showInTable: true,
         exportable: true,
         sortable: true,
+        pinned: false,
         filter: {
             filterable: true,
             filterType: "date",
@@ -249,7 +275,7 @@ const fields = ref([
         },
     },
     {
-        index: 17,
+        index: 14,
         showInTable: true,
         key: "Action",
         label: "Hành động",
@@ -277,6 +303,7 @@ const fields = ref([
     },
 ]);
 
+const fields = ref(JSON.parse(JSON.stringify(defaultFields.value)));
 
 const searchColumns = ['ShiftCode', 'ShiftName', 'CreatedBy', 'ModifiedBy'];
 // 2. Kích hoạt Composable Generic, định nghĩa rõ ràng kiểu dữ liệu là thực thể <Shift>
@@ -312,7 +339,7 @@ const {
     fields.value,
 );
 
-const activeColumnKeys = computed(() => fields.value.filter(f => f.exportable && f.showInTable).map(f => f.key));
+const activeColumnKeys = computed(() => fields.value.filter((f: any) => f.exportable && f.showInTable).map((f: any) => f.key));
 
 //#region init data ==================================================================================
 // const fetchDataPaging = async (pagingParams: PagingParams) => {
@@ -371,11 +398,11 @@ const deleteShift = async (shiftIds: string[]) => {
                     if (tableRows.value.length === 0) {
                         if (currentPage.value > 1) {
                             // Nếu ở trang 2, 3, 4... thì lùi về trang trước (hàm prevPage sẽ tự gọi loadData)
-                            prevPage(activeColumnKeys.value);
+                            prevPage();
                         } else if (totalItems.value > 0) {
                             // Nếu đang ở TRANG ĐẦU TIÊN, nhưng tổng số items vẫn > 0 (tức là vẫn còn dòng ở các trang sau)
                             // Ta giữ nguyên currentPage = 1 và gọi loadData() để kéo dữ liệu trang sau gối đầu lên trang 1
-                            await loadData(activeColumnKeys.value);
+                            await loadData();
                         }
                         // Trường hợp cuối cùng: currentPage === 1 và totalItems === 0 nghĩa là hệ thống hết sạch dữ liệu,
                         // UI tự động hiển thị bảng trống đúng thực tế, không cần gọi API nữa.
@@ -484,10 +511,10 @@ import TableDisplaySettings from '../../../../components/base/ms-table/component
 //#region table settings 
 // Table settings
 const dataColumns = computed(() => {
-    return fields.value.filter(f => f.exportable && f.showInTable).map(f => {
+    return fields.value.filter((f: any) => f.exportable && f.showInTable).map((f: any) => {
         return {
             Key: f.key,
-            DisplayName: f.label,
+            DisplayName: f.displayLabel || f.label,
         };
     });
 });
@@ -1042,6 +1069,42 @@ const handleSort = (sortData: any) => {
     handleSortChange(sortData);
 }
 
+const isShowingTableDisplaySettings = ref(false);
+const handleCloseTableDisplaySettings = () => {
+    isShowingTableDisplaySettings.value = false;
+}
+
+const handleApplyTableDisplaySettings = (updatedColumns: any[]) => {
+    console.log('Updated columns from Table Display Settings:', updatedColumns);
+    console.log('Default fields', defaultFields.value);
+    updatedColumns.forEach(element => {
+        const field = fields.value.find((f: any) => f.key === element.columnKey);
+        if (field) {
+            field.index = element.columnIndex;
+            field.showInTable = element.columnVisible;
+            field.displayLabel = element.columnDisplay;
+            field.pinned = element.columnPinned;
+            field.style = {
+                ...field.style,
+                width: element.columnWidth ? `${element.columnWidth}px` : field.style?.width || 'auto',
+            };
+        }
+    });
+    console.log('Updated fields after applying display settings:', fields.value);
+    fields.value.sort((a: any, b: any) => (a.index || 0) - (b.index || 0));
+    // Cập nhật lại activeColumnKeys để loadData với cột mới
+    // loadData(activeColumnKeys.value);
+    // isShowingTableDisplaySettings.value = false;
+    // message.show({
+    //     icon: "mi-qtsx icon-info bg-(--color-success)!",
+    //     title: "Cài đặt hiển thị",
+    //     variant: "info",
+    //     message: "Cài đặt hiển thị đã được áp dụng.",
+    //     acceptText: "Đóng",
+    // });
+    toast.success("Cài đặt hiển thị đã được áp dụng.");
+}
+
 
 const showInDevelopmentMessage = () => {
     message.show({
@@ -1063,7 +1126,6 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
-
     // document.removeEventListener('click', handleDocumentClick);
 });
 
@@ -1092,7 +1154,7 @@ onBeforeUnmount(() => {
                     <!-- Left -->
                     <div class="table-container__toolbar__left flex items-center gap-x-4">
                         <MsInput class="w-[240px]" placeholder="Tìm kiếm" icon="mi-warehouse icon16 icon left search"
-                            @input="executeSearch($event, activeColumnKeys)" />
+                            @input="executeSearch($event)" />
                         <div v-if="filters.length > 0 && selectedRowIndices.length === 0"
                             class="filter-conditions h-full">
                             <div v-for="(filter, index) in filters" :key="index" class="filter-item">
@@ -1144,8 +1206,8 @@ onBeforeUnmount(() => {
                             <div class="icon reload mi-warehouse icon16 bg-gray-600!"
                                 :class="{ 'animate-spin': isLoading }"></div>
                         </MsButton>
-                        <MsButton class="" serverity="secondary" variant="outlined" @click="showInDevelopmentMessage()"
-                            v-tooltip.top="'Cài đặt hiển thị'">
+                        <MsButton class="" serverity="secondary" variant="outlined"
+                            @click="isShowingTableDisplaySettings = true" v-tooltip.top="'Cài đặt hiển thị'">
                             <div class="icon setting mi-warehouse icon16 bg-gray-600!"></div>
                         </MsButton>
                     </div>
@@ -1313,7 +1375,9 @@ onBeforeUnmount(() => {
             </template>
         </MsMessage>
         <Teleport to="body">
-            <TableDisplaySettings :rows="fields" v-if="false" />
+            <TableDisplaySettings :fields="fields" :defaultFields="defaultFields"
+                :visible="isShowingTableDisplaySettings" @cancel="handleCloseTableDisplaySettings"
+                @apply="handleApplyTableDisplaySettings($event)" />
         </Teleport>
     </div>
 </template>

@@ -311,7 +311,8 @@ const setFilterData = (value: any) => {
     <div ref="filterModalRef" class="condition-container gap-4">
         <div class="flex flex-col gap-4">
             <div class="flex items-center justify-between">
-                <div class="column-filter-text mr-2">Lọc {{ props.field.label.toLowerCase() }}</div>
+                <div class="column-filter-text mr-2">Lọc {{ props.field.displayLabel?.toLowerCase() ||
+                    props.field.label?.toLowerCase() }}</div>
                 <MsButton serverity="secondary" variant="text" @click="handleClose">
                     <div class="icon icon16 close mi-warehouse"></div>
                 </MsButton>

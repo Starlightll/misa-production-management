@@ -24,7 +24,7 @@ export function useTablePagingFilter<T>(
     searchColumns: string[] = [],
     localStorageKey: string = 'misaTablePageSize',
     defaultSort: string = '',
-    fields: any[] = []
+    fields: any[] = [],
 ) {
     // 1. Các State phản ứng quản lý phân trang
     const isLoading = ref(false);
@@ -36,6 +36,11 @@ export function useTablePagingFilter<T>(
     const selectedRowIndices = ref<number[]>([]);
     const sortString = ref('');
 
+    const columns = computed(() => {
+        return fields.filter(f => f.showInTable && f.exportable).map(f => ({
+            key: f.key,
+        }));
+    });
 
     const filters = computed(() => {
         console.log("Tính toán filters từ fields:", fields);
@@ -101,7 +106,7 @@ export function useTablePagingFilter<T>(
             pageSize: pageSize.value,
             filter: globalFilterArray.value.length > 0 ? JSON.stringify(globalFilterArray.value) : "",
             sort: sortString.value !== '' ? sortString.value : defaultSort || "[{\"Selector\":\"CreatedDate\",\"Desc\":false}]",
-            columns: activeFields.length > 0 ? activeFields.join(',') : "",
+            columns: activeFields.length > 0 ? activeFields.join(',') : columns.value.map((c: any) => c.key).join(','),
             customFilter: buildCustomFilter(searchTerm.value),
         };
 
@@ -123,51 +128,51 @@ export function useTablePagingFilter<T>(
     };
 
     // 5. Các hàm điều phối Phân trang Điều hướng UI
-    const changePageSize = (newSize: string, activeFields: string[] = []) => {
+    const changePageSize = (newSize: string) => {
         pageSize.value = newSize;
         currentPage.value = 1;
         localStorage.setItem(localStorageKey, newSize);
-        loadData(activeFields);
+        loadData();
     };
 
-    const nextPage = (activeFields: string[] = []) => {
+    const nextPage = () => {
         if (!canGoNext.value) return;
         currentPage.value += 1;
-        loadData(activeFields);
+        loadData();
     };
 
-    const prevPage = (activeFields: string[] = []) => {
+    const prevPage = () => {
         if (!canGoPrev.value) return;
         currentPage.value -= 1;
-        loadData(activeFields);
+        loadData();
     };
 
-    const goToFirstPage = (activeFields: string[] = []) => {
+    const goToFirstPage = () => {
         if (!canGoPrev.value) return;
         currentPage.value = 1;
-        loadData(activeFields);
+        loadData();
     };
 
-    const goToLastPage = (activeFields: string[] = []) => {
+    const goToLastPage = () => {
         if (!canGoNext.value) return;
         currentPage.value = totalPages.value;
-        loadData(activeFields);
+        loadData();
     };
 
     // Debounce Tìm kiếm nhanh
     let searchTimeout: number | null = null;
-    const executeSearch = (value: string, activeFields: string[] = []) => {
+    const executeSearch = (value: string) => {
         searchTerm.value = value;
         if (searchTimeout) clearTimeout(searchTimeout);
 
         searchTimeout = window.setTimeout(() => {
             currentPage.value = 1;
-            loadData(activeFields);
+            loadData();
         }, 500);
     };
 
     // Xử lý khi nhận mảng bộ lọc từ Component Table truyền ra
-    const handleFilterChange = (filterData: any, activeFields: string[] = []) => {
+    const handleFilterChange = (filterData: any) => {
         // filterData: field, filterData
         // Update fields trong mảng fields để lưu lại thông tin filterData cho từng cột, giúp giữ trạng thái lọc khi người dùng mở lại filter của cột đó
         fields.forEach(f => {
@@ -178,17 +183,17 @@ export function useTablePagingFilter<T>(
             }
         });
         console.log("Fields sau khi cập nhật:", fields);
-        loadData(activeFields);
+        loadData();
     };
 
-    const handleSortChange = (sortData: string, activeFields: string[] = []) => {
+    const handleSortChange = (sortData: string) => {
         console.log("Nhận sortData từ Table:", sortData);
         if (sortData && sortData !== '') {
             sortString.value = sortData;
         } else {
             sortString.value = defaultSort || '';
         }
-        loadData(activeFields);
+        loadData();
     }
 
     const removeFilterFromFilters = (fieldKey: string) => {

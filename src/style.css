@@ -487,10 +487,55 @@ code {
   }
 }
 
+/* Slide in top */
+@keyframes slideInTop {
+  from {
+    transform: translateY(-100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* Slide in right */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Slide out right */
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(100%);
+  }
+}
+
 .animate-rotate {
   animation: rotate 1s linear infinite;
 }
 
 .animate-pulse {
   animation: pulse 2s ease-in-out infinite;
+}
+
+.animate-slide-in-top {
+  animation: slideInTop 0.5s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.5s ease-out;
+}
+
+.animate-slide-out-right {
+  animation: slideOutRight 0.5s ease-out;
 }
