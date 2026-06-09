@@ -102,7 +102,7 @@
                     @clear="handleClearFilter($event)" @close="handleCloseFilter" />
             </div>
             <!-- Column Sort Popover -->
-            <ul ref="sortPopoverRef" v-if="currentSortField" class="sort-modal" :style="columnSortStyle" @click.stop>
+            <ul ref="sortPopoverRef" v-if="currentSortField" class="sort-modal " :style="columnSortStyle" @click.stop>
                 <li class="menu-wrapper-item" @click="handleSort('')">
                     <div class="icon icon16 mi-warehouse empty"></div>
                     Không sắp xếp
@@ -539,6 +539,7 @@ table {
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     background: #fff;
     border-radius: 4px;
+    animation: slide-in 0.3s ease;
 }
 
 .sort-modal {
@@ -553,6 +554,7 @@ table {
     border-radius: 8px;
     margin: 0;
     overflow: hidden;
+    animation: slide-in 0.2s ease;
 
     .menu-wrapper-item {
         white-space: nowrap;
@@ -629,5 +631,18 @@ table {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -100%);
+}
+
+//Animate slide in cho filter-modal
+@keyframes slide-in {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 </style>
